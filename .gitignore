@@ -1,0 +1,63 @@
+
+# Claude Code
+.claude/settings.local.json
+
+# GitNexus cache
+.gitnexus/
+
+claude.md
+.claude/skills/generated/
+.claude/commands/
+.claude/skills/
+
+.docs/
+
+.github/prompts/
+.github/skills/
+
+# ---------------------------------------------------------------------------
+# Cerebro project
+# Tracked on purpose (do NOT ignore): openspec/, docs/, schemas/, contracts/,
+# uv.lock, ui/pnpm-lock.yaml. The .docs/ design narrative is ignored above.
+# ---------------------------------------------------------------------------
+
+# Runtime data: artifacts (source of truth) + derived SQLite registry + logs
+/data/
+*.cerebro.json
+*.db
+*.db-wal
+*.db-shm
+
+# Secrets / local config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+
+# Node / UI
+node_modules/
+ui/dist/
+ui/.vite/
+*.tsbuildinfo
+.eslintcache
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
