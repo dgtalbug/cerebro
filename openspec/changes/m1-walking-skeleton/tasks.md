@@ -126,14 +126,14 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part III §3, §4.
 **Commit:** `feat(ui): app shell — topbar, sidebar, viewheader, theme toggle`
 
-- [ ] `gitnexus_search` for `TopBar`, `Sidebar`, `ViewHeader`, `ThemeToggle`.
-- [ ] Create `ui/src/components/layout/TopBar.tsx`, `Sidebar.tsx`, `ViewHeader.tsx` matching the mockup layout, typography, grain, and glow.
-- [ ] Create `ui/src/components/brand/BrandMark.tsx` (concentric-rings logo as the mockup defines).
-- [ ] Create `ui/src/components/ui/ThemeToggle.tsx` consuming `useTheme()` from task 6a.
-- [ ] Update `ui/src/App.tsx` to wire the shell around the routed view region.
-- [ ] Side-by-side comparison against `.docs/cerebro-dashboard.html` for the shell shows matching shapes; the theme toggle round-trips dark↔light visibly.
-- [ ] `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test` all green.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `TopBar`, `Sidebar`, `ViewHeader`, `ThemeToggle` — no collisions found.
+- [x] Created `ui/src/components/layout/TopBar.tsx`, `Sidebar.tsx`, `ViewHeader.tsx` matching the mockup layout, typography, grain, and glow. Also `AppShell.tsx` (grid layout + `<Outlet/>`).
+- [x] Created `ui/src/components/brand/BrandMark.tsx` (concentric-rings logo verbatim from mockup, 26×26 SVG with `currentColor`).
+- [x] Created `ui/src/components/ui/ThemeToggle.tsx` consuming `useTheme()` from task 6a (inline moon/sun SVGs, `aria-label` with next theme).
+- [x] Updated `ui/src/App.tsx` to wire `AppShell` + `BrowserRouter` (`/` → redirect, `/artifacts/:id/overview`, `*` → 404). Updated `ui/src/main.tsx` with `<BrowserRouter>`. Updated `ui/src/globals.css` with body::before/::after atmosphere + all component CSS classes from mockup.
+- [x] Side-by-side comparison against `.docs/cerebro-dashboard.html` for the shell shows matching shapes; the theme toggle round-trips dark↔light visibly.
+- [x] `pnpm lint`, `pnpm typecheck`, `pnpm build` (302ms, 11 kB CSS / 191 kB JS), `pnpm test` (12/12 in ~460ms) all green. Backend: ruff OK, pytest -n auto (74/74 in 2.83s), all three contract checks OK.
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 7 — Overview view wired to the API
 
