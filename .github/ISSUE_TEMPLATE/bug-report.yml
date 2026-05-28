@@ -1,0 +1,130 @@
+name: Bug report
+description: Report a defect in Cerebro.
+title: "[bug]: "
+labels:
+  - type:bug
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. Please fill out every required field —
+        incomplete reports take longer to triage.
+
+        For security vulnerabilities, **do not** use this form. Use
+        [GitHub Security Advisories](https://github.com/dgtalbug/cerebro/security/advisories/new)
+        for private disclosure.
+
+        Do not paste model contents, training data, secrets, or PII. Counts
+        and sizes are fine (`num_trees=187`, `num_features=24`).
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected surface
+      description: Which part of Cerebro is misbehaving?
+      multiple: true
+      options:
+        - Backend API (FastAPI)
+        - CLI (`cerebro …`)
+        - Extraction (LightGBM)
+        - Canonical schema / contracts
+        - Storage (artifact files / SQLite registry)
+        - AI agent
+        - UI (React dashboard)
+        - Docker / compose
+        - Documentation
+        - Build / packaging / CI
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: input
+    id: cerebro-version
+    attributes:
+      label: Cerebro version
+      description: Tag (`v0.x.y`) or commit SHA. From `git rev-parse --short HEAD` if running from source.
+      placeholder: "git@<sha> or v0.x.y"
+    validations:
+      required: true
+
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: Output of `python --version` in the active environment.
+      placeholder: "3.12.x"
+    validations:
+      required: true
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Node version
+      description: Output of `node --version`. Leave blank if the bug is backend-only.
+      placeholder: "22.x.x"
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Install method
+      options:
+        - From source (uv + pnpm)
+        - Docker compose (`make up`)
+        - Other
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (x86_64)
+        - Linux (arm64)
+        - Windows / WSL2
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Minimal, ordered steps that reproduce the bug. If artifact-related, include framework, objective, and shape (num_trees / num_features) — never the artifact itself.
+      placeholder: |
+        1. Train a LightGBM binary classifier on …
+        2. Run `cerebro extract model.txt`
+        3. Observe …
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Exact error messages, stack traces, or structured-log lines. Redact PII / secrets before pasting.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Structured JSON log lines preferred. Cerebro emits one JSON object per line via structlog.
+      render: json
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Screenshots (UI bugs), related issues, recent changes, hunches.

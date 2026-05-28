@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and discussion
+    url: https://github.com/dgtalbug/cerebro/discussions
+    about: Open-ended questions, design ideas, and general discussion belong in Discussions.
+  - name: Security report
+    url: https://github.com/dgtalbug/cerebro/security/advisories/new
+    about: Report a security vulnerability privately via GitHub Security Advisories.

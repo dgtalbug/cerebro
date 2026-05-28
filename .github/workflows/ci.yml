@@ -35,6 +35,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          # pnpm/action-setup runs with the runner CWD (repo root), not the
+          # job-level working-directory, so we point at ui/package.json
+          # explicitly. Version is read from its "packageManager" field.
+          package_json_file: ui/package.json
       - name: Set up Node 22 LTS
         uses: actions/setup-node@v4
         with:
@@ -64,12 +69,6 @@ jobs:
       - run: uv sync --frozen
       - run: uv run python scripts/check_contracts.py
 
-  docker:
-    name: Docker build (placeholder slim images)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build backend image
-        run: docker build -f docker/backend.Dockerfile -t cerebro/backend:ci .
-      - name: Build UI image
-        run: docker build -f docker/ui.Dockerfile -t cerebro/ui:ci .
+# Docker image builds are deliberately not in CI. They're slow, rarely
+# catch regressions the unit tests don't, and the runtime CMDs are still
+# placeholders. Local dev uses docker-compose (see Makefile).
