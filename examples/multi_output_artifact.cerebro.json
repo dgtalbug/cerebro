@@ -1,0 +1,219 @@
+{
+  "schema_version": "1.0.0",
+  "source": {
+    "framework": "lightgbm",
+    "framework_version": "4.6.0",
+    "extracted_at": "2026-01-01T00:00:00Z",
+    "extractor_version": "0.1.0"
+  },
+  "model": {
+    "objective": "multi_output",
+    "num_class": 2,
+    "num_iteration": 5,
+    "params": {},
+    "feature_schema": {
+      "names": [
+        "feat_0",
+        "feat_1",
+        "feat_2",
+        "feat_3",
+        "feat_4",
+        "feat_5"
+      ],
+      "categorical_indices": [],
+      "monotone_constraints": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  },
+  "trees": [
+    {
+      "index": 0,
+      "class_index": 0,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.0
+      }
+    },
+    {
+      "index": 1,
+      "class_index": 1,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.01
+      }
+    },
+    {
+      "index": 2,
+      "class_index": 0,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.02
+      }
+    },
+    {
+      "index": 3,
+      "class_index": 1,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.03
+      }
+    },
+    {
+      "index": 4,
+      "class_index": 0,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.04
+      }
+    },
+    {
+      "index": 5,
+      "class_index": 1,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.05
+      }
+    },
+    {
+      "index": 6,
+      "class_index": 0,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.06
+      }
+    },
+    {
+      "index": 7,
+      "class_index": 1,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.07
+      }
+    },
+    {
+      "index": 8,
+      "class_index": 0,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.08
+      }
+    },
+    {
+      "index": 9,
+      "class_index": 1,
+      "num_leaves": 2,
+      "root": {
+        "id": 0,
+        "split_feature": null,
+        "threshold": null,
+        "decision_type": null,
+        "left": null,
+        "right": null,
+        "leaf_value": 0.09
+      }
+    }
+  ],
+  "importance": {
+    "gain": {
+      "feat_0": 0.5,
+      "feat_1": 0.3,
+      "feat_2": 0.2,
+      "feat_3": 0.15,
+      "feat_4": 0.1,
+      "feat_5": 0.05
+    },
+    "split": {
+      "feat_0": 0.5,
+      "feat_1": 0.3,
+      "feat_2": 0.2,
+      "feat_3": 0.15,
+      "feat_4": 0.1,
+      "feat_5": 0.05
+    },
+    "permutation": null,
+    "divergence_warnings": null
+  },
+  "rank_metadata": {
+    "num_outputs": 2,
+    "multi_output_importance": {
+      "output_0": {
+        "feat_0": 0.5,
+        "feat_1": 0.3,
+        "feat_2": 0.2,
+        "feat_3": 0.15,
+        "feat_4": 0.1,
+        "feat_5": 0.05
+      },
+      "output_1": {
+        "feat_0": 0.5,
+        "feat_1": 0.3,
+        "feat_2": 0.2,
+        "feat_3": 0.15,
+        "feat_4": 0.1,
+        "feat_5": 0.05
+      }
+    }
+  },
+  "explanations": null,
+  "evaluation": null
+}

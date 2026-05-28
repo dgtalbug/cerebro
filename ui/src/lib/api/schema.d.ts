@@ -24,6 +24,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts/{artifact_id}/importance": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Importance
+         * @description Return importance scores for the requested type.
+         *
+         *     - gain / split: always available (computed at extraction time).
+         *     - permutation: available only when evaluation samples were provided
+         *       at extraction time; returns HTTP 200 with empty features list and a
+         *       detail message when absent.
+         */
+        get: operations["get_importance_artifacts__artifact_id__importance_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -59,6 +84,10 @@ export interface components {
             explanations?: null;
             importance: components["schemas"]["Importance"];
             model: components["schemas"]["Model"];
+            /** Rank Metadata */
+            rank_metadata?: {
+                [key: string]: unknown;
+            } | null;
             /**
              * Schema Version
              * @constant
@@ -110,12 +139,12 @@ export interface components {
         /**
          * Importance
          * @description Feature importance scores keyed by feature name.
-         *
-         *     `permutation` is locked to None in v1.0.0. When permutation importance
-         *     lands, it will use the shape `{feature_name: {"mean": float, "std": float}}`
-         *     behind a schema-version bump.
          */
         Importance: {
+            /** Divergence Warnings */
+            divergence_warnings?: {
+                [key: string]: string | number;
+            }[] | null;
             /** Gain */
             gain: {
                 [key: string]: number;
@@ -143,18 +172,15 @@ export interface components {
          */
         Model: {
             feature_schema: components["schemas"]["FeatureSchema"];
-            /**
-             * Num Class
-             * @constant
-             */
-            num_class: 1;
+            /** Num Class */
+            num_class: number;
             /** Num Iteration */
             num_iteration: number;
             /**
              * Objective
-             * @constant
+             * @enum {string}
              */
-            objective: "binary";
+            objective: "binary" | "multiclass" | "regression" | "lambdarank" | "multi_output";
             /** Params */
             params: {
                 [key: string]: unknown;
@@ -251,6 +277,42 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CerebroArtifact"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_importance_artifacts__artifact_id__importance_get: {
+        parameters: {
+            query: {
+                /** @description Importance type: gain, split, or permutation */
+                type: string;
+            };
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */

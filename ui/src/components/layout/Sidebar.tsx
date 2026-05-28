@@ -23,8 +23,7 @@ const introspectionItems: NavItemDef[] = [
   {
     label: "Trees",
     view: "trees",
-    disabled: true,
-    count: "—",
+    disabled: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M12 3v18M5 8l7-5 7 5M5 16l7-5 7 5" />
@@ -34,7 +33,7 @@ const introspectionItems: NavItemDef[] = [
   {
     label: "Importance",
     view: "importance",
-    disabled: true,
+    disabled: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M3 21v-4M9 21v-9M15 21v-14M21 21v-6" />
