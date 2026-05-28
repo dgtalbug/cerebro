@@ -2,8 +2,9 @@
 # Claude Code
 .claude/settings.local.json
 
-# GitNexus cache
+# GitNexus cache + the AGENTS.md it auto-generates at the root
 .gitnexus/
+AGENTS.md
 
 claude.md
 .claude/skills/generated/
