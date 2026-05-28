@@ -105,7 +105,7 @@ def test_permutation_importance_keys_match_features(
     features, labels = make_classification(
         n_samples=200, n_features=8, n_informative=4, n_redundant=0, random_state=42
     )
-    booster = lgb.Booster(model_file=str(binary_booster_file))  # type: ignore[arg-type]
+    booster = lgb.Booster(model_file=str(binary_booster_file))
     feature_names = booster.feature_name()
 
     result = compute_permutation_importance(booster, features, labels, feature_names)
@@ -127,7 +127,7 @@ def test_permutation_importance_returns_finite_values(
     features, labels = make_classification(
         n_samples=200, n_features=8, n_informative=4, n_redundant=0, random_state=42
     )
-    booster = lgb.Booster(model_file=str(binary_booster_file))  # type: ignore[arg-type]
+    booster = lgb.Booster(model_file=str(binary_booster_file))
     feature_names = booster.feature_name()
 
     result = compute_permutation_importance(booster, features, labels, feature_names)

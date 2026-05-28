@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -28,7 +28,7 @@ def _normalise(d: dict[str, Any]) -> dict[str, Any]:
 
 
 def _load_example(name: str) -> dict[str, Any]:
-    return json.loads((EXAMPLES / name).read_text())
+    return cast(dict[str, Any], json.loads((EXAMPLES / name).read_text()))
 
 
 # ---------------------------------------------------------------------------
