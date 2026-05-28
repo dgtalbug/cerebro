@@ -1,0 +1,10 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cerebro API",
+    "version": "0.1.0",
+    "description": "SEED STUB. The authoritative contract is generated from the FastAPI app (cerebro.api.app) at /openapi.json once it exists. scripts/check_contracts.py then regenerates this file and fails CI on drift; the UI types pipeline (pnpm api:types) consumes it. Until then this is a placeholder and the drift check reports OpenAPI as 'pending'."
+  },
+  "x-cerebro-contract-status": "seed-stub",
+  "paths": {}
+}

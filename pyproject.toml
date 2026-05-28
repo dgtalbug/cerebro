@@ -1,0 +1,118 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cerebro"
+version = "0.1.0"
+description = "Model introspection platform: trained ML artifact in, canonical library-agnostic JSON out."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Bala" }]
+
+# Core runtime deps M0 actually imports + the schema foundation used from M1.
+# The heavy ML/web/agent stacks live in optional-dependencies so `uv sync`
+# stays light in M0 (see ARCHITECTURE.md / the M0 change design).
+dependencies = [
+    "pydantic>=2.5,<3",
+    "structlog>=24.1,<26",
+]
+
+[project.optional-dependencies]
+# Extraction stack (LightGBM-aware). Heavy; exercised from M1.
+ml = [
+    "lightgbm>=4.0,<5",
+    "shap>=0.44,<1",
+    "scikit-learn>=1.4,<2",
+    "numpy>=1.26,<3",
+]
+# API + CLI surface. Wired from M1.
+api = [
+    "fastapi>=0.110,<1",
+    "uvicorn[standard]>=0.27,<1",
+    "typer>=0.9,<1",
+]
+# AI agent provider (default impl). Wired from M4.
+agent = [
+    "anthropic>=0.40,<1",
+]
+
+# Dev toolchain (PEP 735). Installed by default with `uv sync`.
+[dependency-groups]
+dev = [
+    "ruff>=0.8,<1",
+    "mypy>=1.13,<2",
+    "pytest>=8.0,<9",
+    "pytest-cov>=5,<7",
+    "pytest-xdist>=3.6,<4",
+    "pytest-asyncio>=0.24,<1",
+    "import-linter>=2.1,<3",
+    "pre-commit>=4,<5",
+    "httpx>=0.27,<1",
+]
+
+# NOTE: the `cerebro` console script (cerebro.cli.main:app) lands in M1 when the
+# CLI module exists; declaring it now would create a broken entrypoint.
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cerebro"]
+
+# --------------------------------------------------------------------------
+# Tooling
+# --------------------------------------------------------------------------
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+files = ["src", "tests"]
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-n auto"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/cerebro"]
+branch = true
+
+# --------------------------------------------------------------------------
+# import-linter — mechanically enforce the architecture boundaries.
+# Invariant #2: no consumption module imports LightGBM.
+# Consumption must not import the extractor implementation.
+# --------------------------------------------------------------------------
+
+[tool.importlinter]
+root_package = "cerebro"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Consumption layers must not import LightGBM (invariant #2)"
+type = "forbidden"
+source_modules = [
+    "cerebro.schema",
+    "cerebro.analyzers",
+    "cerebro.storage",
+    "cerebro.api",
+    "cerebro.agent",
+]
+forbidden_modules = ["lightgbm"]
+
+[[tool.importlinter.contracts]]
+name = "Consumption must not import the extractor implementation"
+type = "forbidden"
+source_modules = [
+    "cerebro.analyzers",
+    "cerebro.api",
+    "cerebro.agent",
+]
+forbidden_modules = ["cerebro.extractors"]

@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cerebro.dev/schemas/v1/cerebro-artifact.schema.json",
+  "title": "CerebroArtifact",
+  "description": "SEED STUB. The authoritative canonical JSON Schema is generated from the Pydantic v2 models in cerebro.schema.v1 (model_json_schema()) once they exist. scripts/check_contracts.py replaces this stub and then fails CI on any drift. Until then this is a placeholder; the drift check reports the canonical schema as 'pending'.",
+  "x-cerebro-contract-status": "seed-stub",
+  "type": "object",
+  "required": ["schema_version"],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0"
+    }
+  }
+}
