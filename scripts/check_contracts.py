@@ -24,6 +24,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_DDL = ROOT / "schemas" / "registry" / "v1" / "init.sql"
+CANONICAL_SCHEMA = ROOT / "schemas" / "v1" / "cerebro-artifact.schema.json"
+OPENAPI = ROOT / "contracts" / "openapi" / "openapi.json"
 
 
 def check_registry_ddl() -> bool:
@@ -58,10 +60,47 @@ def check_canonical_schema() -> bool:
     if find_spec("cerebro.schema.v1") is None:
         print("  PENDING canonical JSON Schema (no Pydantic models yet)")
         return True
-    # Once the models exist: import them, compare model_json_schema() to the
-    # committed file, and fail on drift. Wired here so the gate exists already.
-    print("  TODO canonical schema source present — implement comparison")
-    return True
+
+    # Sibling-script import. Works because `python scripts/check_contracts.py`
+    # puts scripts/ on sys.path[0]; falls back to a path-based load when run
+    # from elsewhere (e.g. pytest).
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from export_schema import render_schema
+
+    if not CANONICAL_SCHEMA.exists():
+        print(f"  FAIL canonical schema file missing: {CANONICAL_SCHEMA}")
+        return False
+
+    committed = CANONICAL_SCHEMA.read_text(encoding="utf-8")
+    live = render_schema()
+
+    if committed == live:
+        print("  OK   canonical JSON Schema matches Pydantic export")
+        return True
+
+    # Drift: report the first differing line so the failure is actionable.
+    committed_lines = committed.splitlines()
+    live_lines = live.splitlines()
+    for index, (committed_line, live_line) in enumerate(
+        zip(committed_lines, live_lines, strict=False)
+    ):
+        if committed_line != live_line:
+            print(
+                f"  FAIL canonical JSON Schema drift at line {index + 1}:"
+                f"\n         committed: {committed_line!r}"
+                f"\n         live:      {live_line!r}"
+            )
+            break
+    else:
+        print(
+            "  FAIL canonical JSON Schema drift — committed and live differ in length"
+            f" (committed: {len(committed_lines)} lines, live: {len(live_lines)} lines)"
+        )
+    print(
+        "         run `uv run python scripts/export_schema.py` to regenerate"
+        f" {CANONICAL_SCHEMA.relative_to(ROOT)}"
+    )
+    return False
 
 
 def check_openapi() -> bool:
@@ -69,8 +108,43 @@ def check_openapi() -> bool:
     if find_spec("cerebro.api.app") is None:
         print("  PENDING OpenAPI (no FastAPI app yet)")
         return True
-    print("  TODO OpenAPI source present — implement comparison")
-    return True
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from export_openapi import render_openapi
+
+    if not OPENAPI.exists():
+        print(f"  FAIL OpenAPI contract file missing: {OPENAPI}")
+        return False
+
+    committed = OPENAPI.read_text(encoding="utf-8")
+    live = render_openapi()
+
+    if committed == live:
+        print("  OK   OpenAPI matches FastAPI app")
+        return True
+
+    committed_lines = committed.splitlines()
+    live_lines = live.splitlines()
+    for index, (committed_line, live_line) in enumerate(
+        zip(committed_lines, live_lines, strict=False)
+    ):
+        if committed_line != live_line:
+            print(
+                f"  FAIL OpenAPI drift at line {index + 1}:"
+                f"\n         committed: {committed_line!r}"
+                f"\n         live:      {live_line!r}"
+            )
+            break
+    else:
+        print(
+            "  FAIL OpenAPI drift — committed and live differ in length"
+            f" (committed: {len(committed_lines)} lines, live: {len(live_lines)} lines)"
+        )
+    print(
+        "         run `uv run python scripts/export_openapi.py` to regenerate"
+        f" {OPENAPI.relative_to(ROOT)}"
+    )
+    return False
 
 
 def main() -> int:

@@ -133,15 +133,21 @@ ml = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "fastapi" },
     { name = "httpx" },
     { name = "import-linter" },
+    { name = "lightgbm" },
     { name = "mypy" },
+    { name = "numpy" },
     { name = "pre-commit" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "scikit-learn" },
+    { name = "typer" },
+    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
@@ -161,15 +167,21 @@ provides-extras = ["ml", "api", "agent"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "fastapi", specifier = ">=0.136,<1" },
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "import-linter", specifier = ">=2.11,<3" },
+    { name = "lightgbm", specifier = ">=4.6,<5" },
     { name = "mypy", specifier = ">=2.1,<3" },
+    { name = "numpy", specifier = ">=2.4,<3" },
     { name = "pre-commit", specifier = ">=4.6,<5" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
     { name = "pytest-asyncio", specifier = ">=1.4,<2" },
     { name = "pytest-cov", specifier = ">=7,<8" },
     { name = "pytest-xdist", specifier = ">=3.8,<4" },
     { name = "ruff", specifier = ">=0.15,<1" },
+    { name = "scikit-learn", specifier = ">=1.8,<2" },
+    { name = "typer", specifier = ">=0.26,<1" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.48,<1" },
 ]
 
 [[package]]

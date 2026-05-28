@@ -18,17 +18,25 @@
     "api:types": "openapi-typescript ../contracts/openapi/openapi.json -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.62.0",
+    "openapi-fetch": "^0.14.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.15.1",
+    "zustand": "^5.0.13"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@types/jsdom": "^27.0.0",
     "@types/react": "^18.3.29",
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.5.0",
     "eslint": "^10.4.0",
     "globals": "^17.6.0",
+    "jsdom": "^28.0.0",
     "openapi-typescript": "^7.13.0",
     "postcss": "^8.5.15",
     "tailwindcss": "^3.4.19",
