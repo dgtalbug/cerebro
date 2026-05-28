@@ -44,11 +44,11 @@ def get_extractor(model_path: str | Path) -> Any:
 
 __all__ = [
     "Extractor",
-    "LGBExtractor",
     "LGBBinaryExtractor",
-    "LGBMulticlassExtractor",
-    "LGBRegressionExtractor",
-    "LGBRankerExtractor",
+    "LGBExtractor",
     "LGBMultiOutputExtractor",
+    "LGBMulticlassExtractor",
+    "LGBRankerExtractor",
+    "LGBRegressionExtractor",
     "get_extractor",
 ]

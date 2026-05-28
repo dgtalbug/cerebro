@@ -7,6 +7,7 @@ from typing import Any
 
 import numpy as np
 
+from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
     _build_feature_schema,
     _build_importance,
@@ -16,7 +17,6 @@ from cerebro.extractors._lightgbm_base import (
     _load_booster,
     _resolve_objective,
 )
-from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.logging import get_logger
 from cerebro.schema.v1 import CerebroArtifact, Model
 
@@ -33,9 +33,7 @@ class LGBBinaryExtractor:
         labels: np.ndarray | None = None,
     ) -> CerebroArtifact:
         if (samples is None) != (labels is None):
-            raise ValueError(
-                "samples and labels must both be provided or both omitted"
-            )
+            raise ValueError("samples and labels must both be provided or both omitted")
 
         path = Path(model_path)
         booster = _load_booster(path)

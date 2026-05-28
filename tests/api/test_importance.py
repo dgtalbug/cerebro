@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
-import pytest
 from fastapi.testclient import TestClient
 
 
-def test_gain_returns_sorted_features(client: TestClient, written_artifact_id: str) -> None:
+def test_gain_returns_sorted_features(
+    client: TestClient, written_artifact_id: str
+) -> None:
     resp = client.get(f"/artifacts/{written_artifact_id}/importance?type=gain")
     assert resp.status_code == 200
     body = resp.json()
@@ -19,7 +18,9 @@ def test_gain_returns_sorted_features(client: TestClient, written_artifact_id: s
     assert values == sorted(values, reverse=True)
 
 
-def test_split_returns_sorted_features(client: TestClient, written_artifact_id: str) -> None:
+def test_split_returns_sorted_features(
+    client: TestClient, written_artifact_id: str
+) -> None:
     resp = client.get(f"/artifacts/{written_artifact_id}/importance?type=split")
     assert resp.status_code == 200
     body = resp.json()
@@ -45,7 +46,9 @@ def test_invalid_type_returns_422(client: TestClient, written_artifact_id: str) 
     assert resp.status_code == 422
 
 
-def test_missing_type_param_returns_422(client: TestClient, written_artifact_id: str) -> None:
+def test_missing_type_param_returns_422(
+    client: TestClient, written_artifact_id: str
+) -> None:
     resp = client.get(f"/artifacts/{written_artifact_id}/importance")
     assert resp.status_code == 422
 
@@ -55,7 +58,9 @@ def test_unknown_artifact_returns_404(client: TestClient) -> None:
     assert resp.status_code == 404
 
 
-def test_gain_features_have_rank_gain(client: TestClient, written_artifact_id: str) -> None:
+def test_gain_features_have_rank_gain(
+    client: TestClient, written_artifact_id: str
+) -> None:
     resp = client.get(f"/artifacts/{written_artifact_id}/importance?type=gain")
     body = resp.json()
     for feature in body["features"]:

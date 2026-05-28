@@ -2,17 +2,13 @@
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock
-
 import numpy as np
-import pytest
 
 from cerebro.analyzers.importance import (
     DIVERGENCE_RANK_THRESHOLD,
     compute_permutation_importance,
     detect_divergence,
 )
-
 
 # ---------------------------------------------------------------------------
 # detect_divergence — pure logic, no booster needed
@@ -22,7 +18,11 @@ from cerebro.analyzers.importance import (
 def test_no_divergence_when_ranks_align() -> None:
     names = ["a", "b", "c"]
     gain = {"a": 3.0, "b": 2.0, "c": 1.0}
-    perm = {"a": {"mean": 3.0, "std": 0.0}, "b": {"mean": 2.0, "std": 0.0}, "c": {"mean": 1.0, "std": 0.0}}
+    perm = {
+        "a": {"mean": 3.0, "std": 0.0},
+        "b": {"mean": 2.0, "std": 0.0},
+        "c": {"mean": 1.0, "std": 0.0},
+    }
     warnings = detect_divergence(gain, perm, names, threshold=2)
     assert warnings == []
 
@@ -33,13 +33,13 @@ def test_divergence_detected_when_ranks_swap() -> None:
     # a=rank1 by gain, rank7 by perm → delta=6, exceeds threshold=5
     gain = {"a": 7.0, "b": 6.0, "c": 5.0, "d": 4.0, "e": 3.0, "f": 2.0, "g": 1.0}
     perm = {
-        "a": {"mean": 1.0, "std": 0.1},   # rank 7 by perm
+        "a": {"mean": 1.0, "std": 0.1},  # rank 7 by perm
         "b": {"mean": 2.0, "std": 0.1},
         "c": {"mean": 3.0, "std": 0.1},
         "d": {"mean": 4.0, "std": 0.1},
         "e": {"mean": 5.0, "std": 0.1},
         "f": {"mean": 6.0, "std": 0.1},
-        "g": {"mean": 7.0, "std": 0.1},   # rank 1 by perm
+        "g": {"mean": 7.0, "std": 0.1},  # rank 1 by perm
     }
     warnings = detect_divergence(gain, perm, names, threshold=5)
     assert len(warnings) >= 1
@@ -95,9 +95,11 @@ def test_default_threshold_constant() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_permutation_importance_keys_match_features(binary_booster_file: object) -> None:
+def test_permutation_importance_keys_match_features(
+    binary_booster_file: object,
+) -> None:
+
     import lightgbm as lgb
-    from pathlib import Path
     from sklearn.datasets import make_classification
 
     features, labels = make_classification(
@@ -116,7 +118,9 @@ def test_permutation_importance_keys_match_features(binary_booster_file: object)
         assert isinstance(scores["std"], float)
 
 
-def test_permutation_importance_returns_finite_values(binary_booster_file: object) -> None:
+def test_permutation_importance_returns_finite_values(
+    binary_booster_file: object,
+) -> None:
     import lightgbm as lgb
     from sklearn.datasets import make_classification
 
