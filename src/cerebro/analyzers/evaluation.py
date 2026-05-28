@@ -74,7 +74,10 @@ def evaluate(
     if objective == "binary":
         result = _evaluate_binary(predictions, labels)
     elif objective == "multiclass":
-        n_classes = int(predictions.shape[1]) if predictions.ndim == 2 else len(np.unique(labels))
+        if predictions.ndim == 2:
+            n_classes = int(predictions.shape[1])
+        else:
+            n_classes = len(np.unique(labels))
         result = _evaluate_multiclass(predictions, labels, n_classes)
     elif objective in ("regression", "multi_output"):
         result = _evaluate_regression(predictions, labels)
@@ -105,7 +108,7 @@ def _evaluate_binary(predictions: np.ndarray, labels: np.ndarray) -> BinaryEval:
     fpr_arr, tpr_arr, thresh_arr = roc_curve(labels, probs)
     roc_points = [
         ROCPoint(fpr=float(f), tpr=float(t), threshold=float(th))
-        for f, t, th in zip(fpr_arr, tpr_arr, thresh_arr)
+        for f, t, th in zip(fpr_arr, tpr_arr, thresh_arr, strict=False)
     ]
 
     cm = confusion_matrix(labels, hard)
@@ -140,9 +143,11 @@ def _evaluate_multiclass(
     cm_cells = _cm_to_cells(cm)
 
     per_class: list[PerClassMetrics] = []
-    precs = precision_score(labels, hard, average=None, zero_division=0, labels=list(range(n_classes)))
-    recs = recall_score(labels, hard, average=None, zero_division=0, labels=list(range(n_classes)))
-    f1s = f1_score(labels, hard, average=None, zero_division=0, labels=list(range(n_classes)))
+    cls_labels = list(range(n_classes))
+    kw = {"average": None, "zero_division": 0, "labels": cls_labels}
+    precs = precision_score(labels, hard, **kw)
+    recs = recall_score(labels, hard, **kw)
+    f1s = f1_score(labels, hard, **kw)
 
     for cls_idx in range(n_classes):
         support = int((labels == cls_idx).sum())
@@ -200,7 +205,7 @@ def _evaluate_regression(predictions: np.ndarray, labels: np.ndarray) -> Regress
 
     scatter = [
         ScatterPoint(predicted=float(p), actual=float(a))
-        for p, a in zip(scatter_p, scatter_l)
+        for p, a in zip(scatter_p, scatter_l, strict=False)
     ]
 
     lo_pct, hi_pct = PREDICTION_INTERVAL_PERCENTILES
@@ -251,9 +256,8 @@ def _evaluate_ranking(
                 q_labels.reshape(1, -1), q_preds.reshape(1, -1), k=min(k, len(q_labels))
             )
             scores_by_query.append(float(q_ndcg))
-        ndcg_at_k.append(
-            NDCGAtK(k=k, value=float(np.mean(scores_by_query)) if scores_by_query else 0.0)
-        )
+        val = float(np.mean(scores_by_query)) if scores_by_query else 0.0
+        ndcg_at_k.append(NDCGAtK(k=k, value=val))
 
     # MAP via average_precision_score per query (binary relevance: label > 0)
     ap_scores: list[float] = []

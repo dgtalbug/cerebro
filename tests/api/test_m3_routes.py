@@ -11,7 +11,6 @@ from cerebro.api.deps import get_artifact_dir
 from cerebro.schema.v1 import CerebroArtifact
 from cerebro.storage import write_artifact
 
-
 _ARTIFACT_ID = "test_artifact_m3"
 
 

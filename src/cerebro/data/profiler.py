@@ -47,7 +47,7 @@ def profile_table(handle: TableHandle) -> DataProfile:
     column_profiles: list[ColumnProfile] = []
     numeric_columns: list[str] = []
 
-    for col_name, col_type in zip(column_names, columns_info):
+    for col_name, col_type in zip(column_names, columns_info, strict=False):
         dtype_str = str(col_type)
         is_numeric = _is_numeric_type(dtype_str)
         is_categorical = not is_numeric
@@ -89,7 +89,10 @@ def profile_table(handle: TableHandle) -> DataProfile:
             )
         )
 
-    correlations = _pearson_correlations(conn, numeric_columns) if len(numeric_columns) >= 2 else []
+    if len(numeric_columns) >= 2:
+        correlations = _pearson_correlations(conn, numeric_columns)
+    else:
+        correlations: list[CorrelationCell] = []
 
     log.info(
         "table.profiled",
@@ -109,7 +112,9 @@ def profile_table(handle: TableHandle) -> DataProfile:
 def _is_numeric_type(dtype: str) -> bool:
     """Return True for DuckDB numeric types (integer variants and floats)."""
     lower = dtype.lower()
-    numeric_markers = ("int", "float", "double", "decimal", "real", "numeric", "hugeint", "ubigint")
+    numeric_markers = (
+        "int", "float", "double", "decimal", "real", "numeric", "hugeint", "ubigint"
+    )
     return any(m in lower for m in numeric_markers)
 
 
@@ -126,7 +131,8 @@ def _get_null_count(conn: Any, col_name: str, total: int) -> int:
 def _numeric_stats(conn: Any, col_name: str) -> dict[str, float | None]:
     quoted = _q(col_name)
     row = conn.execute(
-        f"SELECT MIN({quoted}), MAX({quoted}), AVG({quoted}), STDDEV_POP({quoted}) FROM _data"
+        f"SELECT MIN({quoted}), MAX({quoted}), AVG({quoted}), "
+        f"STDDEV_POP({quoted}) FROM _data"
     ).fetchone()
     if row is None:
         return {"min": None, "max": None, "mean": None, "std": None}
@@ -136,7 +142,10 @@ def _numeric_stats(conn: Any, col_name: str) -> dict[str, float | None]:
             return None
         return float(v)
 
-    return {"min": _safe(row[0]), "max": _safe(row[1]), "mean": _safe(row[2]), "std": _safe(row[3])}
+    return {
+        "min": _safe(row[0]), "max": _safe(row[1]),
+        "mean": _safe(row[2]), "std": _safe(row[3]),
+    }
 
 
 def _build_histogram(
@@ -193,12 +202,15 @@ def _pearson_correlations(conn: Any, numeric_cols: list[str]) -> list[Correlatio
         for b in numeric_cols[i + 1 :]:
             qa, qb = _q(a), _q(b)
             row = conn.execute(
-                f"SELECT CORR({qa}, {qb}) FROM _data WHERE {qa} IS NOT NULL AND {qb} IS NOT NULL"
+                f"SELECT CORR({qa}, {qb}) FROM _data "
+                f"WHERE {qa} IS NOT NULL AND {qb} IS NOT NULL"
             ).fetchone()
             if row and row[0] is not None:
                 pearson = float(row[0])
                 if not math.isnan(pearson):
-                    cells.append(CorrelationCell(feature_a=a, feature_b=b, pearson=pearson))
+                    cells.append(
+                        CorrelationCell(feature_a=a, feature_b=b, pearson=pearson)
+                    )
 
     return cells
 

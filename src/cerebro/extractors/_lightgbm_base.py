@@ -213,8 +213,8 @@ def _build_m3_sections(
     """
     import numpy as np
 
-    from cerebro.analyzers.explanations import build_explanations
     from cerebro.analyzers.evaluation import evaluate as eval_fn
+    from cerebro.analyzers.explanations import build_explanations
 
     explanations = None
     evaluation = None
@@ -237,7 +237,9 @@ def _build_m3_sections(
             np.asarray(raw_preds, dtype=float),
             np.asarray(eval_labels, dtype=float),
             objective,
-            query_ids=np.asarray(query_ids, dtype=int) if query_ids is not None else None,
+            query_ids=(
+                np.asarray(query_ids, dtype=int) if query_ids is not None else None
+            ),
         )
 
     if training_table_path is not None:

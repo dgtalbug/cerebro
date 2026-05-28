@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
 from typing import Any
 
 import numpy as np
@@ -18,7 +17,6 @@ from cerebro.analyzers.explanations import (
 )
 from cerebro.schema.v1.tree import Tree, TreeNode
 
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -28,9 +26,14 @@ from cerebro.schema.v1.tree import Tree, TreeNode
 def binary_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
     import lightgbm as lgb
 
-    X, y = make_classification(n_samples=300, n_features=8, n_informative=4, random_state=42)
+    X, y = make_classification(
+        n_samples=300, n_features=8, n_informative=4, random_state=42
+    )
     ds = lgb.Dataset(X, y)
-    booster = lgb.train({"objective": "binary", "num_leaves": 8, "n_estimators": 10, "verbosity": -1}, ds, num_boost_round=5)
+    booster = lgb.train(
+        {"objective": "binary", "num_leaves": 8, "n_estimators": 10, "verbosity": -1},
+        ds, num_boost_round=5,
+    )
     return booster, X.astype(float), y.astype(float)
 
 
@@ -40,7 +43,10 @@ def regression_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
 
     X, y = make_regression(n_samples=200, n_features=6, noise=0.1, random_state=42)
     ds = lgb.Dataset(X, y)
-    booster = lgb.train({"objective": "regression", "num_leaves": 8, "verbosity": -1}, ds, num_boost_round=5)
+    booster = lgb.train(
+        {"objective": "regression", "num_leaves": 8, "verbosity": -1},
+        ds, num_boost_round=5,
+    )
     return booster, X.astype(float), y.astype(float)
 
 
@@ -81,7 +87,9 @@ def test_compute_shap_caps_samples(binary_booster_and_data: tuple) -> None:
     assert result.sample_count <= SHAP_MAX_EXPLAIN_SAMPLES
 
 
-def test_compute_shap_without_labels_uses_uniform_background(binary_booster_and_data: tuple) -> None:
+def test_compute_shap_no_labels_uniform_background(
+    binary_booster_and_data: tuple,
+) -> None:
     booster, X, _ = binary_booster_and_data
     result = compute_shap(booster, X[:30])
     assert result.sample_count == 30
@@ -139,7 +147,8 @@ def test_trace_path_raises_on_short_sample(simple_tree: Tree) -> None:
 def test_compute_pdp_returns_top_n(binary_booster_and_data: tuple) -> None:
     booster, X, _ = binary_booster_and_data
     names = booster.feature_name()
-    gain = {n: float(v) for n, v in zip(names, booster.feature_importance(importance_type="gain"))}
+    importance_scores = booster.feature_importance(importance_type="gain")
+    gain = {n: float(v) for n, v in zip(names, importance_scores, strict=False)}
     profiles = compute_pdp(booster, X[:50], names, gain, [])
     assert len(profiles) <= PDP_TOP_N_FEATURES
     assert len(profiles) > 0
@@ -149,7 +158,8 @@ def test_compute_pdp_grid_length(binary_booster_and_data: tuple) -> None:
     from cerebro.analyzers.explanations import PDP_GRID_POINTS
     booster, X, _ = binary_booster_and_data
     names = booster.feature_name()
-    gain = {n: float(v) for n, v in zip(names, booster.feature_importance(importance_type="gain"))}
+    importance_scores = booster.feature_importance(importance_type="gain")
+    gain = {n: float(v) for n, v in zip(names, importance_scores, strict=False)}
     profiles = compute_pdp(booster, X[:50], names, gain, [])
     for p in profiles:
         assert len(p.grid) == len(p.values)

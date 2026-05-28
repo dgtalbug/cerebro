@@ -74,12 +74,12 @@ def test_load_parquet(parquet_file: Path) -> None:
 def test_unsupported_extension_raises(tmp_path: Path) -> None:
     p = tmp_path / "model.pkl"
     p.write_bytes(b"fake")
-    with pytest.raises(UnsupportedFormatError, match=".pkl"):
+    with pytest.raises(UnsupportedFormatError, match=r"\.pkl"):
         load_table(p)
 
 
 def test_context_manager_closes_connection(csv_file: Path) -> None:
     with load_table(csv_file) as h:
         conn = h._conn
-    with pytest.raises(Exception):
+    with pytest.raises(Exception):  # noqa: B017 — closed DuckDB conn raises generic exc
         conn.execute("SELECT 1")

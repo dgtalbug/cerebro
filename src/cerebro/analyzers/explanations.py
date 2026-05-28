@@ -80,7 +80,7 @@ def compute_shap(
     expected = explainer.expected_value
 
     if isinstance(raw_shap, list):
-        # Multiclass: list of (n_samples, n_features) arrays → (n_samples, n_classes, n_features)
+        # Multiclass: list of (n_samples, n_features) arrays stacked per class.
         shap_3d = np.stack(raw_shap, axis=1)
         shap_list: list[list[float]] | list[list[list[float]]] = shap_3d.tolist()
         expected_val: float | list[float] = (
@@ -88,7 +88,9 @@ def compute_shap(
         )
     else:
         shap_list = raw_shap.tolist()
-        expected_val = float(expected) if not hasattr(expected, "__len__") else float(expected[0])
+        expected_val = (
+            float(expected) if not hasattr(expected, "__len__") else float(expected[0])
+        )
 
     feature_names: list[str] = booster.feature_name()
 
@@ -197,10 +199,7 @@ def trace_path(tree: Tree, sample_values: list[float]) -> DecisionPath:
             )
         )
 
-        if went_left:
-            node = node.left  # type: ignore[assignment]
-        else:
-            node = node.right  # type: ignore[assignment]
+        node = node.left if went_left else node.right  # type: ignore[assignment]
 
     leaf_value = node.leaf_value or 0.0
     return DecisionPath(tree_index=tree.index, steps=steps, leaf_value=leaf_value)
@@ -319,14 +318,14 @@ def build_explanations(
         feature_names: Feature names in column order.
         gain_importance: Gain importance dict from artifact.
         categorical_indices: List of categorical feature column indices.
-        n_path_samples: How many sample × tree paths to pre-trace and store.
+        n_path_samples: How many sample x tree paths to pre-trace and store.
 
     Returns:
         A frozen `Explanations` instance.
     """
     shap_result = compute_shap(booster, samples, labels)
 
-    # Pre-trace decision paths for first n_path_samples × all trees
+    # Pre-trace decision paths for the first n_path_samples x all trees.
     decision_paths: list[list[DecisionPath]] = []
     n_trace = min(n_path_samples, len(samples))
     for sample_idx in range(n_trace):
@@ -358,7 +357,9 @@ def build_explanations(
                 pass
         decision_paths.append(sample_paths)
 
-    pdp = compute_pdp(booster, samples, feature_names, gain_importance, categorical_indices)
+    pdp = compute_pdp(
+        booster, samples, feature_names, gain_importance, categorical_indices
+    )
 
     return Explanations(
         shap=shap_result,

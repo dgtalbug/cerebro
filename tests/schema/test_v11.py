@@ -7,29 +7,35 @@ from typing import Any
 import pytest
 
 from cerebro.schema.v1 import CerebroArtifact
-from cerebro.schema.v1.evaluation import BinaryEval, ROCPoint, ConfusionCell
-from cerebro.schema.v1.explanations import Explanations, ShapResult
-from cerebro.schema.v1.data_profile import DataProfile, ColumnProfile
+from cerebro.schema.v1.data_profile import DataProfile
+from cerebro.schema.v1.evaluation import BinaryEval
+from cerebro.schema.v1.explanations import Explanations
 
 
-def test_v100_artifact_validates_without_new_fields(binary_artifact_dict: dict[str, Any]) -> None:
+def test_v100_artifact_validates_without_new_fields(
+    binary_artifact_dict: dict[str, Any],
+) -> None:
     """A v1.0.0 dict without explanations/evaluation/data_profile stays valid."""
-    bare = {k: v for k, v in binary_artifact_dict.items()
-            if k not in ("explanations", "evaluation", "data_profile")}
+    drop = ("explanations", "evaluation", "data_profile")
+    bare = {k: v for k, v in binary_artifact_dict.items() if k not in drop}
     art = CerebroArtifact.model_validate(bare)
     assert art.explanations is None
     assert art.evaluation is None
     assert art.data_profile is None
 
 
-def test_v100_artifact_with_nulls_validates(binary_artifact_dict: dict[str, Any]) -> None:
+def test_v100_artifact_with_nulls_validates(
+    binary_artifact_dict: dict[str, Any],
+) -> None:
     art = CerebroArtifact.model_validate(binary_artifact_dict)
     assert art.explanations is None
     assert art.evaluation is None
     assert art.data_profile is None
 
 
-def test_artifact_with_binary_eval_validates(binary_artifact_dict: dict[str, Any]) -> None:
+def test_artifact_with_binary_eval_validates(
+    binary_artifact_dict: dict[str, Any],
+) -> None:
     d = dict(binary_artifact_dict)
     d["evaluation"] = {
         "objective": "binary",
@@ -51,7 +57,9 @@ def test_artifact_with_binary_eval_validates(binary_artifact_dict: dict[str, Any
     assert art.evaluation.auc == pytest.approx(0.92)
 
 
-def test_artifact_with_explanations_validates(binary_artifact_dict: dict[str, Any]) -> None:
+def test_artifact_with_explanations_validates(
+    binary_artifact_dict: dict[str, Any],
+) -> None:
     d = dict(binary_artifact_dict)
     d["explanations"] = {
         "shap": {
@@ -70,7 +78,9 @@ def test_artifact_with_explanations_validates(binary_artifact_dict: dict[str, An
     assert art.explanations.shap.expected_value == pytest.approx(-0.42)
 
 
-def test_artifact_with_data_profile_validates(binary_artifact_dict: dict[str, Any]) -> None:
+def test_artifact_with_data_profile_validates(
+    binary_artifact_dict: dict[str, Any],
+) -> None:
     d = dict(binary_artifact_dict)
     d["data_profile"] = {
         "row_count": 1000,
@@ -98,10 +108,13 @@ def test_artifact_with_data_profile_validates(binary_artifact_dict: dict[str, An
                 "missingness": 0.02,
                 "histogram": None,
                 "top_categories": None,
-                "min": 10000.0, "max": 200000.0, "mean": 75000.0, "std": 30000.0,
+                "min": 10000.0, "max": 200000.0,
+                "mean": 75000.0, "std": 30000.0,
             },
         ],
-        "correlations": [{"feature_a": "credit_score", "feature_b": "annual_income", "pearson": 0.45}],
+        "correlations": [
+            {"feature_a": "credit_score", "feature_b": "annual_income", "pearson": 0.45},  # noqa: E501
+        ],
     }
     art = CerebroArtifact.model_validate(d)
     assert isinstance(art.data_profile, DataProfile)

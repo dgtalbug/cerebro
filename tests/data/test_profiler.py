@@ -95,7 +95,8 @@ def test_empty_table(tmp_path: Path) -> None:
 
 def test_json_columnar_profiles_correctly(tmp_path: Path) -> None:
     p = tmp_path / "col.json"
-    p.write_text(json.dumps({"score": [1.0, 2.0, 3.0, 4.0, 5.0], "label": [0, 1, 0, 1, 0]}))
+    data = {"score": [1.0, 2.0, 3.0, 4.0, 5.0], "label": [0, 1, 0, 1, 0]}
+    p.write_text(json.dumps(data))
     with load_table(p) as h:
         profile = profile_table(h)
     assert profile.row_count == 5

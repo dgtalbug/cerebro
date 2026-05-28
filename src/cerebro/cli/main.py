@@ -122,7 +122,7 @@ def extract(
         Path | None,
         typer.Option(
             "--samples",
-            help="CSV/Parquet/JSON file with feature samples for SHAP and permutation importance.",
+            help="CSV/Parquet/JSON samples for SHAP and permutation importance.",
             exists=True,
             dir_okay=False,
             readable=True,
@@ -193,17 +193,17 @@ def extract(
             np_samples = np.column_stack(list(np_samples.values()))
         with load_table(labels) as h:
             cols = h.relation.fetchnumpy()
-            np_labels = list(cols.values())[0]
+            np_labels = next(iter(cols.values()))
 
     if eval_samples is not None or eval_labels is not None:
         if eval_samples is None or eval_labels is None:
-            typer.echo("error: --eval-samples and --eval-labels must be used together", err=True)
+            typer.echo("error: --eval-samples and --eval-labels required together", err=True)  # noqa: E501
             raise typer.Exit(code=1)
         from cerebro.data.loader import load_table
         with load_table(eval_samples) as h:
             np_eval_samples = np.column_stack(list(h.relation.fetchnumpy().values()))
         with load_table(eval_labels) as h:
-            np_eval_labels = list(h.relation.fetchnumpy().values())[0]
+            np_eval_labels = next(iter(h.relation.fetchnumpy().values()))
 
     extractor = get_extractor(model)
     artifact = extractor.extract(
