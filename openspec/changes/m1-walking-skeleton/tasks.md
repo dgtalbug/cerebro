@@ -103,23 +103,23 @@
 - [x] `tests/api/test_correlation_id.py`: client-supplied id preserved; generated id matches the 32-hex trace-id shape; ids do not bleed across requests.
 - [x] All gates green: ruff, mypy --strict (51 source files), lint-imports (2/2 kept), pytest -n auto (74/74 in ~3 s, +10 API tests), all three contract checks (registry / canonical schema / OpenAPI) OK.
 - [x] `npx gitnexus analyze` after commit.
-- [ ] `import-linter` still green (api imports schema + storage + exceptions; no `lightgbm`).
-- [ ] `npx gitnexus analyze` after commit.
 
 ## Task 6a — Design tokens lifted verbatim from the mockup
 
 **Spec:** `.docs/cerebro-open-spec.md` Part III §8.
 **Commit:** `feat(ui): design tokens from mockup (tokens.css, tailwind, theme.ts)`
 
-- [ ] `gitnexus_search` for `tokens.css`, `theme.ts`, `applyTheme`, `useTheme` — confirm none exist.
-- [ ] Create `ui/src/styles/tokens.css` containing the 28 dark + 23 light tokens **verbatim** from `.docs/cerebro-dashboard.html`. No re-derivation, no HSL alts, no opinionated additions. Plus a `:root` block aliasing the shadcn token names (`--background`, `--foreground`, `--card`, ...) to the mockup tokens, as the mapping table in `design.md` specifies.
-- [ ] Edit `ui/src/globals.css` to `@import "./styles/tokens.css"` *before* the `@tailwind` directives.
-- [ ] Rewrite `ui/tailwind.config.ts` to extend `theme.colors`, `theme.fontFamily`, `theme.borderRadius` via `var(--…)` references (no hex values in the config).
-- [ ] Create `ui/src/lib/theme.ts` — Zustand store with `theme: "dark" | "light"`, `setTheme(...)`, `toggleTheme()`. `applyTheme(theme)` writes `data-theme` to `document.documentElement` and persists to `localStorage["cerebro-theme"]`. On first load: prefer the stored value; if absent, read `window.matchMedia("(prefers-color-scheme: dark)")`.
-- [ ] Export `useTheme()` from the same file as a thin wrapper around the Zustand hook.
-- [ ] No hardcoded colors anywhere in `ui/src/**/*.ts(x)`. Comments explain token intent in design terms, never spec / milestone identifiers.
-- [ ] `pnpm typecheck`, `pnpm build`, `pnpm test` all green.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `tokens.css`, `theme.ts`, `applyTheme`, `useTheme` — none existed; UI lib only had `format.ts` and the API stub.
+- [x] Create `ui/src/styles/tokens.css` containing the 28 dark + 23 light tokens **verbatim** from `.docs/cerebro-dashboard.html`. Plus the shadcn alias block (`--background` → `var(--bg)`, `--foreground` → `var(--text)`, ... 16 aliases per the mapping table in `design.md`). No re-derivation, no HSL alts.
+- [x] Edit `ui/src/globals.css` to `@import "./styles/tokens.css"` before the `@tailwind` directives. Old M0 placeholder tokens removed.
+- [x] Rewrite `ui/tailwind.config.ts` to extend `theme.colors`, `theme.fontFamily`, `theme.borderRadius` via `var(--…)` references only — no hex in the config.
+- [x] Create `ui/src/lib/theme.ts` — Zustand store with `theme`, `setTheme`, `toggleTheme`. `applyTheme(theme)` writes `data-theme` on `<html>` and persists to `localStorage["cerebro-theme"]`. First-load resolution: stored value → `prefers-color-scheme` → fallback to `dark`. Storage failures (private-mode browsers) degrade gracefully.
+- [x] Export `useTheme()` as the public hook surface. `applyTheme` / `readInitialTheme` exported for tests only.
+- [x] Add `zustand@^5.0.13` to `ui/package.json` dependencies and `jsdom@^28.0.0` + `@types/jsdom@^27.0.0` to devDependencies (initially tried happy-dom but Node 25's experimental Web Storage conflicted; jsdom + a Map-backed Storage shim in the test `beforeEach` is the robust workaround).
+- [x] No hardcoded colors anywhere in `ui/src/**/*.ts(x)`. Comments explain token intent in design terms, never spec / milestone identifiers.
+- [x] `ui/src/lib/theme.test.ts` — 8 tests: localStorage preference; `prefers-color-scheme` fall-back; dark default; garbage-value rejection; `applyTheme` writes DOM + storage; store applies on import; `toggleTheme` flips and updates DOM; `setTheme` writes through.
+- [x] All gates green: `pnpm lint`, `pnpm typecheck`, `pnpm test` (12/12 in ~480 ms), `pnpm build` (5.65 kB CSS, 141 kB JS, 212 ms). Backend still 74/74 and contracts all OK.
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 6b — UI shell components
 

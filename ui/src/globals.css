@@ -1,26 +1,33 @@
+@import "./styles/tokens.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens as CSS variables. Light + dark ship from day one; values are
-   lifted from the design mockup as views land. shadcn/ui and Reaviz read these
-   same tokens — no hardcoded colors in components. */
-:root,
-:root[data-theme="light"] {
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-  --border: 214 32% 91%;
-  --primary: 221 83% 53%;
-  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, monospace;
+/*
+ * Base styles that consume the design tokens. Component-level styling
+ * lives in components/; this file just establishes the document baseline
+ * (canvas colour, default typography, the `.tnum` helper used wherever
+ * data is shown).
+ */
+
+* {
+  box-sizing: border-box;
 }
 
-:root[data-theme="dark"] {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-  --border: 217 33% 24%;
-  --primary: 217 91% 60%;
-}
-
+html,
 body {
-  @apply bg-background text-foreground;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular numerals everywhere data is shown — keeps columns aligned. */
+.tnum {
+  font-variant-numeric: tabular-nums;
 }

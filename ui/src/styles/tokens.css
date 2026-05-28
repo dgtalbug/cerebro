@@ -1,0 +1,113 @@
+/*
+ * Design tokens — lifted verbatim from docs/cerebro-dashboard.html.
+ *
+ * Do not re-derive, round, or "improve" values here. The mockup is the
+ * source of truth; this file mirrors it byte-for-byte. Future visual
+ * changes start by editing the mockup, then propagate here.
+ *
+ * Layout: three blocks.
+ *   1. `:root` — dark theme defaults + theme-invariant tokens
+ *      (typography, radii).
+ *   2. `:root[data-theme="light"]` — colour + atmosphere overrides only;
+ *      fonts and radii inherit from `:root`.
+ *   3. Both blocks alias the shadcn token namespace
+ *      (`--background`, `--foreground`, ...) onto our mockup tokens so
+ *      shadcn/ui primitives copied into the project theme correctly
+ *      without per-component patching.
+ */
+
+:root,
+:root[data-theme="dark"] {
+  /* Surface */
+  --bg: #0a0d14;
+  --bg-elev: #11151f;
+  --bg-elev-2: #161b27;
+  --bg-hover: #1a2030;
+  --border: #1f2632;
+  --border-strong: #2a3242;
+
+  /* Text */
+  --text: #e8e6df;
+  --text-muted: #8b92a8;
+  --text-dim: #5a6275;
+
+  /* Accent */
+  --accent: #d4a574;
+  --accent-bright: #e8be8a;
+  --accent-dim: #8a6d4f;
+  --accent-glow: rgba(212, 165, 116, 0.15);
+
+  /* Semantic / chart palette */
+  --blue: #6b8dde;
+  --green: #7fb069;
+  --red: #c95a5a;
+  --amber: #d4a574;
+  --purple: #9b87c4;
+
+  /* Typography (theme-invariant) */
+  --font-display: "Instrument Serif", "Times New Roman", serif;
+  --font-body: "Geist", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "SF Mono", monospace;
+
+  /* Radii (theme-invariant) */
+  --radius: 4px;
+  --radius-lg: 8px;
+
+  /* Atmosphere — grain + dual radial glow */
+  --grain-opacity: 0.4;
+  --grain-blend: overlay;
+  --glow-1: rgba(212, 165, 116, 0.15);
+  --glow-2: rgba(107, 141, 222, 0.06);
+
+  /* shadcn aliases — both names resolve to the mockup tokens so
+     shadcn primitives need no per-component patching. */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--bg-elev);
+  --card-foreground: var(--text);
+  --popover: var(--bg-elev-2);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--bg);
+  --secondary: var(--bg-elev-2);
+  --secondary-foreground: var(--text);
+  --muted: var(--bg-elev);
+  --muted-foreground: var(--text-muted);
+  --accent-foreground: var(--bg);
+  --destructive: var(--red);
+  --destructive-foreground: var(--text);
+  --input: var(--border);
+  --ring: var(--accent);
+}
+
+/* Light theme — aged paper / archival aesthetic.
+   Only colour and atmosphere tokens are redefined; typography and radii
+   inherit from `:root` deliberately. */
+:root[data-theme="light"] {
+  --bg: #f4efe2;
+  --bg-elev: #fbf7eb;
+  --bg-elev-2: #ede6d1;
+  --bg-hover: #e4dbc1;
+  --border: #d8cdaf;
+  --border-strong: #b8aa86;
+
+  --text: #1f1d18;
+  --text-muted: #5c574a;
+  --text-dim: #8a8270;
+
+  --accent: #a07338;
+  --accent-bright: #b8884a;
+  --accent-dim: #c9b78f;
+  --accent-glow: rgba(160, 115, 56, 0.1);
+
+  --blue: #3d5d9b;
+  --green: #4a7a3d;
+  --red: #a23030;
+  --amber: #a07338;
+  --purple: #6e5896;
+
+  --grain-opacity: 0.25;
+  --grain-blend: multiply;
+  --glow-1: rgba(160, 115, 56, 0.08);
+  --glow-2: rgba(61, 93, 155, 0.04);
+}
