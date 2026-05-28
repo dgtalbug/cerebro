@@ -11,10 +11,20 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
+from cerebro.schema.v1.data_profile import DataProfile
+from cerebro.schema.v1.evaluation import (
+    BinaryEval,
+    MulticlassEval,
+    RankingEval,
+    RegressionEval,
+)
+from cerebro.schema.v1.explanations import Explanations
 from cerebro.schema.v1.importance import Importance
 from cerebro.schema.v1.model import Model
 from cerebro.schema.v1.source import Source
 from cerebro.schema.v1.tree import Tree
+
+AnyEval = BinaryEval | MulticlassEval | RegressionEval | RankingEval
 
 
 class CerebroArtifact(BaseModel):
@@ -28,5 +38,6 @@ class CerebroArtifact(BaseModel):
     trees: list[Tree]
     importance: Importance
     rank_metadata: dict[str, Any] | None = None
-    explanations: None = None
-    evaluation: None = None
+    explanations: Explanations | None = None
+    evaluation: AnyEval | None = None
+    data_profile: DataProfile | None = None

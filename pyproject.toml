@@ -27,6 +27,7 @@ ml = [
     "shap>=0.51,<1",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
+    "duckdb>=1.1,<2",
 ]
 # API + CLI surface.
 api = [
@@ -56,6 +57,7 @@ dev = [
     "lightgbm>=4.6,<5",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
+    "duckdb>=1.1,<2",
     # CLI + API surface — pulled in so CLI / API tests run under uv sync
     # without needing an explicit `--extra api`. Mirror of the [api] extra.
     "typer>=0.26,<1",
@@ -91,7 +93,7 @@ plugins = ["pydantic.mypy"]
 # Any inside the extractor / tests; the canonical schema (which is fully
 # typed) is what consumers see, so untyped boundaries here are acceptable.
 [[tool.mypy.overrides]]
-module = ["lightgbm", "lightgbm.*", "sklearn", "sklearn.*"]
+module = ["lightgbm", "lightgbm.*", "sklearn", "sklearn.*", "shap", "shap.*", "duckdb", "duckdb.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

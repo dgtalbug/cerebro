@@ -81,6 +81,7 @@ def binary_artifact_dict() -> dict[str, Any]:
         "rank_metadata": None,
         "explanations": None,
         "evaluation": None,
+        "data_profile": None,
     }
 
 
