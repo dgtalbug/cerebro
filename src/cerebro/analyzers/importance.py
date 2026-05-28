@@ -16,7 +16,7 @@ DIVERGENCE_RANK_THRESHOLD = 5
 
 
 def compute_permutation_importance(
-    booster: object,
+    booster: Any,
     samples: np.ndarray,
     labels: np.ndarray,
     feature_names: list[str],
@@ -36,8 +36,7 @@ def compute_permutation_importance(
             return self
 
         def predict(self, X: np.ndarray) -> Any:
-            predict_fn = getattr(booster, "predict")
-            raw: np.ndarray = predict_fn(X)
+            raw: np.ndarray = booster.predict(X)
             # multiclass predict returns (n_samples, n_classes); take argmax for scoring
             if raw.ndim == 2:
                 return raw.argmax(axis=1).astype(float)
