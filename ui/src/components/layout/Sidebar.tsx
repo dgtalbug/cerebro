@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useParams } from "react-router-dom";
 
 interface NavItemDef {
   label: string;
@@ -41,9 +41,21 @@ const introspectionItems: NavItemDef[] = [
     ),
   },
   {
+    label: "Data",
+    view: "data",
+    disabled: false,
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <ellipse cx="12" cy="5" rx="9" ry="3" />
+        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
+      </svg>
+    ),
+  },
+  {
     label: "Explanations",
     view: "explanations",
-    disabled: true,
+    disabled: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <circle cx="12" cy="12" r="9" /><path d="M9 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17v.01" />
@@ -53,7 +65,7 @@ const introspectionItems: NavItemDef[] = [
   {
     label: "Evaluation",
     view: "evaluation",
-    disabled: true,
+    disabled: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M3 12l5 5L21 4" />
@@ -90,7 +102,8 @@ const artifactItems: NavItemDef[] = [
 ];
 
 function NavItem({ item }: { item: NavItemDef }) {
-  const to = `/artifacts/:id/${item.view}`;
+  const { id } = useParams<{ id?: string }>();
+  const to = `/artifacts/${id ?? ":id"}/${item.view}`;
 
   if (item.disabled) {
     return (

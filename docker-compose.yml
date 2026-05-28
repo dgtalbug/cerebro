@@ -10,8 +10,9 @@
 #     /docs (Swagger UI) and /redoc directly from a browser.
 #     The UI's nginx also proxies /api/ -> http://backend:8000/ inside
 #     the bridge network (see docker/nginx.conf).
-#   - Artifacts and the derived SQLite registry persist in the named
-#     volume `cerebro-data` at /data inside the backend container.
+#   - Artifacts live in ./data/ on the host (bind-mounted at /data in the
+#     backend container). Seed example artifacts with `make seed` before
+#     the first `make up`.
 
 services:
   backend:
@@ -25,7 +26,7 @@ services:
       CEREBRO_LOG_LEVEL: ${CEREBRO_LOG_LEVEL:-INFO}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
-      - cerebro-data:/data
+      - ./data:/data
     ports:
       - "${API_PORT:-8000}:8000"
     expose:
@@ -61,6 +62,3 @@ services:
 networks:
   cerebro:
     driver: bridge
-
-volumes:
-  cerebro-data:

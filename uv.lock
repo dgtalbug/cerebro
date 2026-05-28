@@ -148,6 +148,7 @@ dev = [
     { name = "pytest-xdist" },
     { name = "ruff" },
     { name = "scikit-learn" },
+    { name = "shap" },
     { name = "typer" },
     { name = "uvicorn", extra = ["standard"] },
 ]
@@ -184,6 +185,7 @@ dev = [
     { name = "pytest-xdist", specifier = ">=3.8,<4" },
     { name = "ruff", specifier = ">=0.15,<1" },
     { name = "scikit-learn", specifier = ">=1.8,<2" },
+    { name = "shap", specifier = ">=0.51,<1" },
     { name = "typer", specifier = ">=0.26,<1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.48,<1" },
 ]
