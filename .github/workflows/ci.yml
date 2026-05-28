@@ -35,6 +35,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
+        with:
+          # pnpm/action-setup runs with the runner CWD (repo root), not the
+          # job-level working-directory, so we point at ui/package.json
+          # explicitly. Version is read from its "packageManager" field.
+          package_json_file: ui/package.json
       - name: Set up Node 22 LTS
         uses: actions/setup-node@v4
         with:
