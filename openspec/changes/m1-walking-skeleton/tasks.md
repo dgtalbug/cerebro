@@ -11,19 +11,19 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part I §6, Part II §4.2.
 **Commit:** `feat(schema): canonical artifact schema v1.0.0 (Pydantic + JSON Schema)`
 
-- [ ] `gitnexus_search` for `Artifact`, `Tree`, `Node`, `FeatureSchema`, `Source`, `Importance`, `Model` — confirm none exist as Python symbols today.
-- [ ] Create `src/cerebro/schema/__init__.py` (re-exports `v1` symbols).
-- [ ] Create `src/cerebro/schema/v1/__init__.py` re-exporting `CerebroArtifact`, `Source`, `Model`, `FeatureSchema`, `Tree`, `TreeNode`, `Importance`.
-- [ ] Create `src/cerebro/schema/v1/artifact.py` with the `CerebroArtifact` model (`schema_version: Literal["1.0.0"]`).
-- [ ] Create `src/cerebro/schema/v1/source.py`, `model.py`, `tree.py`, `importance.py` matching the shape defined in `design.md`.
-- [ ] Add a `model_config = ConfigDict(extra="forbid", frozen=True)` to every model so unknown keys fail validation.
-- [ ] Create `schemas/v1/cerebro.schema.json` — exported via `CerebroArtifact.model_json_schema()` (committed bytes).
-- [ ] Add `scripts/check_contracts.py` step (or extend the existing one) to assert the committed schema matches the live export — drift fails CI.
-- [ ] `tests/schema/test_round_trip.py`: round-trip a known-good fixture artifact through `model_validate_json` and `model_dump_json`; bytes are stable.
-- [ ] `tests/schema/test_extra_keys_rejected.py`: extra keys in any nested object raise `SchemaValidationError`.
-- [ ] **Schema freeze.** No further edits to `schemas/v1/` or `cerebro/schema/v1/` in subsequent tasks.
-- [ ] `uv run pytest tests/schema -n auto` passes.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `Artifact`, `Tree`, `Node`, `FeatureSchema`, `Source`, `Importance`, `Model` — confirm none exist as Python symbols today. (verified via grep over `src/`, `tests/` — zero collisions)
+- [x] Create `src/cerebro/schema/__init__.py` (re-exports `v1` symbols).
+- [x] Create `src/cerebro/schema/v1/__init__.py` re-exporting `CerebroArtifact`, `Source`, `Model`, `FeatureSchema`, `Tree`, `TreeNode`, `Importance`.
+- [x] Create `src/cerebro/schema/v1/artifact.py` with the `CerebroArtifact` model (`schema_version: Literal["1.0.0"]`).
+- [x] Create `src/cerebro/schema/v1/source.py`, `model.py`, `tree.py`, `importance.py` matching the shape defined in `design.md`.
+- [x] Add a `model_config = ConfigDict(extra="forbid", frozen=True)` to every model so unknown keys fail validation.
+- [x] Replace the seed-stub at `schemas/v1/cerebro-artifact.schema.json` with the real export from `CerebroArtifact.model_json_schema()` (committed bytes). Filename corrected to match the file that already exists from M0.
+- [x] Extend `scripts/check_contracts.py` with a real `check_canonical_schema` that compares the committed file to `render_schema()` output; CI fails on any drift. `scripts/export_schema.py` is the regeneration entrypoint.
+- [x] `tests/schema/test_round_trip.py`: round-trip a known-good fixture artifact through `model_validate_json` and `model_dump_json`; bytes are stable.
+- [x] `tests/schema/test_extra_keys_rejected.py`: extra keys in any nested object raise `SchemaValidationError`. Plus a separate assertion that `explanations` and `evaluation` reject any non-None value (the v1.0.0 lock).
+- [x] **Schema freeze.** No further edits to `schemas/v1/` or `cerebro/schema/v1/` in subsequent tasks.
+- [x] `uv run pytest tests/schema -n auto` passes (11/11 in 0.93s; full suite 40/40).
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 2 — Extractor protocol + LightGBM binary extractor
 
