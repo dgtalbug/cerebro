@@ -22,9 +22,7 @@ router = APIRouter()
 @router.get("/artifacts/{artifact_id}", response_model=CerebroArtifact)
 async def get_artifact(
     artifact_id: str,
-    loader: Annotated[
-        Callable[[str], CerebroArtifact], Depends(get_artifact_loader)
-    ],
+    loader: Annotated[Callable[[str], CerebroArtifact], Depends(get_artifact_loader)],
 ) -> CerebroArtifact:
     """Return the canonical artifact for `artifact_id`."""
     return loader(artifact_id)

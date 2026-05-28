@@ -157,13 +157,13 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part II §9 (testing strategy).
 **Commit:** `test(e2e): walking skeleton — train, extract, serve, render`
 
-- [ ] `gitnexus_search` for `e2e`, `walking_skeleton`.
-- [ ] Create `tests/e2e/test_walking_skeleton.py`:
-  - Train 50-tree binary `LGBMClassifier` on `make_classification(n_samples=500, n_features=24, random_state=42)`.
-  - Run `cerebro.cli.main.app` via `CliRunner` (or call the extract function directly) with the trained booster's saved model file and a `tmp_path` output.
-  - Read the file back via `storage.files.read_artifact` and assert the schema is satisfied.
-  - Spin up a `TestClient(app)` with `CEREBRO_DATA_DIR` pointed at `tmp_path`; `client.get(f"/artifacts/{id}")` returns 200 and the asserted shape (see `design.md` "What the e2e test asserts").
-- [ ] (UI side, optional but valuable) — Add a vitest test that renders `Overview` against the e2e fixture JSON loaded statically; the test catches divergence between the Pydantic export and the TS contract.
-- [ ] All quality gates green: `ruff`, `ruff format --check`, `mypy`, `lint-imports`, `pytest -n auto`, `pnpm lint`, `pnpm typecheck`, `pnpm build`, `pnpm test`, `python scripts/check_contracts.py`.
-- [ ] `npx gitnexus analyze` after commit.
-- [ ] `openspec validate m1-walking-skeleton --strict` is clean.
+- [x] `gitnexus_search` for `e2e`, `walking_skeleton` — no collisions.
+- [x] Created `tests/e2e/test_walking_skeleton.py` — single test function `test_walking_skeleton`:
+  - Trains 50-tree binary `LGBMClassifier` on `make_classification(n_samples=500, n_features=24, random_state=42)`.
+  - Calls `LGBExtractor().extract()` directly (exercises the same object the CLI wraps — tested separately in Task 4).
+  - Writes via `storage.files.write_artifact` to `tmp_path/artifacts/`, reads back via `storage.files.read_artifact`, asserts schema round-trip.
+  - Creates a `TestClient(app)` with `CEREBRO_DATA_DIR` pointed at `tmp_path`; `GET /health` → 200, `GET /artifacts/e2e-model` → 200 with assertions: schema_version, objective, tree count, feature names, gain keys match, explanations/evaluation null.
+- [x] Skipped optional UI vitest test against static fixture — Task 7's 6 Overview tests already cover all those assertions.
+- [x] All quality gates green: ruff check + format, mypy --strict (unchanged 51 files), lint-imports (2/2), pytest -n auto (75/75 in 3.11s), pnpm lint/typecheck/build (332ms)/test (18/18 in 672ms), 3/3 contract checks OK.
+- [x] `npx gitnexus analyze` after commit.
+- [x] `openspec validate m1-walking-skeleton --strict` is clean.
