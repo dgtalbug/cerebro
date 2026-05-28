@@ -25,6 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 REGISTRY_DDL = ROOT / "schemas" / "registry" / "v1" / "init.sql"
 CANONICAL_SCHEMA = ROOT / "schemas" / "v1" / "cerebro-artifact.schema.json"
+OPENAPI = ROOT / "contracts" / "openapi" / "openapi.json"
 
 
 def check_registry_ddl() -> bool:
@@ -107,8 +108,43 @@ def check_openapi() -> bool:
     if find_spec("cerebro.api.app") is None:
         print("  PENDING OpenAPI (no FastAPI app yet)")
         return True
-    print("  TODO OpenAPI source present — implement comparison")
-    return True
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from export_openapi import render_openapi
+
+    if not OPENAPI.exists():
+        print(f"  FAIL OpenAPI contract file missing: {OPENAPI}")
+        return False
+
+    committed = OPENAPI.read_text(encoding="utf-8")
+    live = render_openapi()
+
+    if committed == live:
+        print("  OK   OpenAPI matches FastAPI app")
+        return True
+
+    committed_lines = committed.splitlines()
+    live_lines = live.splitlines()
+    for index, (committed_line, live_line) in enumerate(
+        zip(committed_lines, live_lines, strict=False)
+    ):
+        if committed_line != live_line:
+            print(
+                f"  FAIL OpenAPI drift at line {index + 1}:"
+                f"\n         committed: {committed_line!r}"
+                f"\n         live:      {live_line!r}"
+            )
+            break
+    else:
+        print(
+            "  FAIL OpenAPI drift — committed and live differ in length"
+            f" (committed: {len(committed_lines)} lines, live: {len(live_lines)} lines)"
+        )
+    print(
+        "         run `uv run python scripts/export_openapi.py` to regenerate"
+        f" {OPENAPI.relative_to(ROOT)}"
+    )
+    return False
 
 
 def main() -> int:

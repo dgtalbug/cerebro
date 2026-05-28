@@ -89,16 +89,20 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part II §6, §7, §8.
 **Commit:** `feat(api): fastapi bootstrap with /health and /artifacts/{id}`
 
-- [ ] `gitnexus_search` for `FastAPI`, `app`, `correlation_id`, `exception_handler`.
-- [ ] Create `src/cerebro/api/__init__.py`, `src/cerebro/api/app.py`, `src/cerebro/api/deps.py`.
-- [ ] `app.py`: `app = FastAPI(title="Cerebro", openapi_url="/openapi.json")` with Swagger at `/docs` and ReDoc at `/redoc`.
-- [ ] `GET /health` returns `{"status": "ok", "version": <pkg_version>, "schema_version": "1.0.0"}`.
-- [ ] `GET /artifacts/{id}` resolves the path via `deps.get_artifact_loader()` (M1: filesystem-backed, takes `CEREBRO_DATA_DIR/artifacts/{id}.cerebro.json`), returns the validated artifact.
-- [ ] Correlation-ID middleware: read `X-Request-ID` header (or generate a UUID4), bind via `structlog.contextvars.bind_contextvars`, echo in the response header.
-- [ ] Single `@app.exception_handler(CerebroError)` mapping the taxonomy to status codes per the table in `design.md`; body is the RFC 7807 shape; correlation ID echoed in the body.
-- [ ] `tests/api/test_health.py`: `GET /health` returns the expected shape.
-- [ ] `tests/api/test_artifacts.py`: a known fixture path is round-tripped; missing id → 404; corrupt artifact → 422; both error bodies carry a `correlation_id`.
-- [ ] `tests/api/test_correlation_id.py`: a request with `X-Request-ID: foo` echoes `foo` in the response header and the logs.
+- [x] `gitnexus_search` for `FastAPI`, `app`, `correlation_id`, `exception_handler` — confirmed no collisions; M0 stubs (`api/__init__.py`, `api/routes/__init__.py`) were empty.
+- [x] Create `src/cerebro/api/__init__.py` (exports `app`, `create_app`), `src/cerebro/api/app.py` (factory + module-level `app`), `src/cerebro/api/deps.py`, `src/cerebro/api/handlers.py`.
+- [x] `app.py`: `app = FastAPI(title="Cerebro", version=__version__, openapi_url="/openapi.json", docs_url="/docs", redoc_url="/redoc")`. Mounts `CorrelationIdMiddleware` from `cerebro.logging` (pure ASGI, framework-agnostic) and the `CerebroError` exception handler.
+- [x] `GET /health` returns `{"status": "ok", "version": <pkg version>, "schema_version": "1.0.0"}` via a typed `HealthBody` Pydantic response model.
+- [x] `GET /artifacts/{id}` resolves the path via `deps.get_artifact_loader` (DI uses `Annotated[Path, Depends(get_artifact_dir)]` so test overrides propagate cleanly), reads via `storage.read_artifact`, returns the validated artifact. `response_model=CerebroArtifact` so the OpenAPI doc embeds the canonical schema.
+- [x] Correlation-ID middleware reuses the existing `cerebro.logging.CorrelationIdMiddleware` (pure ASGI). Reads `X-Request-ID` or generates `uuid4().hex` (32-hex OTel trace-id shape), binds via `structlog.contextvars`, echoes header on every response, clears in `finally`.
+- [x] Single `cerebro_error_handler` registered with `app.add_exception_handler(CerebroError, ...)`. Walks `__mro__` so subclasses resolve to the nearest mapped status; RFC-7807 body with `type`, `title`, `status`, `detail`, `instance`, `correlation_id`, and JSON-safe `context`. Header injection left to middleware (avoid duplicate-header drift).
+- [x] Wired `scripts/export_openapi.py` (mirrors `export_schema.py` — `app.openapi()` → sorted JSON → committed bytes). `contracts/openapi/openapi.json` now matches the live FastAPI app.
+- [x] Extended `scripts/check_contracts.py` with an active OpenAPI drift gate; the gate now reports `OK` instead of `PENDING`.
+- [x] `tests/api/test_health.py`: `GET /health` returns the expected body; correlation-ID middleware echoes a client-supplied id.
+- [x] `tests/api/test_artifacts.py`: existing artifact returns 200 with the canonical shape; missing id → 404 RFC-7807 body; corrupt gzip → 422; schema-invalid → 422; error body's `correlation_id` matches the response header.
+- [x] `tests/api/test_correlation_id.py`: client-supplied id preserved; generated id matches the 32-hex trace-id shape; ids do not bleed across requests.
+- [x] All gates green: ruff, mypy --strict (51 source files), lint-imports (2/2 kept), pytest -n auto (74/74 in ~3 s, +10 API tests), all three contract checks (registry / canonical schema / OpenAPI) OK.
+- [x] `npx gitnexus analyze` after commit.
 - [ ] `import-linter` still green (api imports schema + storage + exceptions; no `lightgbm`).
 - [ ] `npx gitnexus analyze` after commit.
 

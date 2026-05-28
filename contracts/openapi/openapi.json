@@ -1,10 +1,459 @@
 {
-  "openapi": "3.1.0",
-  "info": {
-    "title": "Cerebro API",
-    "version": "0.1.0",
-    "description": "SEED STUB. The authoritative contract is generated from the FastAPI app (cerebro.api.app) at /openapi.json once it exists. scripts/check_contracts.py then regenerates this file and fails CI on drift; the UI types pipeline (pnpm api:types) consumes it. Until then this is a placeholder and the drift check reports OpenAPI as 'pending'."
+  "components": {
+    "schemas": {
+      "CerebroArtifact": {
+        "additionalProperties": false,
+        "description": "The whole canonical artifact \u2014 the contract every layer agrees on.",
+        "properties": {
+          "evaluation": {
+            "title": "Evaluation",
+            "type": "null"
+          },
+          "explanations": {
+            "title": "Explanations",
+            "type": "null"
+          },
+          "importance": {
+            "$ref": "#/components/schemas/Importance"
+          },
+          "model": {
+            "$ref": "#/components/schemas/Model"
+          },
+          "schema_version": {
+            "const": "1.0.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "source": {
+            "$ref": "#/components/schemas/Source"
+          },
+          "trees": {
+            "items": {
+              "$ref": "#/components/schemas/Tree"
+            },
+            "title": "Trees",
+            "type": "array"
+          }
+        },
+        "required": [
+          "schema_version",
+          "source",
+          "model",
+          "trees",
+          "importance"
+        ],
+        "title": "CerebroArtifact",
+        "type": "object"
+      },
+      "FeatureSchema": {
+        "additionalProperties": false,
+        "description": "The features the model sees, in input order.\n\n`monotone_constraints` has the same length as `names`. A value of 0 means\nno monotonicity is enforced; +1 / -1 enforce increasing / decreasing\nrelationships between the feature and the prediction.",
+        "properties": {
+          "categorical_indices": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Categorical Indices",
+            "type": "array"
+          },
+          "monotone_constraints": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Monotone Constraints",
+            "type": "array"
+          },
+          "names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Names",
+            "type": "array"
+          }
+        },
+        "required": [
+          "names",
+          "categorical_indices",
+          "monotone_constraints"
+        ],
+        "title": "FeatureSchema",
+        "type": "object"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "HealthBody": {
+        "description": "Response shape for `GET /health`.",
+        "properties": {
+          "schema_version": {
+            "const": "1.0.0",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "status": {
+            "const": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "version",
+          "schema_version"
+        ],
+        "title": "HealthBody",
+        "type": "object"
+      },
+      "Importance": {
+        "additionalProperties": false,
+        "description": "Feature importance scores keyed by feature name.\n\n`permutation` is locked to None in v1.0.0. When permutation importance\nlands, it will use the shape `{feature_name: {\"mean\": float, \"std\": float}}`\nbehind a schema-version bump.",
+        "properties": {
+          "gain": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Gain",
+            "type": "object"
+          },
+          "permutation": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Permutation"
+          },
+          "split": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Split",
+            "type": "object"
+          }
+        },
+        "required": [
+          "gain",
+          "split"
+        ],
+        "title": "Importance",
+        "type": "object"
+      },
+      "Model": {
+        "additionalProperties": false,
+        "description": "Booster-level metadata: objective, parameters, feature shape.\n\n`params` is typed as `dict[str, Any]` because LightGBM stores a mix of\nscalars, lists, and nested dicts; tightening this would require enumerating\nevery LightGBM parameter and would still need updates when LightGBM adds\nparameters. The booster contract is what enforces shape \u2014 the extractor\nforwards what LightGBM gives us.",
+        "properties": {
+          "feature_schema": {
+            "$ref": "#/components/schemas/FeatureSchema"
+          },
+          "num_class": {
+            "const": 1,
+            "title": "Num Class",
+            "type": "integer"
+          },
+          "num_iteration": {
+            "title": "Num Iteration",
+            "type": "integer"
+          },
+          "objective": {
+            "const": "binary",
+            "title": "Objective",
+            "type": "string"
+          },
+          "params": {
+            "additionalProperties": true,
+            "title": "Params",
+            "type": "object"
+          }
+        },
+        "required": [
+          "objective",
+          "num_class",
+          "num_iteration",
+          "params",
+          "feature_schema"
+        ],
+        "title": "Model",
+        "type": "object"
+      },
+      "Source": {
+        "additionalProperties": false,
+        "description": "Where this artifact came from and when.",
+        "properties": {
+          "extracted_at": {
+            "title": "Extracted At",
+            "type": "string"
+          },
+          "extractor_version": {
+            "title": "Extractor Version",
+            "type": "string"
+          },
+          "framework": {
+            "const": "lightgbm",
+            "title": "Framework",
+            "type": "string"
+          },
+          "framework_version": {
+            "title": "Framework Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "framework",
+          "framework_version",
+          "extracted_at",
+          "extractor_version"
+        ],
+        "title": "Source",
+        "type": "object"
+      },
+      "Tree": {
+        "additionalProperties": false,
+        "description": "One tree in the ensemble.\n\n`class_index` is null for binary boosters; per-class trees in multiclass\nboosters set it to the class they predict (a future schema bump).",
+        "properties": {
+          "class_index": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Class Index"
+          },
+          "index": {
+            "title": "Index",
+            "type": "integer"
+          },
+          "num_leaves": {
+            "title": "Num Leaves",
+            "type": "integer"
+          },
+          "root": {
+            "$ref": "#/components/schemas/TreeNode"
+          }
+        },
+        "required": [
+          "index",
+          "num_leaves",
+          "root"
+        ],
+        "title": "Tree",
+        "type": "object"
+      },
+      "TreeNode": {
+        "additionalProperties": false,
+        "description": "One node in a decision tree (recursive).",
+        "properties": {
+          "decision_type": {
+            "anyOf": [
+              {
+                "enum": [
+                  "<=",
+                  "=="
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Type"
+          },
+          "id": {
+            "title": "Id",
+            "type": "integer"
+          },
+          "leaf_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leaf Value"
+          },
+          "left": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TreeNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "right": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TreeNode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "split_feature": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Split Feature"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "TreeNode",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      }
+    }
   },
-  "x-cerebro-contract-status": "seed-stub",
-  "paths": {}
+  "info": {
+    "description": "Model introspection platform \u2014 canonical artifact API. Every response cites the schema version it conforms to.",
+    "title": "Cerebro",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/artifacts/{artifact_id}": {
+      "get": {
+        "description": "Return the canonical artifact for `artifact_id`.",
+        "operationId": "get_artifact_artifacts__artifact_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CerebroArtifact"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Artifact"
+      }
+    },
+    "/health": {
+      "get": {
+        "description": "Liveness probe \u2014 does not check storage or downstream deps.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthBody"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health"
+      }
+    }
+  }
 }
