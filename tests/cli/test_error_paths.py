@@ -38,15 +38,15 @@ def test_validate_schema_invalid_exits_three(tmp_path: Path) -> None:
     assert "CorruptArtifactError" in result.output
 
 
-def test_extract_regression_model_exits_four(
+def test_extract_regression_model_succeeds(
     tmp_path: Path, regression_booster_file: Path
 ) -> None:
-    output = tmp_path / "should_not_exist.cerebro.json"
+    """Regression models are now supported — extraction should succeed."""
+    output = tmp_path / "regression.cerebro.json"
     result = _runner.invoke(
         app, ["extract", str(regression_booster_file), "--output", str(output)]
     )
 
-    assert result.exit_code == 4
-    assert "UnsupportedObjectiveError" in result.output
-    # The handler exits before write_artifact runs, so no partial file lands.
-    assert not output.exists()
+    assert result.exit_code == 0
+    assert output.exists()
+    assert "objective=regression" in result.output

@@ -24,7 +24,7 @@ from cerebro.exceptions import (
     UnsupportedFrameworkError,
     UnsupportedObjectiveError,
 )
-from cerebro.extractors import LGBExtractor
+from cerebro.extractors import get_extractor
 from cerebro.logging import configure_logging, get_logger
 from cerebro.schema.v1 import CerebroArtifact
 from cerebro.storage import read_artifact, write_artifact
@@ -120,7 +120,7 @@ def extract(
     ],
 ) -> None:
     """Extract a canonical artifact from a trained model."""
-    extractor = LGBExtractor()
+    extractor = get_extractor(model)
     artifact = extractor.extract(model)
     write_artifact(artifact, output)
     typer.echo(f"extracted: {_format_summary(artifact)} -> {output}")
