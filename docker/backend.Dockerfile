@@ -4,6 +4,10 @@
 # uvicorn CMD) and digest-pinned bases land alongside the API layer.
 FROM python:3.12-slim
 
+# Non-interactive flag honored by uv and most modern Python tooling.
+# Keeps the build deterministic if any tool decides to prompt.
+ENV CI=true
+
 # uv pinned by version (pin by digest when the build is hardened).
 COPY --from=ghcr.io/astral-sh/uv:0.9.9 /uv /uvx /bin/
 

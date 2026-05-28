@@ -1,0 +1,87 @@
+# Cerebro .dockerignore — keep image-build contexts small and deterministic.
+#
+# Anything matched here is excluded from the build context Docker sends to
+# the daemon. The two big wins: (1) prevents the host's resolved
+# node_modules / .venv from being COPYed on top of the image's own
+# resolutions; (2) cuts context size from hundreds of MB to a few MB,
+# which makes builds substantially faster.
+
+# ---- Node / UI build artifacts ----------------------------------------
+**/node_modules
+**/dist
+**/.vite
+**/.eslintcache
+*.tsbuildinfo
+**/coverage
+
+# ---- Python build artifacts -------------------------------------------
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/.venv
+**/venv
+**/*.egg-info
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.import_linter_cache
+**/.coverage
+**/.coverage.*
+**/htmlcov
+**/coverage.xml
+
+# ---- Runtime data — never bake into images ----------------------------
+/data/
+**/*.cerebro.json
+**/*.db
+**/*.db-wal
+**/*.db-shm
+
+# ---- Secrets / env files ----------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ---- Git / VCS --------------------------------------------------------
+.git
+.gitignore
+.gitattributes
+
+# ---- IDE / OS ---------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ---- Build / analysis caches that don't belong in images --------------
+.turbo
+.gitnexus/
+.codegraph/
+.claude/
+AGENTS.md
+.docs/
+.docs.local/
+
+# ---- Specs / docs / dev tooling (not needed at runtime) ---------------
+openspec/
+docs/
+scripts/
+tests/
+.github/
+.pre-commit-config.yaml
+.python-version
+.node-version
+
+# ---- Compose / Make are tooling, not image content --------------------
+docker-compose.yml
+docker-compose.*.yml
+Makefile
+
+# ---- Top-level docs we don't need at runtime --------------------------
+# (backend.Dockerfile explicitly COPYs README.md, so don't ignore *.md.)
+ARCHITECTURE.md
+CLAUDE.md
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+LICENSE
