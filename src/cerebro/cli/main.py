@@ -118,10 +118,102 @@ def extract(
             help="Where to write the .cerebro.json artifact (gzip-encoded).",
         ),
     ],
+    samples: Annotated[
+        Path | None,
+        typer.Option(
+            "--samples",
+            help="CSV/Parquet/JSON file with feature samples for SHAP and permutation importance.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    labels: Annotated[
+        Path | None,
+        typer.Option(
+            "--labels",
+            help="Single-column CSV with ground-truth labels aligned to --samples.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    eval_samples: Annotated[
+        Path | None,
+        typer.Option(
+            "--eval-samples",
+            help="Held-out feature samples for evaluation metrics (CSV/Parquet/JSON).",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    eval_labels: Annotated[
+        Path | None,
+        typer.Option(
+            "--eval-labels",
+            help="Ground-truth labels aligned to --eval-samples.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    training_table: Annotated[
+        Path | None,
+        typer.Option(
+            "--training-table",
+            help="Full training table (CSV/Parquet/JSON) for data profiling.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
 ) -> None:
-    """Extract a canonical artifact from a trained model."""
+    """Extract a canonical artifact from a trained model.
+
+    When --samples and --labels are provided, also computes SHAP explanations
+    and permutation importance. When --eval-samples and --eval-labels are
+    provided, computes objective-aware evaluation metrics. When --training-table
+    is provided, computes a data profile of the training distribution.
+    """
+    import numpy as np
+
+    np_samples: np.ndarray | None = None
+    np_labels: np.ndarray | None = None
+    np_eval_samples: np.ndarray | None = None
+    np_eval_labels: np.ndarray | None = None
+
+    if samples is not None or labels is not None:
+        if samples is None or labels is None:
+            typer.echo("error: --samples and --labels must be used together", err=True)
+            raise typer.Exit(code=1)
+        from cerebro.data.loader import load_table
+        with load_table(samples) as h:
+            np_samples = h.relation.fetchnumpy()
+            np_samples = np.column_stack(list(np_samples.values()))
+        with load_table(labels) as h:
+            cols = h.relation.fetchnumpy()
+            np_labels = list(cols.values())[0]
+
+    if eval_samples is not None or eval_labels is not None:
+        if eval_samples is None or eval_labels is None:
+            typer.echo("error: --eval-samples and --eval-labels must be used together", err=True)
+            raise typer.Exit(code=1)
+        from cerebro.data.loader import load_table
+        with load_table(eval_samples) as h:
+            np_eval_samples = np.column_stack(list(h.relation.fetchnumpy().values()))
+        with load_table(eval_labels) as h:
+            np_eval_labels = list(h.relation.fetchnumpy().values())[0]
+
     extractor = get_extractor(model)
-    artifact = extractor.extract(model)
+    artifact = extractor.extract(
+        model,
+        samples=np_samples,
+        labels=np_labels,
+        eval_samples=np_eval_samples,
+        eval_labels=np_eval_labels,
+        training_table_path=training_table,
+    )
     write_artifact(artifact, output)
     typer.echo(f"extracted: {_format_summary(artifact)} -> {output}")
 

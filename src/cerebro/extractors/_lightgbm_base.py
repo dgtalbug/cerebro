@@ -190,3 +190,61 @@ def _build_importance(booster: lgb.Booster, feature_names: list[str]) -> Importa
         for name, score in zip(feature_names, split_array, strict=False)
     }
     return Importance(gain=gain, split=split, permutation=None)
+
+
+def _build_m3_sections(
+    booster: lgb.Booster,
+    trees: list[Tree],
+    importance: Importance,
+    feature_schema: FeatureSchema,
+    *,
+    samples: Any | None = None,
+    labels: Any | None = None,
+    eval_samples: Any | None = None,
+    eval_labels: Any | None = None,
+    training_table_path: Path | None = None,
+    objective: str = "binary",
+    query_ids: Any | None = None,
+) -> tuple[Any, Any, Any]:
+    """Compute optional explanations, evaluation, and data_profile sections.
+
+    Returns (explanations, evaluation, data_profile) — any may be None
+    when the corresponding inputs are absent.
+    """
+    import numpy as np
+
+    from cerebro.analyzers.explanations import build_explanations
+    from cerebro.analyzers.evaluation import evaluate as eval_fn
+
+    explanations = None
+    evaluation = None
+    data_profile = None
+
+    if samples is not None:
+        explanations = build_explanations(
+            booster=booster,
+            canonical_trees=trees,
+            samples=np.asarray(samples, dtype=float),
+            labels=np.asarray(labels, dtype=float) if labels is not None else None,
+            feature_names=feature_schema.names,
+            gain_importance=importance.gain,
+            categorical_indices=feature_schema.categorical_indices,
+        )
+
+    if eval_samples is not None and eval_labels is not None:
+        raw_preds = booster.predict(eval_samples)
+        evaluation = eval_fn(
+            np.asarray(raw_preds, dtype=float),
+            np.asarray(eval_labels, dtype=float),
+            objective,
+            query_ids=np.asarray(query_ids, dtype=int) if query_ids is not None else None,
+        )
+
+    if training_table_path is not None:
+        from cerebro.data.loader import load_table
+        from cerebro.data.profiler import profile_table
+
+        with load_table(training_table_path) as handle:
+            data_profile = profile_table(handle)
+
+    return explanations, evaluation, data_profile

@@ -17,6 +17,7 @@ import numpy as np
 from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
     _build_feature_schema,
+    _build_m3_sections,
     _build_source,
     _build_tree,
     _extract_params,
@@ -58,7 +59,7 @@ def _aggregate_importance(
                 name: float(score)
                 for name, score in zip(feature_names, g, strict=False)
             }
-            _ = s  # split per-output available if needed
+            _ = s
         except Exception:
             break
 
@@ -82,6 +83,9 @@ class LGBMultiOutputExtractor:
         model_path: str | Path,
         samples: np.ndarray | None = None,
         labels: np.ndarray | None = None,
+        eval_samples: np.ndarray | None = None,
+        eval_labels: np.ndarray | None = None,
+        training_table_path: Path | None = None,
     ) -> CerebroArtifact:
         if (samples is None) != (labels is None):
             raise ValueError("samples and labels must both be provided or both omitted")
@@ -144,6 +148,19 @@ class LGBMultiOutputExtractor:
                 update={"permutation": perm, "divergence_warnings": warnings or None}
             )
 
+        explanations, evaluation, data_profile = _build_m3_sections(
+            booster=booster,
+            trees=trees,
+            importance=importance,
+            feature_schema=feature_schema,
+            samples=samples,
+            labels=labels,
+            eval_samples=eval_samples,
+            eval_labels=eval_labels,
+            training_table_path=training_table_path,
+            objective="regression",
+        )
+
         _LOG.info(
             "artifact.extracted",
             framework="lightgbm",
@@ -151,6 +168,8 @@ class LGBMultiOutputExtractor:
             num_outputs=num_outputs,
             num_trees=len(trees),
             num_features=len(feature_schema.names),
+            has_explanations=explanations is not None,
+            has_evaluation=evaluation is not None,
         )
 
         return CerebroArtifact(
@@ -160,4 +179,7 @@ class LGBMultiOutputExtractor:
             trees=trees,
             importance=importance,
             rank_metadata=rank_metadata,
+            explanations=explanations,
+            evaluation=evaluation,
+            data_profile=data_profile,
         )
