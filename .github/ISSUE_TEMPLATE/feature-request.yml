@@ -1,0 +1,86 @@
+name: Feature request
+description: Propose a new capability or improvement.
+title: "[feat]: "
+labels:
+  - type:feature
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a feature. Cerebro follows an OpenSpec workflow —
+        accepted feature requests usually become a change folder under
+        `openspec/changes/<name>/` (with `proposal.md`, `design.md`, `tasks.md`,
+        and a delta spec) before implementation starts.
+
+        Discussion-style ideas live better in
+        [Discussions](https://github.com/dgtalbug/cerebro/discussions);
+        use this form when you have a concrete proposal.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What's hard or impossible today? Describe the situation, not the solution.
+      placeholder: |
+        When inspecting a multiclass LightGBM model, the dashboard groups all
+        K class trees under a single tab so per-class importance is hidden.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: How would Cerebro behave if this feature shipped? Focus on user-visible behavior, not implementation.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Primary surface(s)
+      description: Where would this feature appear?
+      multiple: true
+      options:
+        - Extraction (LightGBM / XGBoost / future framework)
+        - Canonical schema (new field, semantics, versioning)
+        - Backend API
+        - CLI
+        - Storage / registry
+        - AI agent
+        - UI (React dashboard)
+        - Diagnostics / recommendations
+        - Docker / compose
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches you've thought about and why they fall short.
+
+  - type: textarea
+    id: success
+    attributes:
+      label: Definition of done
+      description: How would we know the feature is finished? Ideally a user-visible, observable outcome.
+
+  - type: input
+    id: openspec-change
+    attributes:
+      label: OpenSpec change folder (if already drafted)
+      description: Path under `openspec/changes/`. Leave blank if triage will assign one.
+      placeholder: "openspec/changes/<short-name>"
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - label: I've checked open issues and discussions; this is not a duplicate.
+        - label: I'm willing to draft the OpenSpec change proposal for this.
+        - label: I'm willing to implement this if accepted.

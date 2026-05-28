@@ -1,0 +1,84 @@
+name: OpenSpec change (tracking issue)
+description: Umbrella tracking issue for an OpenSpec change folder. Internal use by maintainers.
+title: "[openspec]: "
+labels:
+  - type:openspec
+  - needs-triage
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to open the visible tracking issue for an
+        OpenSpec change. The actual artifacts (`proposal.md`, `design.md`,
+        `tasks.md`, delta specs) live under `openspec/changes/<name>/`;
+        this issue is the umbrella for the change's PRs, review
+        checkpoints, and cross-references.
+
+  - type: input
+    id: change-folder
+    attributes:
+      label: Change folder
+      description: Path under `openspec/changes/`.
+      placeholder: "openspec/changes/lightgbm-extraction"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Lane
+      description: Which release lane does this change target?
+      options:
+        - v0.1 — LightGBM artifact in / canonical JSON out
+        - v0.2 — diagnostics, recommendations, XGBoost extractor
+        - v0.3 — `cerebro train` (apply + retrain)
+        - hygiene / contributors / docs
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: One-paragraph summary
+      description: What does this change ship and why?
+    validations:
+      required: true
+
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Depends on
+      description: Other changes, decisions, or secrets that must land first.
+      placeholder: |
+        - openspec/changes/canonical-schema-v1 merged
+        - `ANTHROPIC_API_KEY` configured for agent E2E tests
+
+  - type: textarea
+    id: pr-plan
+    attributes:
+      label: Planned PRs
+      description: One bullet per PR, in dependency order. Conventional Commit titles.
+      placeholder: |
+        - feat(extractor): canonical schema for LightGBM regression
+        - feat(extractor): cover the 5 LightGBM variants
+        - test(extractor): golden fixtures for each variant
+
+  - type: textarea
+    id: blast-radius
+    attributes:
+      label: Blast radius
+      description: Symbols / modules affected if this is a refactor. Paste the relevant `gitnexus_impact` output. Leave blank for greenfield changes.
+      render: text
+
+  - type: checkboxes
+    id: pre-flight
+    attributes:
+      label: Pre-flight
+      options:
+        - label: "`proposal.md` written and references the design narrative section it implements"
+        - label: "`design.md` written (if structural)"
+        - label: "`tasks.md` enumerates one Conventional Commit per task"
+        - label: "Delta specs added under `openspec/changes/<name>/specs/`"
+        - label: "Hard invariants from `openspec/project.md` reviewed for this change"
+        - label: "Branch convention: `feat/<scope>-<short>` or matching prefix"
