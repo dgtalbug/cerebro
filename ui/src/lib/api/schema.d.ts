@@ -3,10 +3,228 @@
  * Do not make direct changes to the file.
  */
 
-export type paths = Record<string, never>;
+export interface paths {
+    "/artifacts/{artifact_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Artifact
+         * @description Return the canonical artifact for `artifact_id`.
+         */
+        get: operations["get_artifact_artifacts__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/health": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Health
+         * @description Liveness probe — does not check storage or downstream deps.
+         */
+        get: operations["health_health_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+}
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: never;
+    schemas: {
+        /**
+         * CerebroArtifact
+         * @description The whole canonical artifact — the contract every layer agrees on.
+         */
+        CerebroArtifact: {
+            /** Evaluation */
+            evaluation?: null;
+            /** Explanations */
+            explanations?: null;
+            importance: components["schemas"]["Importance"];
+            model: components["schemas"]["Model"];
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "1.0.0";
+            source: components["schemas"]["Source"];
+            /** Trees */
+            trees: components["schemas"]["Tree"][];
+        };
+        /**
+         * FeatureSchema
+         * @description The features the model sees, in input order.
+         *
+         *     `monotone_constraints` has the same length as `names`. A value of 0 means
+         *     no monotonicity is enforced; +1 / -1 enforce increasing / decreasing
+         *     relationships between the feature and the prediction.
+         */
+        FeatureSchema: {
+            /** Categorical Indices */
+            categorical_indices: number[];
+            /** Monotone Constraints */
+            monotone_constraints: number[];
+            /** Names */
+            names: string[];
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /**
+         * HealthBody
+         * @description Response shape for `GET /health`.
+         */
+        HealthBody: {
+            /**
+             * Schema Version
+             * @constant
+             */
+            schema_version: "1.0.0";
+            /**
+             * Status
+             * @constant
+             */
+            status: "ok";
+            /** Version */
+            version: string;
+        };
+        /**
+         * Importance
+         * @description Feature importance scores keyed by feature name.
+         *
+         *     `permutation` is locked to None in v1.0.0. When permutation importance
+         *     lands, it will use the shape `{feature_name: {"mean": float, "std": float}}`
+         *     behind a schema-version bump.
+         */
+        Importance: {
+            /** Gain */
+            gain: {
+                [key: string]: number;
+            };
+            /** Permutation */
+            permutation?: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            } | null;
+            /** Split */
+            split: {
+                [key: string]: number;
+            };
+        };
+        /**
+         * Model
+         * @description Booster-level metadata: objective, parameters, feature shape.
+         *
+         *     `params` is typed as `dict[str, Any]` because LightGBM stores a mix of
+         *     scalars, lists, and nested dicts; tightening this would require enumerating
+         *     every LightGBM parameter and would still need updates when LightGBM adds
+         *     parameters. The booster contract is what enforces shape — the extractor
+         *     forwards what LightGBM gives us.
+         */
+        Model: {
+            feature_schema: components["schemas"]["FeatureSchema"];
+            /**
+             * Num Class
+             * @constant
+             */
+            num_class: 1;
+            /** Num Iteration */
+            num_iteration: number;
+            /**
+             * Objective
+             * @constant
+             */
+            objective: "binary";
+            /** Params */
+            params: {
+                [key: string]: unknown;
+            };
+        };
+        /**
+         * Source
+         * @description Where this artifact came from and when.
+         */
+        Source: {
+            /** Extracted At */
+            extracted_at: string;
+            /** Extractor Version */
+            extractor_version: string;
+            /**
+             * Framework
+             * @constant
+             */
+            framework: "lightgbm";
+            /** Framework Version */
+            framework_version: string;
+        };
+        /**
+         * Tree
+         * @description One tree in the ensemble.
+         *
+         *     `class_index` is null for binary boosters; per-class trees in multiclass
+         *     boosters set it to the class they predict (a future schema bump).
+         */
+        Tree: {
+            /** Class Index */
+            class_index?: number | null;
+            /** Index */
+            index: number;
+            /** Num Leaves */
+            num_leaves: number;
+            root: components["schemas"]["TreeNode"];
+        };
+        /**
+         * TreeNode
+         * @description One node in a decision tree (recursive).
+         */
+        TreeNode: {
+            /** Decision Type */
+            decision_type?: ("<=" | "==") | null;
+            /** Id */
+            id: number;
+            /** Leaf Value */
+            leaf_value?: number | null;
+            left?: components["schemas"]["TreeNode"] | null;
+            right?: components["schemas"]["TreeNode"] | null;
+            /** Split Feature */
+            split_feature?: number | null;
+            /** Threshold */
+            threshold?: number | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Context */
+            ctx?: Record<string, never>;
+            /** Input */
+            input?: unknown;
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+        };
+    };
     responses: never;
     parameters: never;
     requestBodies: never;
@@ -14,4 +232,56 @@ export interface components {
     pathItems: never;
 }
 export type $defs = Record<string, never>;
-export type operations = Record<string, never>;
+export interface operations {
+    get_artifact_artifacts__artifact_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CerebroArtifact"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    health_health_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HealthBody"];
+                };
+            };
+        };
+    };
+}

@@ -140,16 +140,17 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part III §6 (state mgmt), Part VI §3 F1.13.
 **Commit:** `feat(ui): overview view rendering artifact via tanstack query`
 
-- [ ] `gitnexus_search` for `Overview`, `useArtifact`.
-- [ ] Create `ui/src/lib/api/queries.ts` (or extend the existing one) with `useArtifact(id: string)` calling `GET /artifacts/{id}` via the openapi-typed `fetch`. `staleTime: 5 * 60 * 1000` (artifacts are immutable per Part III §6 example).
-- [ ] Create `ui/src/views/Overview.tsx`:
+- [x] `gitnexus_search` for `Overview`, `useArtifact` — no collisions. `useArtifact` was the planned name and was available.
+- [x] Rewrote `ui/src/lib/api/queries.ts` with `useArtifact(id)` calling `GET /artifacts/{id}` via openapi-fetch (typed from `schema.d.ts`). `staleTime: 5 * 60 * 1000`, `retry: false`.
+- [x] Rewrote `ui/src/views/Overview.tsx`:
   - 4-stat top row: Objective, Trees (= `model.num_iteration`), Features (= `model.feature_schema.names.length`), Headline metric (`—` for M1, subtitle "no samples at extraction time").
-  - Training params panel: render every key/value pair from `model.params` with `tnum` class on values.
+  - Training params panel: every key/value pair from `model.params` with `tnum` class on values.
   - Feature schema panel: index, name, type (`numeric` blue / `categorical` purple based on `categorical_indices`), const column (mono+ / mono- / — based on `monotone_constraints`).
-- [ ] Loading state, error state, and 404 state surface the relevant message — never silent.
-- [ ] `tests/ui/Overview.test.tsx`: render against a mocked `useArtifact` returning a fixture; assert objective, tree count, params count, feature rows render correctly.
-- [ ] `pnpm api:types` regenerates `ui/src/lib/api/schema.d.ts` against the live `/openapi.json`; commit no drift.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] Loading state, error state, and 404 state surface the relevant message — never silent. Error panel shows RFC-7807-derived info when available.
+- [x] `src/views/Overview.test.tsx`: 6 tests — stat tiles, training params, feature schema (type colours + constraint labels), loading, error, 404. Mocking via vitest module-level mock on `useArtifact`.
+- [x] `pnpm api:types` regenerated `ui/src/lib/api/schema.d.ts` from the live OpenAPI doc (Task 5); committed. No drift.
+- [x] All gates green: pnpm lint, pnpm typecheck, pnpm build (347ms, 11 kB CSS / 235 kB JS), pnpm test (18/18 in 664ms). Backend: ruff OK, pytest -n auto (74/74 in 2.96s), 3/3 contract checks OK.
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 8 — End-to-end test
 
