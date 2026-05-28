@@ -1,15 +1,14 @@
-"""Model metadata and feature schema for a canonical artifact.
-
-For v1.0.0 the objective is constrained to "binary" — multiclass,
-regression, ranker, and multi-output variants are deliberately deferred
-to a future schema version (folder copy, not in-place edit).
-"""
+"""Model metadata and feature schema for a canonical artifact."""
 
 from __future__ import annotations
 
 from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
+
+ObjectiveLiteral = Literal[
+    "binary", "multiclass", "regression", "lambdarank", "multi_output"
+]
 
 
 class FeatureSchema(BaseModel):
@@ -39,8 +38,8 @@ class Model(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    objective: Literal["binary"]
-    num_class: Literal[1]
+    objective: ObjectiveLiteral
+    num_class: int
     num_iteration: int
     params: dict[str, Any]
     feature_schema: FeatureSchema

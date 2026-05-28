@@ -36,8 +36,36 @@
     },
     "Importance": {
       "additionalProperties": false,
-      "description": "Feature importance scores keyed by feature name.\n\n`permutation` is locked to None in v1.0.0. When permutation importance\nlands, it will use the shape `{feature_name: {\"mean\": float, \"std\": float}}`\nbehind a schema-version bump.",
+      "description": "Feature importance scores keyed by feature name.",
       "properties": {
+        "divergence_warnings": {
+          "anyOf": [
+            {
+              "items": {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Divergence Warnings"
+        },
         "gain": {
           "additionalProperties": {
             "type": "number"
@@ -86,7 +114,6 @@
           "$ref": "#/$defs/FeatureSchema"
         },
         "num_class": {
-          "const": 1,
           "title": "Num Class",
           "type": "integer"
         },
@@ -95,7 +122,13 @@
           "type": "integer"
         },
         "objective": {
-          "const": "binary",
+          "enum": [
+            "binary",
+            "multiclass",
+            "regression",
+            "lambdarank",
+            "multi_output"
+          ],
           "title": "Objective",
           "type": "string"
         },
@@ -290,6 +323,19 @@
     },
     "model": {
       "$ref": "#/$defs/Model"
+    },
+    "rank_metadata": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Rank Metadata"
     },
     "schema_version": {
       "const": "1.0.0",

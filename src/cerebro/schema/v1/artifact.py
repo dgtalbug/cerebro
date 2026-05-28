@@ -3,15 +3,11 @@
 The `CerebroArtifact` is the single object every downstream consumer reads.
 Dashboards, the AI agent, and any future analysis tool work against the
 canonical JSON — they do not import the original ML framework.
-
-`explanations` and `evaluation` are deliberately typed as None for v1.0.0.
-Future SHAP, decision-path, and evaluation work will land under a new
-schema-version folder, not as an in-place edit.
 """
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -31,5 +27,6 @@ class CerebroArtifact(BaseModel):
     model: Model
     trees: list[Tree]
     importance: Importance
+    rank_metadata: dict[str, Any] | None = None
     explanations: None = None
     evaluation: None = None

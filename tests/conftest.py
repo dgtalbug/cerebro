@@ -76,7 +76,9 @@ def binary_artifact_dict() -> dict[str, Any]:
             "gain": {"credit_score": 1.5, "annual_income": 0.8},
             "split": {"credit_score": 5.0, "annual_income": 3.0},
             "permutation": None,
+            "divergence_warnings": None,
         },
+        "rank_metadata": None,
         "explanations": None,
         "evaluation": None,
     }
