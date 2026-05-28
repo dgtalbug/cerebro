@@ -34,7 +34,7 @@ const introspectionItems: NavItemDef[] = [
   {
     label: "Importance",
     view: "importance",
-    disabled: true,
+    disabled: false,
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M3 21v-4M9 21v-9M15 21v-14M21 21v-6" />
