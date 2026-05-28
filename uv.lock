@@ -133,6 +133,7 @@ ml = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "fastapi" },
     { name = "httpx" },
     { name = "import-linter" },
     { name = "lightgbm" },
@@ -145,6 +146,8 @@ dev = [
     { name = "pytest-xdist" },
     { name = "ruff" },
     { name = "scikit-learn" },
+    { name = "typer" },
+    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.metadata]
@@ -164,6 +167,7 @@ provides-extras = ["ml", "api", "agent"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "fastapi", specifier = ">=0.136,<1" },
     { name = "httpx", specifier = ">=0.28,<1" },
     { name = "import-linter", specifier = ">=2.11,<3" },
     { name = "lightgbm", specifier = ">=4.6,<5" },
@@ -176,6 +180,8 @@ dev = [
     { name = "pytest-xdist", specifier = ">=3.8,<4" },
     { name = "ruff", specifier = ">=0.15,<1" },
     { name = "scikit-learn", specifier = ">=1.8,<2" },
+    { name = "typer", specifier = ">=0.26,<1" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.48,<1" },
 ]
 
 [[package]]

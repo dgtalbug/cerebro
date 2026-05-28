@@ -71,15 +71,18 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part II §6 (Distribution: CLI), Part VI §3 F1.25.
 **Commit:** `feat(cli): cerebro extract and cerebro validate commands (binary)`
 
-- [ ] `gitnexus_search` for `cli`, `typer`, `extract_command`, `validate_command`.
-- [ ] Create `src/cerebro/cli/__init__.py` and `src/cerebro/cli/main.py` exposing `app = typer.Typer()`.
-- [ ] `extract`: `cerebro extract <model> --output <file>`. Loads model via `LGBExtractor`, writes via `storage.files.write_artifact`. Exit code 0 on success, non-zero on `CerebroError`.
-- [ ] `validate`: `cerebro validate <file>`. Reads via `storage.files.read_artifact`. Exit code 0 if validation passes, non-zero with structured stderr otherwise.
-- [ ] Process-boundary exception handler: catch `CerebroError`, log via structlog at `error`, print a one-line summary to stderr, exit with the right code. Never bare-`except`.
-- [ ] Wire `cerebro` console-script entry in `pyproject.toml` under `[project.scripts]` (the script that M0 deferred because the CLI module didn't exist yet).
-- [ ] `tests/cli/test_extract_validate.py`: invoke via `typer.testing.CliRunner`, train → extract → validate → exit code 0.
-- [ ] `tests/cli/test_validate_corrupt.py`: validate against a known-corrupt fixture → exit code != 0, stderr contains the error class name.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `cli`, `typer`, `extract_command`, `validate_command` — confirmed no symbol collisions (M0 CLI package was empty stub).
+- [x] Create `src/cerebro/cli/__init__.py` (exports `app`) and `src/cerebro/cli/main.py` exposing `app = typer.Typer(...)` with the project description and `no_args_is_help=True`.
+- [x] `extract`: `cerebro extract <model> --output <file>` (also `-o`). Loads via `LGBExtractor`, writes via `storage.write_artifact`. Exit 0 on success with a one-line summary; non-zero on any `CerebroError`.
+- [x] `validate`: `cerebro validate <artifact>`. Reads via `storage.read_artifact` — the same path the API uses, so a green validate is a strong signal the API will serve the file.
+- [x] Process-boundary exception handler: `@_handle_cerebro_errors` decorator catches `CerebroError`, logs at `error` level with structured context, prints `error: <Class>: <message>` to stderr, exits with the mapped code. Uses PEP 695 `[**P]` generic syntax so typer can introspect parameters through the wrapper. No bare excepts; non-`CerebroError` exceptions propagate so genuine bugs surface with tracebacks.
+- [x] Stable exit codes: `ArtifactNotFoundError` → 2, `CorruptArtifactError` → 3, `UnsupportedObjective` / `UnsupportedFramework` → 4, other `CerebroError` → 1.
+- [x] Wire `cerebro` console-script entry in `pyproject.toml` under `[project.scripts]` (M0 had it deferred).
+- [x] Add `typer>=0.26,<1`, `fastapi>=0.136,<1`, `uvicorn[standard]>=0.48,<1` to `[dependency-groups].dev` (mirrors the `[api]` optional-extra so CLI/API tests run under `uv sync` without an explicit extra).
+- [x] `tests/cli/test_extract_validate.py`: happy path via `typer.testing.CliRunner` — extract → validate → exit 0; `-o` short flag works.
+- [x] `tests/cli/test_error_paths.py`: missing file → exit 2; corrupt gzip → exit 3; schema-invalid JSON → exit 3; regression model → exit 4 with no partial output file.
+- [x] All gates green: ruff, mypy --strict (41 files), lint-imports (2/2 kept), pytest -n auto (64/64 in ~2.5 s, +6 CLI tests).
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 5 — FastAPI bootstrap: `/health`, `/artifacts/{id}`, middleware, exception handler
 

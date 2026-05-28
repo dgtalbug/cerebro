@@ -56,10 +56,15 @@ dev = [
     "lightgbm>=4.6,<5",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
+    # CLI + API surface — pulled in so CLI / API tests run under uv sync
+    # without needing an explicit `--extra api`. Mirror of the [api] extra.
+    "typer>=0.26,<1",
+    "fastapi>=0.136,<1",
+    "uvicorn[standard]>=0.48,<1",
 ]
 
-# NOTE: the `cerebro` console script (cerebro.cli.main:app) lands in M1 when the
-# CLI module exists; declaring it now would create a broken entrypoint.
+[project.scripts]
+cerebro = "cerebro.cli.main:app"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/cerebro"]
