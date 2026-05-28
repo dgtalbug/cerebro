@@ -24,7 +24,7 @@ dependencies = [
 # Extraction stack (LightGBM-aware).
 ml = [
     "lightgbm>=4.6,<5",
-    "shap>=0.46,<1",
+    "shap>=0.46,<0.48",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
     "duckdb>=1.1,<2",
@@ -58,7 +58,7 @@ dev = [
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
     "duckdb>=1.1,<2",
-    "shap>=0.46,<1",
+    "shap>=0.46,<0.48",
     # CLI + API surface — pulled in so CLI / API tests run under uv sync
     # without needing an explicit `--extra api`. Mirror of the [api] extra.
     "typer>=0.26,<1",
