@@ -51,6 +51,11 @@ dev = [
     "import-linter>=2.11,<3",
     "pre-commit>=4.6,<5",
     "httpx>=0.28,<1",
+    # Extraction stack — pulled into dev so tests can train tiny boosters.
+    # Mirrors the [ml] optional-extra in [project.optional-dependencies].
+    "lightgbm>=4.6,<5",
+    "scikit-learn>=1.8,<2",
+    "numpy>=2.4,<3",
 ]
 
 # NOTE: the `cerebro` console script (cerebro.cli.main:app) lands in M1 when the
@@ -76,6 +81,13 @@ python_version = "3.12"
 strict = true
 files = ["src", "tests"]
 plugins = ["pydantic.mypy"]
+
+# Third-party libraries without published type stubs. Imports resolve as
+# Any inside the extractor / tests; the canonical schema (which is fully
+# typed) is what consumers see, so untyped boundaries here are acceptable.
+[[tool.mypy.overrides]]
+module = ["lightgbm", "lightgbm.*", "sklearn", "sklearn.*"]
+ignore_missing_imports = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

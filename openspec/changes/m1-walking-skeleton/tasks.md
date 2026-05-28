@@ -30,18 +30,22 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part II §5, Part I §6.
 **Commit:** `feat(extractor): lightgbm binary extractor via Booster.dump_model`
 
-- [ ] `gitnexus_search` for `Extractor`, `LGBExtractor`, `lightgbm` — confirm no extractors exist yet.
-- [ ] Create `src/cerebro/extractors/__init__.py`.
-- [ ] Create `src/cerebro/extractors/base.py` defining `Extractor` as a `Protocol` with `extract(model_path: str | Path) -> CerebroArtifact`.
-- [ ] Create `src/cerebro/extractors/lightgbm.py` with `LGBExtractor` implementing that protocol — accepts a model file path, loads via `lightgbm.Booster(model_file=...)`, calls `booster.dump_model()`, builds a `CerebroArtifact`.
-- [ ] Binary-only guard: if `objective` isn't `binary`, raise `UnsupportedObjectiveError` with `context = {"objective": <found>}`.
-- [ ] Map `dump_model()` fields to canonical schema: `tree_info` → `trees[]` (with `class_index=None`), `feature_names` → `model.feature_schema.names`, importance via `booster.feature_importance(importance_type="gain"/"split")`.
-- [ ] Set `permutation = None`, `explanations = None`, `evaluation = None`.
-- [ ] No bare excepts; any `lightgbm` exception transforms via `raise CorruptArtifactError(...) from original` with structured context.
-- [ ] `tests/extractors/test_lightgbm_binary.py`: train a 20-tree `LGBMClassifier` on `make_classification(n=200, n_features=8)`, extract, assert `model.objective == "binary"`, `len(trees) == 20`, `importance.gain` keyed by all feature names.
-- [ ] `tests/extractors/test_unsupported_objective.py`: a regression model raises `UnsupportedObjectiveError`.
-- [ ] `uv run lint-imports` still green (extractors-only-imports-lightgbm contract holds).
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `Extractor`, `LGBExtractor`, `lightgbm` — confirm no extractors exist yet. (verified via grep; the M0 stub at `src/cerebro/extractors/__init__.py` was empty)
+- [x] Create `src/cerebro/extractors/__init__.py` — re-exports `Extractor`, `LGBExtractor`.
+- [x] Create `src/cerebro/extractors/base.py` defining `Extractor` as a `@runtime_checkable Protocol` with `extract(model_path: str | Path) -> CerebroArtifact`.
+- [x] Create `src/cerebro/extractors/lightgbm.py` with `LGBExtractor` implementing that protocol — accepts a model file path, loads via `lightgbm.Booster(model_file=...)`, calls `booster.dump_model()`, builds a `CerebroArtifact`.
+- [x] Binary-only guard: if `objective` isn't `binary`, raise `UnsupportedObjectiveError` with `context = {"objective": <found>}`. LightGBM stores objective as `"<name> <args>"`; we parse the leading keyword.
+- [x] Map `dump_model()` fields to canonical schema: `tree_info` → `trees[]` (with `class_index=None`), `feature_names` → `model.feature_schema.names`, importance via `booster.feature_importance(importance_type="gain"/"split")`. Categorical indices resolved from `Booster.params["categorical_feature"]` (canonical declaration); `feature_infos` heuristic dropped after early test exposed mis-classification.
+- [x] Set `permutation = None`, `explanations = None`, `evaluation = None`.
+- [x] No bare excepts; load-time `(lightgbm.basic.LightGBMError, FileNotFoundError, OSError)` are transformed via `raise CorruptArtifactError(...) from original` with structured context. Unexpected `decision_type` operators also fail with `CorruptArtifactError`.
+- [x] Node ids re-numbered with a monotonic per-tree counter so they're unique within a tree (LightGBM's `split_index` and `leaf_index` are independent sequences and can collide).
+- [x] Added `lightgbm>=4.6,<5`, `scikit-learn>=1.8,<2`, `numpy>=2.4,<3` to `[dependency-groups].dev` so `uv sync` installs them; mypy override for untyped `lightgbm.*` / `sklearn.*` imports.
+- [x] `tests/extractors/test_lightgbm_binary.py`: train a 10-tree `LGBMClassifier` (`make_classification(n=200, n_features=8)`), extract, assert objective, tree count, importance keys, locked-None fields, schema round-trip, and unique node ids.
+- [x] `tests/extractors/test_unsupported_objective.py`: a regression booster raises `UnsupportedObjectiveError` with `context["objective"] == "regression"`.
+- [x] `tests/extractors/test_corrupt_model.py`: missing path raises `CorruptArtifactError`; a non-model text file raises `CorruptArtifactError`.
+- [x] `uv run lint-imports` still green (extractors-only-imports-lightgbm contract holds — 2 contracts kept, 0 broken).
+- [x] `pytest -n auto`: 49/49 passed in ~2 s (9 new extractor tests + 40 prior).
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 3 — Filesystem read/write with gzip and validate-on-read
 
