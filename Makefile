@@ -9,16 +9,21 @@ SHELL := /bin/bash
 
 COMPOSE ?= docker compose
 
+# Resolve the ports that will actually be used (honour .env overrides).
+UI_PORT  ?= 3000
+API_PORT ?= 8000
+
 .PHONY: help \
         up down build rebuild restart ps logs shell-backend shell-ui clean \
-        lint fmt test contracts
+        lint fmt test contracts open
 
 # ----------------------------------------------------------------------------
 # Containers (docker-compose)
 # ----------------------------------------------------------------------------
 
-up: ## Bring up backend + ui in the background
-	$(COMPOSE) up -d
+up: ## Bring up backend + ui, wait until healthy, then print service URLs
+	$(COMPOSE) up -d --wait
+	@$(MAKE) --no-print-directory _urls
 
 down: ## Stop and remove containers (named volume preserved)
 	$(COMPOSE) down
@@ -26,9 +31,10 @@ down: ## Stop and remove containers (named volume preserved)
 build: ## Build images
 	$(COMPOSE) build
 
-rebuild: ## Rebuild images without cache, then start
+rebuild: ## Rebuild images without cache, then start and print URLs
 	$(COMPOSE) build --no-cache
-	$(COMPOSE) up -d
+	$(COMPOSE) up -d --wait
+	@$(MAKE) --no-print-directory _urls
 
 restart: down up ## Restart containers
 
@@ -46,6 +52,18 @@ shell-ui: ## Open a shell in the ui container
 
 clean: ## Stop containers AND remove the data volume (DATA LOSS)
 	$(COMPOSE) down -v
+
+# Internal target — print the running service URLs.
+# Not in .PHONY so it doesn't appear in `make help`.
+_urls:
+	@printf "\n\033[1mCerebro is up:\033[0m\n\n"
+	@printf "  \033[36m%-22s\033[0m %s\n" "Dashboard (UI)" "http://localhost:$(UI_PORT)"
+	@printf "  \033[36m%-22s\033[0m %s\n" "API root"       "http://localhost:$(API_PORT)"
+	@printf "  \033[36m%-22s\033[0m %s\n" "Swagger UI"     "http://localhost:$(API_PORT)/docs"
+	@printf "  \033[36m%-22s\033[0m %s\n" "ReDoc"          "http://localhost:$(API_PORT)/redoc"
+	@printf "  \033[36m%-22s\033[0m %s\n" "Health check"   "http://localhost:$(API_PORT)/health"
+	@printf "\n  \033[2mmake logs   — tail service logs\033[0m\n"
+	@printf "  \033[2mmake down   — stop all containers\033[0m\n\n"
 
 # ----------------------------------------------------------------------------
 # Quality gates — same checks CI runs
