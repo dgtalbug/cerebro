@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends
 from cerebro.api.deps import get_artifact_loader
 from cerebro.schema.v1 import CerebroArtifact
 
-router = APIRouter()
+router = APIRouter(tags=["artifacts"])
 
 
 @router.get("/artifacts/{artifact_id}", response_model=CerebroArtifact)

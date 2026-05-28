@@ -14,7 +14,7 @@ from pydantic import BaseModel
 
 from cerebro import __version__
 
-router = APIRouter()
+router = APIRouter(tags=["system"])
 
 
 class HealthBody(BaseModel):

@@ -433,7 +433,10 @@
             "description": "Validation Error"
           }
         },
-        "summary": "Get Artifact"
+        "summary": "Get Artifact",
+        "tags": [
+          "artifacts"
+        ]
       }
     },
     "/health": {
@@ -452,7 +455,10 @@
             "description": "Successful Response"
           }
         },
-        "summary": "Health"
+        "summary": "Health",
+        "tags": [
+          "system"
+        ]
       }
     }
   }
