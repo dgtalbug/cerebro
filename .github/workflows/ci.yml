@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Heavy ML deps stay out of the install path (no [ml] extra) so CI is fast.
+# Coverage is not gated yet; thresholds attach as schema/ + analyzers/ land.
+jobs:
+  backend:
+    name: Backend (lint, types, boundaries, tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up uv (pinned) + Python 3.12
+        uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.9.9"
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run lint-imports
+      - run: uv run pytest -n auto
+
+  ui:
+    name: UI (lint, types, build, tests)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ui
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - name: Set up Node 22 LTS
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ui/.node-version
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm build
+      - run: pnpm test
+      - name: API↔UI contract drift (regenerate types, fail on drift)
+        run: |
+          pnpm api:types
+          git diff --exit-code -- src/lib/api/schema.d.ts
+
+  contracts:
+    name: Contract drift (schema / registry DDL / OpenAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.9.9"
+          python-version: "3.12"
+          enable-cache: true
+      - run: uv sync --frozen
+      - run: uv run python scripts/check_contracts.py
+
+  docker:
+    name: Docker build (placeholder slim images)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -f docker/backend.Dockerfile -t cerebro/backend:ci .
+      - name: Build UI image
+        run: docker build -f docker/ui.Dockerfile -t cerebro/ui:ci .
