@@ -60,7 +60,6 @@ _urls:
 	@printf "  \033[36m%-22s\033[0m %s\n" "Dashboard (UI)" "http://localhost:$(UI_PORT)"
 	@printf "  \033[36m%-22s\033[0m %s\n" "API root"       "http://localhost:$(API_PORT)"
 	@printf "  \033[36m%-22s\033[0m %s\n" "Swagger UI"     "http://localhost:$(API_PORT)/docs"
-	@printf "  \033[36m%-22s\033[0m %s\n" "ReDoc"          "http://localhost:$(API_PORT)/redoc"
 	@printf "  \033[36m%-22s\033[0m %s\n" "Health check"   "http://localhost:$(API_PORT)/health"
 	@printf "\n  \033[2mmake logs   — tail service logs\033[0m\n"
 	@printf "  \033[2mmake down   — stop all containers\033[0m\n\n"

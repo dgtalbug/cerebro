@@ -33,7 +33,7 @@ def create_app() -> FastAPI:
         ),
         openapi_url="/openapi.json",
         docs_url="/docs",
-        redoc_url="/redoc",
+        redoc_url=None,
     )
 
     app.add_middleware(CorrelationIdMiddleware)
