@@ -1,7 +1,7 @@
 """Multi-output LightGBM extractor.
 
 Multi-output boosters predict multiple targets simultaneously. LightGBM
-emits N×T trees in tree_info (T = number of targets), interleaved in
+emits N x T trees in tree_info (T = number of targets), interleaved in
 round-robin order (same layout as multiclass). Per-output importance
 vectors are stored in rank_metadata; the canonical importance fields
 hold the sum across outputs so single-output consumers are unaffected.
@@ -14,6 +14,7 @@ from typing import Any
 
 import numpy as np
 
+from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
     _build_feature_schema,
     _build_source,
@@ -22,7 +23,6 @@ from cerebro.extractors._lightgbm_base import (
     _load_booster,
     _resolve_objective,
 )
-from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.logging import get_logger
 from cerebro.schema.v1 import CerebroArtifact, Importance, Model
 
@@ -42,8 +42,7 @@ def _aggregate_importance(
     split_agg = booster.feature_importance(importance_type="split")
 
     gain: dict[str, float] = {
-        name: float(score)
-        for name, score in zip(feature_names, gain_agg, strict=False)
+        name: float(score) for name, score in zip(feature_names, gain_agg, strict=False)
     }
     split: dict[str, float] = {
         name: float(score)
@@ -60,7 +59,7 @@ def _aggregate_importance(
                 for name, score in zip(feature_names, g, strict=False)
             }
             _ = s  # split per-output available if needed
-        except Exception:  # noqa: BLE001 — lgb API variance across versions
+        except Exception:
             break
 
     return gain, split, per_output
@@ -85,9 +84,7 @@ class LGBMultiOutputExtractor:
         labels: np.ndarray | None = None,
     ) -> CerebroArtifact:
         if (samples is None) != (labels is None):
-            raise ValueError(
-                "samples and labels must both be provided or both omitted"
-            )
+            raise ValueError("samples and labels must both be provided or both omitted")
 
         path = Path(model_path)
         booster = _load_booster(path)
@@ -95,7 +92,8 @@ class LGBMultiOutputExtractor:
         objective = _resolve_objective(dumped)
         if objective != "multi_output":
             raise UnsupportedObjectiveError(
-                f"LGBMultiOutputExtractor requires multi_output objective; got {objective!r}",
+                "LGBMultiOutputExtractor requires multi_output objective; "
+                f"got {objective!r}",
                 context={"objective": objective},
             )
 

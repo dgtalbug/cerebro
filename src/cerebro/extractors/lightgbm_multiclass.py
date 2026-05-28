@@ -1,6 +1,6 @@
 """Multiclass LightGBM extractor.
 
-For a k-class booster with N iterations LightGBM emits N×k trees in
+For a k-class booster with N iterations LightGBM emits N x k trees in
 tree_info — class 0 first, then class 1, etc. (round-robin order).
 Each tree's position modulo num_class gives its class_index.
 """
@@ -12,6 +12,7 @@ from typing import Any
 
 import numpy as np
 
+from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
     _build_feature_schema,
     _build_importance,
@@ -21,7 +22,6 @@ from cerebro.extractors._lightgbm_base import (
     _load_booster,
     _resolve_objective,
 )
-from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.logging import get_logger
 from cerebro.schema.v1 import CerebroArtifact, Model
 
@@ -48,9 +48,7 @@ class LGBMulticlassExtractor:
         labels: np.ndarray | None = None,
     ) -> CerebroArtifact:
         if (samples is None) != (labels is None):
-            raise ValueError(
-                "samples and labels must both be provided or both omitted"
-            )
+            raise ValueError("samples and labels must both be provided or both omitted")
 
         path = Path(model_path)
         booster = _load_booster(path)
@@ -58,7 +56,8 @@ class LGBMulticlassExtractor:
         objective = _resolve_objective(dumped)
         if objective != "multiclass":
             raise UnsupportedObjectiveError(
-                f"LGBMulticlassExtractor requires multiclass objective; got {objective!r}",
+                "LGBMulticlassExtractor requires multiclass objective; "
+                f"got {objective!r}",
                 context={"objective": objective},
             )
 

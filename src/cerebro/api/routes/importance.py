@@ -69,20 +69,16 @@ async def get_importance(
                 "features": [],
                 "detail": _NO_PERMUTATION_DETAIL,
             }
-        perm_ranks = _rank_map(
-            {name: scores["mean"] for name, scores in importance.permutation.items()}
-        )
-        divergent = {
-            w["feature"]: w
-            for w in (importance.divergence_warnings or [])
-        }
+        divergent = {w["feature"]: w for w in (importance.divergence_warnings or [])}
         features = [
             {
                 "name": name,
                 "value": scores["mean"],
                 "std": scores["std"],
                 "rank_gain": gain_ranks.get(name),
-                "rank_divergence": divergent[name]["delta"] if name in divergent else None,
+                "rank_divergence": divergent[name]["delta"]
+                if name in divergent
+                else None,
             }
             for name, scores in sorted(
                 importance.permutation.items(),

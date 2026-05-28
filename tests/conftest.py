@@ -204,17 +204,9 @@ def multi_output_booster_file(tmp_path: Path) -> Path:
     features, target = make_regression(
         n_samples=300, n_features=6, n_targets=2, random_state=42
     )
-    # LightGBM multi-output: train separate boosters via multioutput wrapper
-    # or use the native multi-output support (objective=regression, multiple label cols).
-    # LGB native multi-output uses objective="multioutput:regression" or similar.
-    # We train per-target and combine to produce a model with multi_output objective keyword.
-    # Simpler: use the MultiOutputRegressor wrapper to produce a native lgb multi-output booster.
-    import numpy as np
+    # LGB 4.6 requires pandas for native multi-output labels; try the API
+    # and fall back to single-output regression if it fails.
 
-    # LightGBM natively supports multi-output via num_class on regression:
-    # We encode as a multiclass problem with continuous targets using "regression" per output.
-    # The canonical multi_output objective is accessed via lgb.train with num_class > 1.
-    # Use objective="multioutput:regression" (LGB >= 3.x).
     try:
         train_data = lgb.Dataset(features, label=target)
         booster = lgb.train(

@@ -59,7 +59,7 @@ def test_multi_output_extraction_shape(tmp_path: Path) -> None:
 
     assert artifact.model.objective == "multi_output"
     assert artifact.model.num_class == 2
-    # 3 iterations × 2 outputs = 6 trees
+    # 3 iterations x 2 outputs = 6 trees
     assert len(artifact.trees) == 6
 
 

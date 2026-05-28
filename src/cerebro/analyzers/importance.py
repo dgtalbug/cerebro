@@ -7,6 +7,8 @@ passes the booster in; this module never imports from cerebro.extractors.
 
 from __future__ import annotations
 
+from typing import Any
+
 import numpy as np
 from sklearn.inspection import permutation_importance as sklearn_perm_importance
 
@@ -30,17 +32,18 @@ def compute_permutation_importance(
     class _BoosterEstimator:
         """Minimal sklearn-compatible wrapper around a LightGBM Booster."""
 
-        def fit(self, X: np.ndarray, y: np.ndarray) -> "_BoosterEstimator":  # noqa: N803
+        def fit(self, X: np.ndarray, y: np.ndarray) -> _BoosterEstimator:
             return self
 
-        def predict(self, X: np.ndarray) -> np.ndarray:  # noqa: N803
-            raw = booster.predict(X)  # type: ignore[union-attr]
+        def predict(self, X: np.ndarray) -> Any:
+            predict_fn = getattr(booster, "predict")
+            raw: np.ndarray = predict_fn(X)
             # multiclass predict returns (n_samples, n_classes); take argmax for scoring
             if raw.ndim == 2:
                 return raw.argmax(axis=1).astype(float)
             return raw.astype(float)
 
-        def score(self, X: np.ndarray, y: np.ndarray) -> float:  # noqa: N803
+        def score(self, X: np.ndarray, y: np.ndarray) -> float:
             # Default score — sklearn's permutation_importance uses this baseline.
             preds = self.predict(X)
             if np.unique(y).shape[0] <= 2:  # binary / regression
@@ -81,7 +84,9 @@ def detect_divergence(
     Rank 1 = highest importance. Features with |gain_rank - perm_rank| > threshold
     are returned sorted by delta descending (most divergent first).
     """
-    gain_sorted = sorted(feature_names, key=lambda n: gain_scores.get(n, 0.0), reverse=True)
+    gain_sorted = sorted(
+        feature_names, key=lambda n: gain_scores.get(n, 0.0), reverse=True
+    )
     perm_sorted = sorted(
         feature_names,
         key=lambda n: permutation_scores.get(n, {}).get("mean", 0.0),

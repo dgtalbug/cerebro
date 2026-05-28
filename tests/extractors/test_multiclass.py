@@ -14,7 +14,7 @@ def test_multiclass_extraction_shape(multiclass_booster_file: Path) -> None:
     assert artifact.schema_version == "1.0.0"
     assert artifact.model.objective == "multiclass"
     assert artifact.model.num_class == 3
-    # 20 iterations × 3 classes = 60 trees
+    # 20 iterations x 3 classes = 60 trees
     assert len(artifact.trees) == 60
     assert artifact.model.num_iteration == 20
 
