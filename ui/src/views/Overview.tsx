@@ -163,7 +163,7 @@ export function Overview() {
               <span>const</span>
             </div>
 
-            {feat.names.map((name, i) => {
+            {feat.names.map((name: string, i: number) => {
               const isCategorical = feat.categorical_indices.includes(i);
               const mono = feat.monotone_constraints[i] ?? 0;
               return (
