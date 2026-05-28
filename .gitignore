@@ -25,6 +25,8 @@ claude.md
 # Runtime data: artifacts (source of truth) + derived SQLite registry + logs
 /data/
 *.cerebro.json
+# Committed example artifacts are the snapshot test fixtures — keep them
+!examples/*.cerebro.json
 *.db
 *.db-wal
 *.db-shm
