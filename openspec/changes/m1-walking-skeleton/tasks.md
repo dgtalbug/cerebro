@@ -52,16 +52,19 @@
 **Spec:** `.docs/cerebro-open-spec.md` Part I §8 (fail fast at boundaries), Part VI §3 F1.12 (gzip-on-disk).
 **Commit:** `feat(storage): gzipped .cerebro.json read/write with validate-on-read`
 
-- [ ] `gitnexus_search` for `read_artifact`, `write_artifact`, `cerebro.storage`.
-- [ ] Create `src/cerebro/storage/__init__.py`.
-- [ ] Create `src/cerebro/storage/files.py` exposing `write_artifact(artifact: CerebroArtifact, path: Path) -> None` and `read_artifact(path: Path) -> CerebroArtifact`.
-- [ ] Write path: serialize via `artifact.model_dump_json(indent=None)`, gzip-encode, write atomically (write to `path.with_suffix(path.suffix + ".tmp")`, then rename).
-- [ ] Read path: open with `gzip.open(...)`, parse via `CerebroArtifact.model_validate_json(...)`. Catch `gzip.BadGzipFile`, `pydantic.ValidationError`, raise `CorruptArtifactError(...) from original` with `context = {"artifact_path": str(path)}`.
-- [ ] Missing path raises `ArtifactNotFoundError`.
-- [ ] `tests/storage/test_round_trip.py`: write then read produces an equal model.
-- [ ] `tests/storage/test_corrupt_input.py`: a file with junk bytes raises `CorruptArtifactError`.
-- [ ] `tests/storage/test_missing_path.py`: missing file raises `ArtifactNotFoundError`.
-- [ ] `npx gitnexus analyze` after commit.
+- [x] `gitnexus_search` for `read_artifact`, `write_artifact`, `cerebro.storage` — verified no collisions (storage package was empty M0 stub).
+- [x] Update `src/cerebro/storage/__init__.py` to re-export `read_artifact`, `write_artifact`.
+- [x] Create `src/cerebro/storage/files.py` exposing `write_artifact(artifact: CerebroArtifact, path: Path) -> None` and `read_artifact(path: Path) -> CerebroArtifact`.
+- [x] Write path: `model_dump_json` -> utf-8 -> `gzip.compress` -> sibling `.tmp` file -> `Path.replace` for atomic rename. Parent directories created on demand via `mkdir(parents=True, exist_ok=True)`.
+- [x] Read path: `gzip.decompress(path.read_bytes())` -> `CerebroArtifact.model_validate_json`. `(gzip.BadGzipFile, OSError, EOFError)` and `pydantic.ValidationError` are transformed via `raise CorruptArtifactError(...) from original` with `context = {"artifact_path": str(path)}`.
+- [x] Missing path raises `ArtifactNotFoundError` with structured context.
+- [x] Hoist `binary_artifact_dict` and add `binary_artifact` (parsed instance) fixtures into top-level `tests/conftest.py` so schema, storage, and future tests share one source of truth.
+- [x] `tests/storage/test_round_trip.py`: write then read produces an equal model; on-disk bytes start with gzip magic (`1f 8b`); parent directories are created on demand.
+- [x] `tests/storage/test_atomic_write.py`: no `.tmp` left after success; second write replaces first; recovered model reflects the second write.
+- [x] `tests/storage/test_corrupt_input.py`: three modes — random bytes (not gzip), gzip of malformed JSON, gzip of JSON missing required fields — each raises `CorruptArtifactError`.
+- [x] `tests/storage/test_missing_path.py`: missing file raises `ArtifactNotFoundError` with context.
+- [x] All gates green: ruff, mypy strict (37 files), lint-imports (2/2 kept), pytest -n auto (58/58 in ~2 s; 9 new storage tests).
+- [x] `npx gitnexus analyze` after commit.
 
 ## Task 4 — CLI: `cerebro extract` and `cerebro validate`
 
