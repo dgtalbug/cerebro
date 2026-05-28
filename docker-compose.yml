@@ -1,0 +1,60 @@
+# docker-compose.yml — Cerebro local development environment.
+#
+# One file, two services (backend + ui). Bring up: `make up`. Tear down:
+# `make down`. The full target list lives in the Makefile (`make help`).
+#
+# Network shape:
+#   - `ui` binds to host port ${UI_PORT:-3000} -> container :80 (nginx).
+#   - `backend` is reachable only from inside the `cerebro` bridge network;
+#     the UI's nginx proxies /api/ to http://backend:8000 (see docker/nginx.conf).
+#   - Artifacts and the derived SQLite registry persist in the named volume
+#     `cerebro-data` at /data inside the backend container.
+#
+# Pre-alpha note: the backend image CMD is still a placeholder that exits
+# after printing the package version. We override it here with `sleep
+# infinity` so the container stays up and the UI's proxy upstream
+# resolves. Remove the `command:` override once uvicorn is wired into
+# docker/backend.Dockerfile.
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/backend.Dockerfile
+    image: cerebro/backend:dev
+    container_name: cerebro-backend
+    command: ["sleep", "infinity"]
+    environment:
+      CEREBRO_DATA_DIR: /data
+      CEREBRO_LOG_LEVEL: ${CEREBRO_LOG_LEVEL:-INFO}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - cerebro-data:/data
+    expose:
+      - "8000"
+    networks:
+      - cerebro
+    restart: unless-stopped
+
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.Dockerfile
+      args:
+        VITE_API_URL: /api
+    image: cerebro/ui:dev
+    container_name: cerebro-ui
+    ports:
+      - "${UI_PORT:-3000}:80"
+    depends_on:
+      - backend
+    networks:
+      - cerebro
+    restart: unless-stopped
+
+networks:
+  cerebro:
+    driver: bridge
+
+volumes:
+  cerebro-data:
