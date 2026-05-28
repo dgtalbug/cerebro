@@ -483,6 +483,62 @@
         ]
       }
     },
+    "/artifacts/{artifact_id}/importance": {
+      "get": {
+        "description": "Return importance scores for the requested type.\n\n- gain / split: always available (computed at extraction time).\n- permutation: available only when evaluation samples were provided\n  at extraction time; returns HTTP 200 with empty features list and a\n  detail message when absent.",
+        "operationId": "get_importance_artifacts__artifact_id__importance_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Importance type: gain, split, or permutation",
+            "in": "query",
+            "name": "type",
+            "required": true,
+            "schema": {
+              "description": "Importance type: gain, split, or permutation",
+              "title": "Type",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Importance Artifacts  Artifact Id  Importance Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Importance",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
     "/health": {
       "get": {
         "description": "Liveness probe \u2014 does not check storage or downstream deps.",
