@@ -17,6 +17,7 @@ RUN apt-get update \
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
+COPY schemas ./schemas
 
 # Install API surface + full ML stack so the /ingest endpoint can run
 # extraction server-side without requiring a local Python environment.
