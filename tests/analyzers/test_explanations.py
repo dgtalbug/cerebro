@@ -17,6 +17,8 @@ from cerebro.analyzers.explanations import (
 )
 from cerebro.schema.v1.tree import Tree, TreeNode
 
+_BoosterAndData = tuple[Any, np.ndarray, np.ndarray]
+
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -32,7 +34,8 @@ def binary_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
     ds = lgb.Dataset(X, y)
     booster = lgb.train(
         {"objective": "binary", "num_leaves": 8, "n_estimators": 10, "verbosity": -1},
-        ds, num_boost_round=5,
+        ds,
+        num_boost_round=5,
     )
     return booster, X.astype(float), y.astype(float)
 
@@ -45,7 +48,8 @@ def regression_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
     ds = lgb.Dataset(X, y)
     booster = lgb.train(
         {"objective": "regression", "num_leaves": 8, "verbosity": -1},
-        ds, num_boost_round=5,
+        ds,
+        num_boost_round=5,
     )
     return booster, X.astype(float), y.astype(float)
 
@@ -69,7 +73,9 @@ def simple_tree() -> Tree:
 # ---------------------------------------------------------------------------
 
 
-def test_compute_shap_binary_returns_shape(binary_booster_and_data: tuple) -> None:
+def test_compute_shap_binary_returns_shape(
+    binary_booster_and_data: _BoosterAndData,
+) -> None:
     booster, X, y = binary_booster_and_data
     result = compute_shap(booster, X[:50], y[:50])
 
@@ -79,7 +85,9 @@ def test_compute_shap_binary_returns_shape(binary_booster_and_data: tuple) -> No
     assert isinstance(result.expected_value, float)
 
 
-def test_compute_shap_caps_samples(binary_booster_and_data: tuple) -> None:
+def test_compute_shap_caps_samples(
+    binary_booster_and_data: _BoosterAndData,
+) -> None:
     booster, X, y = binary_booster_and_data
     large_X = np.tile(X, (5, 1))
     large_y = np.tile(y, 5)
@@ -88,7 +96,7 @@ def test_compute_shap_caps_samples(binary_booster_and_data: tuple) -> None:
 
 
 def test_compute_shap_no_labels_uniform_background(
-    binary_booster_and_data: tuple,
+    binary_booster_and_data: _BoosterAndData,
 ) -> None:
     booster, X, _ = binary_booster_and_data
     result = compute_shap(booster, X[:30])
@@ -96,7 +104,9 @@ def test_compute_shap_no_labels_uniform_background(
     assert result.background_sample_count > 0
 
 
-def test_compute_shap_regression(regression_booster_and_data: tuple) -> None:
+def test_compute_shap_regression(
+    regression_booster_and_data: _BoosterAndData,
+) -> None:
     booster, X, y = regression_booster_and_data
     result = compute_shap(booster, X[:40], y[:40])
     assert result.sample_count == 40
@@ -144,7 +154,7 @@ def test_trace_path_raises_on_short_sample(simple_tree: Tree) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_compute_pdp_returns_top_n(binary_booster_and_data: tuple) -> None:
+def test_compute_pdp_returns_top_n(binary_booster_and_data: _BoosterAndData) -> None:
     booster, X, _ = binary_booster_and_data
     names = booster.feature_name()
     importance_scores = booster.feature_importance(importance_type="gain")
@@ -154,8 +164,9 @@ def test_compute_pdp_returns_top_n(binary_booster_and_data: tuple) -> None:
     assert len(profiles) > 0
 
 
-def test_compute_pdp_grid_length(binary_booster_and_data: tuple) -> None:
+def test_compute_pdp_grid_length(binary_booster_and_data: _BoosterAndData) -> None:
     from cerebro.analyzers.explanations import PDP_GRID_POINTS
+
     booster, X, _ = binary_booster_and_data
     names = booster.feature_name()
     importance_scores = booster.feature_importance(importance_type="gain")

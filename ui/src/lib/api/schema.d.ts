@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/artifacts/ingest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ingest */
+        post: operations["ingest_artifacts_ingest_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/{artifact_id}": {
         parameters: {
             query?: never;
@@ -16,6 +33,102 @@ export interface paths {
          * @description Return the canonical artifact for `artifact_id`.
          */
         get: operations["get_artifact_artifacts__artifact_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/data-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Data Profile
+         * @description Return the data profile section for `artifact_id`.
+         *
+         *     Returns column distributions, missingness rates, and pairwise Pearson
+         *     correlations from the training table. When no training table was provided
+         *     at extraction time, returns HTTP 200 with a detail message.
+         */
+        get: operations["get_data_profile_artifacts__artifact_id__data_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/enrich": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Enrich
+         * @description Add a data profile section to an existing artifact.
+         *
+         *     SHAP and evaluation enrichment require re-ingesting the model file via
+         *     POST /artifacts/ingest — the API layer cannot import LightGBM (invariant #2).
+         */
+        patch: operations["enrich_artifacts__artifact_id__enrich_patch"];
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/evaluation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Evaluation
+         * @description Return the evaluation section for `artifact_id`.
+         *
+         *     Returns objective-aware evaluation metrics (ROC/confusion matrix for
+         *     binary, NxN confusion + per-class metrics for multiclass, residuals
+         *     for regression, nDCG@k for ranking). When evaluation was not computed,
+         *     returns HTTP 200 with a detail message.
+         */
+        get: operations["get_evaluation_artifacts__artifact_id__evaluation_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/explanations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Explanations
+         * @description Return the explanations section for `artifact_id`.
+         *
+         *     Returns the SHAP values, decision paths, and partial dependence profiles
+         *     stored at extraction time. When explanations were not computed, returns
+         *     HTTP 200 with a detail message (not 404 — the artifact exists).
+         */
+        get: operations["get_explanations_artifacts__artifact_id__explanations_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -69,19 +182,132 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Models */
+        get: operations["list_models_models_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/models/{model_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Model */
+        get: operations["get_model_models__model_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/models/{model_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Versions */
+        get: operations["list_versions_models__model_id__versions_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * BinaryEval
+         * @description Binary classification evaluation metrics.
+         */
+        BinaryEval: {
+            /** Auc */
+            auc: number;
+            /** Confusion Matrix */
+            confusion_matrix: components["schemas"]["ConfusionCell"][];
+            /** F1 */
+            f1: number;
+            /**
+             * Objective
+             * @constant
+             */
+            objective: "binary";
+            /** Precision */
+            precision: number;
+            /** Recall */
+            recall: number;
+            /** Roc Curve */
+            roc_curve: components["schemas"]["ROCPoint"][];
+            /** Threshold */
+            threshold: number;
+        };
+        /** Body_enrich_artifacts__artifact_id__enrich_patch */
+        Body_enrich_artifacts__artifact_id__enrich_patch: {
+            /** Training Table */
+            training_table?: string | null;
+        };
+        /** Body_ingest_artifacts_ingest_post */
+        Body_ingest_artifacts_ingest_post: {
+            /** Eval Labels */
+            eval_labels?: string | null;
+            /** Eval Samples */
+            eval_samples?: string | null;
+            /** Labels */
+            labels?: string | null;
+            /**
+             * Model
+             * @description LightGBM .txt model file
+             */
+            model: string;
+            /**
+             * Model Name
+             * @description Logical model name, e.g. 'loan_default_classifier'
+             */
+            model_name: string;
+            /** Notes */
+            notes?: string | null;
+            /** Samples */
+            samples?: string | null;
+            /** Training Table */
+            training_table?: string | null;
+        };
+        /** CategoryCount */
+        CategoryCount: {
+            /** Count */
+            count: number;
+            /** Value */
+            value: string;
+        };
+        /**
          * CerebroArtifact
          * @description The whole canonical artifact — the contract every layer agrees on.
          */
         CerebroArtifact: {
+            data_profile?: components["schemas"]["DataProfile"] | null;
             /** Evaluation */
-            evaluation?: null;
-            /** Explanations */
-            explanations?: null;
+            evaluation?: components["schemas"]["BinaryEval"] | components["schemas"]["MulticlassEval"] | components["schemas"]["RegressionEval"] | components["schemas"]["RankingEval"] | null;
+            explanations?: components["schemas"]["Explanations"] | null;
             importance: components["schemas"]["Importance"];
             model: components["schemas"]["Model"];
             /** Rank Metadata */
@@ -96,6 +322,122 @@ export interface components {
             source: components["schemas"]["Source"];
             /** Trees */
             trees: components["schemas"]["Tree"][];
+        };
+        /**
+         * ColumnProfile
+         * @description Per-column statistical profile.
+         */
+        ColumnProfile: {
+            /** Dtype */
+            dtype: string;
+            /** Histogram */
+            histogram?: components["schemas"]["HistogramBin"][] | null;
+            /** Is Categorical */
+            is_categorical: boolean;
+            /** Is Numeric */
+            is_numeric: boolean;
+            /** Max */
+            max?: number | null;
+            /** Mean */
+            mean?: number | null;
+            /** Min */
+            min?: number | null;
+            /** Missingness */
+            missingness: number;
+            /** Name */
+            name: string;
+            /** Null Count */
+            null_count: number;
+            /** Std */
+            std?: number | null;
+            /** Top Categories */
+            top_categories?: components["schemas"]["CategoryCount"][] | null;
+            /** Total Rows */
+            total_rows: number;
+        };
+        /** ConfusionCell */
+        ConfusionCell: {
+            /** Actual */
+            actual: number;
+            /** Count */
+            count: number;
+            /** Predicted */
+            predicted: number;
+        };
+        /** CorrelationCell */
+        CorrelationCell: {
+            /** Feature A */
+            feature_a: string;
+            /** Feature B */
+            feature_b: string;
+            /** Pearson */
+            pearson: number;
+        };
+        /**
+         * DataProfile
+         * @description Statistical summary of the training table.
+         */
+        DataProfile: {
+            /** Column Count */
+            column_count: number;
+            /** Columns */
+            columns: components["schemas"]["ColumnProfile"][];
+            /** Correlations */
+            correlations: components["schemas"]["CorrelationCell"][];
+            /** Row Count */
+            row_count: number;
+        };
+        /**
+         * DecisionPath
+         * @description Traced path through a single tree for one sample.
+         */
+        DecisionPath: {
+            /** Leaf Value */
+            leaf_value: number;
+            /** Steps */
+            steps: components["schemas"]["DecisionStep"][];
+            /** Tree Index */
+            tree_index: number;
+        };
+        /**
+         * DecisionStep
+         * @description One split node on the path from root to leaf.
+         */
+        DecisionStep: {
+            /** Decision Type */
+            decision_type: string;
+            /** Feature Index */
+            feature_index: number;
+            /** Feature Name */
+            feature_name: string;
+            /** Node Id */
+            node_id: number;
+            /** Sample Value */
+            sample_value: number;
+            /** Threshold */
+            threshold: number | null;
+            /** Went Left */
+            went_left: boolean;
+        };
+        /** EnrichResponse */
+        EnrichResponse: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Enriched At */
+            enriched_at: string;
+            /** Sections Added */
+            sections_added: string[];
+        };
+        /**
+         * Explanations
+         * @description Full explanations bundle stored in the artifact.
+         */
+        Explanations: {
+            /** Decision Paths */
+            decision_paths?: components["schemas"]["DecisionPath"][][] | null;
+            /** Partial Dependence */
+            partial_dependence?: components["schemas"]["PDPFeature"][] | null;
+            shap?: components["schemas"]["ShapResult"] | null;
         };
         /**
          * FeatureSchema
@@ -136,6 +478,15 @@ export interface components {
             /** Version */
             version: string;
         };
+        /** HistogramBin */
+        HistogramBin: {
+            /** Count */
+            count: number;
+            /** Lower */
+            lower: number;
+            /** Upper */
+            upper: number;
+        };
         /**
          * Importance
          * @description Feature importance scores keyed by feature name.
@@ -159,6 +510,27 @@ export interface components {
             split: {
                 [key: string]: number;
             };
+        };
+        /** IngestResponse */
+        IngestResponse: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Model Id */
+            model_id: string;
+            /** Model Name */
+            model_name: string;
+            sections: components["schemas"]["SectionStatus"];
+            /** Version */
+            version: number;
+        };
+        /** IntervalPoint */
+        IntervalPoint: {
+            /** Lower */
+            lower: number;
+            /** Predicted */
+            predicted: number;
+            /** Upper */
+            upper: number;
         };
         /**
          * Model
@@ -185,6 +557,191 @@ export interface components {
             params: {
                 [key: string]: unknown;
             };
+        };
+        /**
+         * ModelDetail
+         * @description Detail page data — full version history, newest first.
+         */
+        ModelDetail: {
+            /** Created At */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Versions */
+            versions: components["schemas"]["VersionSummary"][];
+        };
+        /**
+         * ModelSummary
+         * @description Card data for the registry home view.
+         */
+        ModelSummary: {
+            /** Created At */
+            created_at: string;
+            /** Description */
+            description: string | null;
+            /** Framework */
+            framework: string;
+            /** Id */
+            id: string;
+            /** Latest Version */
+            latest_version: number;
+            /** Latest Version Date */
+            latest_version_date: string;
+            /** Name */
+            name: string;
+            /** Objective */
+            objective: string;
+            section_status: components["schemas"]["SectionStatus"];
+        };
+        /**
+         * MulticlassEval
+         * @description Multiclass classification evaluation metrics.
+         */
+        MulticlassEval: {
+            /** Accuracy */
+            accuracy: number;
+            /** Confusion Matrix */
+            confusion_matrix: components["schemas"]["ConfusionCell"][];
+            /** Macro F1 */
+            macro_f1: number;
+            /**
+             * Objective
+             * @constant
+             */
+            objective: "multiclass";
+            /** Per Class */
+            per_class: components["schemas"]["PerClassMetrics"][];
+        };
+        /** NDCGAtK */
+        NDCGAtK: {
+            /** K */
+            k: number;
+            /** Value */
+            value: number;
+        };
+        /**
+         * PDPFeature
+         * @description Partial dependence profile for one feature.
+         */
+        PDPFeature: {
+            /** Feature */
+            feature: string;
+            /** Feature Index */
+            feature_index: number;
+            /** Grid */
+            grid: number[];
+            /** Is Categorical */
+            is_categorical: boolean;
+            /** Values */
+            values: number[];
+        };
+        /** PerClassMetrics */
+        PerClassMetrics: {
+            /** Class Index */
+            class_index: number;
+            /** F1 */
+            f1: number;
+            /** Precision */
+            precision: number;
+            /** Recall */
+            recall: number;
+            /** Support */
+            support: number;
+        };
+        /** ROCPoint */
+        ROCPoint: {
+            /** Fpr */
+            fpr: number;
+            /** Threshold */
+            threshold: number;
+            /** Tpr */
+            tpr: number;
+        };
+        /**
+         * RankingEval
+         * @description Ranking (lambdarank) evaluation metrics.
+         */
+        RankingEval: {
+            /** Mean Average Precision */
+            mean_average_precision: number;
+            /** Ndcg At K */
+            ndcg_at_k: components["schemas"]["NDCGAtK"][];
+            /**
+             * Objective
+             * @constant
+             */
+            objective: "lambdarank";
+            /** Per Query Ndcg */
+            per_query_ndcg: number[];
+        };
+        /**
+         * RegressionEval
+         * @description Regression evaluation metrics.
+         */
+        RegressionEval: {
+            /** Interval Band */
+            interval_band: components["schemas"]["IntervalPoint"][];
+            /** Mae */
+            mae: number;
+            /**
+             * Objective
+             * @constant
+             */
+            objective: "regression";
+            /** R2 */
+            r2: number;
+            /** Residuals Histogram */
+            residuals_histogram: components["schemas"]["HistogramBin"][];
+            /** Rmse */
+            rmse: number;
+            /** Scatter */
+            scatter: components["schemas"]["ScatterPoint"][];
+        };
+        /** ScatterPoint */
+        ScatterPoint: {
+            /** Actual */
+            actual: number;
+            /** Predicted */
+            predicted: number;
+        };
+        /** SectionStatus */
+        SectionStatus: {
+            /** Data Profile */
+            data_profile: boolean;
+            /** Evaluation */
+            evaluation: boolean;
+            /** Importance */
+            importance: boolean;
+            /** Shap */
+            shap: boolean;
+            /** Trees */
+            trees: boolean;
+        };
+        /**
+         * ShapResult
+         * @description SHAP values for a set of samples.
+         *
+         *     `shap_values` has shape (n_samples, n_features) for binary and regression
+         *     models. For multiclass it has shape (n_samples, n_classes, n_features),
+         *     stored as a nested list.
+         *     `expected_value` is a scalar for binary/regression; a list of per-class
+         *     base values for multiclass.
+         */
+        ShapResult: {
+            /** Background Sample Count */
+            background_sample_count: number;
+            /** Expected Value */
+            expected_value: number | number[];
+            /** Feature Names */
+            feature_names: string[];
+            /** Sample Count */
+            sample_count: number;
+            /** Shap Values */
+            shap_values: number[][] | number[][][];
         };
         /**
          * Source
@@ -250,6 +807,18 @@ export interface components {
             /** Error Type */
             type: string;
         };
+        /** VersionSummary */
+        VersionSummary: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Created At */
+            created_at: string;
+            /** Notes */
+            notes: string | null;
+            section_status: components["schemas"]["SectionStatus"];
+            /** Version */
+            version: number;
+        };
     };
     responses: never;
     parameters: never;
@@ -259,6 +828,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    ingest_artifacts_ingest_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_ingest_artifacts_ingest_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IngestResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     get_artifact_artifacts__artifact_id__get: {
         parameters: {
             query?: never;
@@ -277,6 +879,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CerebroArtifact"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_data_profile_artifacts__artifact_id__data_profile_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    enrich_artifacts__artifact_id__enrich_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_enrich_artifacts__artifact_id__enrich_patch"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EnrichResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_evaluation_artifacts__artifact_id__evaluation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_explanations_artifacts__artifact_id__explanations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
                 };
             };
             /** @description Validation Error */
@@ -342,6 +1078,102 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthBody"];
+                };
+            };
+        };
+    };
+    list_models_models_get: {
+        parameters: {
+            query?: {
+                framework?: string | null;
+                objective?: string | null;
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_model_models__model_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ModelDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_versions_models__model_id__versions_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                model_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionSummary"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

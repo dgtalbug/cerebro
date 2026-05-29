@@ -1,4 +1,4 @@
-import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useArtifact } from "../../lib/api/queries";
 
 interface NavItemDef {
@@ -141,19 +141,69 @@ function NavSection({ label, items }: { label: string; items: NavItemDef[] }) {
   );
 }
 
+function RegistrySidebarNav() {
+  const navigate = useNavigate();
+  return (
+    <>
+      <NavLink
+        to="/"
+        end
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <rect x="2" y="3" width="20" height="14" rx="2" />
+          <path d="M8 21h8M12 17v4" />
+        </svg>
+        <span>Registry</span>
+      </NavLink>
+      <button
+        className="btn primary"
+        onClick={() => navigate("/ingest")}
+        style={{ width: "100%", justifyContent: "center", marginTop: "16px", gap: "8px" }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Load model
+      </button>
+    </>
+  );
+}
+
 export function Sidebar() {
   const { id } = useParams<{ id?: string }>();
+  const location = useLocation();
   const { data } = useArtifact(id ?? "");
   const artifact = id ? data?.data : undefined;
   const navigate = useNavigate();
+
+  const isArtifactRoute = location.pathname.startsWith("/artifacts/");
 
   const extractedAt = artifact
     ? artifact.source.extracted_at.replace("T", " ").replace("Z", " UTC")
     : "—";
   const extractorVer = artifact ? artifact.source.extractor_version : "—";
 
+  if (!isArtifactRoute) {
+    return (
+      <aside className="sidebar">
+        <RegistrySidebarNav />
+      </aside>
+    );
+  }
+
   return (
     <aside className="sidebar">
+      <NavLink
+        to="/"
+        className="nav-item"
+        style={{ marginBottom: "8px", fontSize: "11px", color: "var(--text-dim)" }}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        <span>Registry</span>
+      </NavLink>
       <button
         className="btn primary"
         onClick={() => navigate("/ingest")}

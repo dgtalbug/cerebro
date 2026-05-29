@@ -119,9 +119,7 @@ def _load_json(conn: duckdb.DuckDBPyConnection, path: Path) -> Any:
         records = [{k: raw[k][i] for k in keys} for i in range(length)]
         log.info("table.json_columnar_detected", columns=len(keys), rows=length)
         # DuckDB read_json_auto requires a file path; write records to a temp file.
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
             json.dump(records, tmp)
             tmp_path = tmp.name
         return conn.read_json(tmp_path)

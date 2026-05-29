@@ -19,7 +19,7 @@ function FeatureBar({ name, value, max }: { name: string; value: number; max: nu
         <div className="fi-bar" style={{ width: `${pct}%` }} />
       </div>
       <span className="fi-value tnum">
-        {value.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+        {value.toFixed(2)}
       </span>
     </div>
   );

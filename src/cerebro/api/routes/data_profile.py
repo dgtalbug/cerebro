@@ -20,8 +20,7 @@ from cerebro.schema.v1 import CerebroArtifact
 router = APIRouter(tags=["artifacts"])
 
 _NO_DATA_PROFILE_DETAIL = (
-    "data profile was not computed — "
-    "no training table was provided at extraction time"
+    "data profile was not computed — no training table was provided at extraction time"
 )
 
 

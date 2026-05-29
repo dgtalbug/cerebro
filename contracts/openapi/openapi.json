@@ -1,17 +1,235 @@
 {
   "components": {
     "schemas": {
+      "BinaryEval": {
+        "additionalProperties": false,
+        "description": "Binary classification evaluation metrics.",
+        "properties": {
+          "auc": {
+            "title": "Auc",
+            "type": "number"
+          },
+          "confusion_matrix": {
+            "items": {
+              "$ref": "#/components/schemas/ConfusionCell"
+            },
+            "title": "Confusion Matrix",
+            "type": "array"
+          },
+          "f1": {
+            "title": "F1",
+            "type": "number"
+          },
+          "objective": {
+            "const": "binary",
+            "title": "Objective",
+            "type": "string"
+          },
+          "precision": {
+            "title": "Precision",
+            "type": "number"
+          },
+          "recall": {
+            "title": "Recall",
+            "type": "number"
+          },
+          "roc_curve": {
+            "items": {
+              "$ref": "#/components/schemas/ROCPoint"
+            },
+            "title": "Roc Curve",
+            "type": "array"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "number"
+          }
+        },
+        "required": [
+          "objective",
+          "auc",
+          "roc_curve",
+          "confusion_matrix",
+          "threshold",
+          "precision",
+          "recall",
+          "f1"
+        ],
+        "title": "BinaryEval",
+        "type": "object"
+      },
+      "Body_enrich_artifacts__artifact_id__enrich_patch": {
+        "properties": {
+          "training_table": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Table"
+          }
+        },
+        "title": "Body_enrich_artifacts__artifact_id__enrich_patch",
+        "type": "object"
+      },
+      "Body_ingest_artifacts_ingest_post": {
+        "properties": {
+          "eval_labels": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eval Labels"
+          },
+          "eval_samples": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Eval Samples"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Labels"
+          },
+          "model": {
+            "contentMediaType": "application/octet-stream",
+            "description": "LightGBM .txt model file",
+            "title": "Model",
+            "type": "string"
+          },
+          "model_name": {
+            "description": "Logical model name, e.g. 'loan_default_classifier'",
+            "title": "Model Name",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "samples": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Samples"
+          },
+          "training_table": {
+            "anyOf": [
+              {
+                "contentMediaType": "application/octet-stream",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Training Table"
+          }
+        },
+        "required": [
+          "model",
+          "model_name"
+        ],
+        "title": "Body_ingest_artifacts_ingest_post",
+        "type": "object"
+      },
+      "CategoryCount": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "count"
+        ],
+        "title": "CategoryCount",
+        "type": "object"
+      },
       "CerebroArtifact": {
         "additionalProperties": false,
         "description": "The whole canonical artifact \u2014 the contract every layer agrees on.",
         "properties": {
+          "data_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DataProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "evaluation": {
-            "title": "Evaluation",
-            "type": "null"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BinaryEval"
+              },
+              {
+                "$ref": "#/components/schemas/MulticlassEval"
+              },
+              {
+                "$ref": "#/components/schemas/RegressionEval"
+              },
+              {
+                "$ref": "#/components/schemas/RankingEval"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Evaluation"
           },
           "explanations": {
-            "title": "Explanations",
-            "type": "null"
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Explanations"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "importance": {
             "$ref": "#/components/schemas/Importance"
@@ -55,6 +273,362 @@
           "importance"
         ],
         "title": "CerebroArtifact",
+        "type": "object"
+      },
+      "ColumnProfile": {
+        "additionalProperties": false,
+        "description": "Per-column statistical profile.",
+        "properties": {
+          "dtype": {
+            "title": "Dtype",
+            "type": "string"
+          },
+          "histogram": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/HistogramBin"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Histogram"
+          },
+          "is_categorical": {
+            "title": "Is Categorical",
+            "type": "boolean"
+          },
+          "is_numeric": {
+            "title": "Is Numeric",
+            "type": "boolean"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "missingness": {
+            "title": "Missingness",
+            "type": "number"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "null_count": {
+            "title": "Null Count",
+            "type": "integer"
+          },
+          "std": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Std"
+          },
+          "top_categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CategoryCount"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Top Categories"
+          },
+          "total_rows": {
+            "title": "Total Rows",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "name",
+          "dtype",
+          "is_numeric",
+          "is_categorical",
+          "total_rows",
+          "null_count",
+          "missingness"
+        ],
+        "title": "ColumnProfile",
+        "type": "object"
+      },
+      "ConfusionCell": {
+        "additionalProperties": false,
+        "properties": {
+          "actual": {
+            "title": "Actual",
+            "type": "integer"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "predicted": {
+            "title": "Predicted",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "predicted",
+          "actual",
+          "count"
+        ],
+        "title": "ConfusionCell",
+        "type": "object"
+      },
+      "CorrelationCell": {
+        "additionalProperties": false,
+        "properties": {
+          "feature_a": {
+            "title": "Feature A",
+            "type": "string"
+          },
+          "feature_b": {
+            "title": "Feature B",
+            "type": "string"
+          },
+          "pearson": {
+            "title": "Pearson",
+            "type": "number"
+          }
+        },
+        "required": [
+          "feature_a",
+          "feature_b",
+          "pearson"
+        ],
+        "title": "CorrelationCell",
+        "type": "object"
+      },
+      "DataProfile": {
+        "additionalProperties": false,
+        "description": "Statistical summary of the training table.",
+        "properties": {
+          "column_count": {
+            "title": "Column Count",
+            "type": "integer"
+          },
+          "columns": {
+            "items": {
+              "$ref": "#/components/schemas/ColumnProfile"
+            },
+            "title": "Columns",
+            "type": "array"
+          },
+          "correlations": {
+            "items": {
+              "$ref": "#/components/schemas/CorrelationCell"
+            },
+            "title": "Correlations",
+            "type": "array"
+          },
+          "row_count": {
+            "title": "Row Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "row_count",
+          "column_count",
+          "columns",
+          "correlations"
+        ],
+        "title": "DataProfile",
+        "type": "object"
+      },
+      "DecisionPath": {
+        "additionalProperties": false,
+        "description": "Traced path through a single tree for one sample.",
+        "properties": {
+          "leaf_value": {
+            "title": "Leaf Value",
+            "type": "number"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "tree_index": {
+            "title": "Tree Index",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "tree_index",
+          "steps",
+          "leaf_value"
+        ],
+        "title": "DecisionPath",
+        "type": "object"
+      },
+      "DecisionStep": {
+        "additionalProperties": false,
+        "description": "One split node on the path from root to leaf.",
+        "properties": {
+          "decision_type": {
+            "title": "Decision Type",
+            "type": "string"
+          },
+          "feature_index": {
+            "title": "Feature Index",
+            "type": "integer"
+          },
+          "feature_name": {
+            "title": "Feature Name",
+            "type": "string"
+          },
+          "node_id": {
+            "title": "Node Id",
+            "type": "integer"
+          },
+          "sample_value": {
+            "title": "Sample Value",
+            "type": "number"
+          },
+          "threshold": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold"
+          },
+          "went_left": {
+            "title": "Went Left",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "node_id",
+          "feature_index",
+          "feature_name",
+          "threshold",
+          "decision_type",
+          "sample_value",
+          "went_left"
+        ],
+        "title": "DecisionStep",
+        "type": "object"
+      },
+      "EnrichResponse": {
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "enriched_at": {
+            "title": "Enriched At",
+            "type": "string"
+          },
+          "sections_added": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sections Added",
+            "type": "array"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "sections_added",
+          "enriched_at"
+        ],
+        "title": "EnrichResponse",
+        "type": "object"
+      },
+      "Explanations": {
+        "additionalProperties": false,
+        "description": "Full explanations bundle stored in the artifact.",
+        "properties": {
+          "decision_paths": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "$ref": "#/components/schemas/DecisionPath"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Paths"
+          },
+          "partial_dependence": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/PDPFeature"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Partial Dependence"
+          },
+          "shap": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShapResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "Explanations",
         "type": "object"
       },
       "FeatureSchema": {
@@ -130,6 +704,30 @@
         "title": "HealthBody",
         "type": "object"
       },
+      "HistogramBin": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "lower": {
+            "title": "Lower",
+            "type": "number"
+          },
+          "upper": {
+            "title": "Upper",
+            "type": "number"
+          }
+        },
+        "required": [
+          "lower",
+          "upper",
+          "count"
+        ],
+        "title": "HistogramBin",
+        "type": "object"
+      },
       "Importance": {
         "additionalProperties": false,
         "description": "Feature importance scores keyed by feature name.",
@@ -200,6 +798,62 @@
         "title": "Importance",
         "type": "object"
       },
+      "IngestResponse": {
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "model_id": {
+            "title": "Model Id",
+            "type": "string"
+          },
+          "model_name": {
+            "title": "Model Name",
+            "type": "string"
+          },
+          "sections": {
+            "$ref": "#/components/schemas/SectionStatus"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "model_id",
+          "model_name",
+          "version",
+          "artifact_id",
+          "sections"
+        ],
+        "title": "IngestResponse",
+        "type": "object"
+      },
+      "IntervalPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "lower": {
+            "title": "Lower",
+            "type": "number"
+          },
+          "predicted": {
+            "title": "Predicted",
+            "type": "number"
+          },
+          "upper": {
+            "title": "Upper",
+            "type": "number"
+          }
+        },
+        "required": [
+          "predicted",
+          "lower",
+          "upper"
+        ],
+        "title": "IntervalPoint",
+        "type": "object"
+      },
       "Model": {
         "additionalProperties": false,
         "description": "Booster-level metadata: objective, parameters, feature shape.\n\n`params` is typed as `dict[str, Any]` because LightGBM stores a mix of\nscalars, lists, and nested dicts; tightening this would require enumerating\nevery LightGBM parameter and would still need updates when LightGBM adds\nparameters. The booster contract is what enforces shape \u2014 the extractor\nforwards what LightGBM gives us.",
@@ -240,6 +894,484 @@
           "feature_schema"
         ],
         "title": "Model",
+        "type": "object"
+      },
+      "ModelDetail": {
+        "description": "Detail page data \u2014 full version history, newest first.",
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionSummary"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "versions",
+          "created_at"
+        ],
+        "title": "ModelDetail",
+        "type": "object"
+      },
+      "ModelSummary": {
+        "description": "Card data for the registry home view.",
+        "properties": {
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "framework": {
+            "title": "Framework",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "latest_version": {
+            "title": "Latest Version",
+            "type": "integer"
+          },
+          "latest_version_date": {
+            "title": "Latest Version Date",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "objective": {
+            "title": "Objective",
+            "type": "string"
+          },
+          "section_status": {
+            "$ref": "#/components/schemas/SectionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "latest_version",
+          "latest_version_date",
+          "framework",
+          "objective",
+          "section_status",
+          "created_at"
+        ],
+        "title": "ModelSummary",
+        "type": "object"
+      },
+      "MulticlassEval": {
+        "additionalProperties": false,
+        "description": "Multiclass classification evaluation metrics.",
+        "properties": {
+          "accuracy": {
+            "title": "Accuracy",
+            "type": "number"
+          },
+          "confusion_matrix": {
+            "items": {
+              "$ref": "#/components/schemas/ConfusionCell"
+            },
+            "title": "Confusion Matrix",
+            "type": "array"
+          },
+          "macro_f1": {
+            "title": "Macro F1",
+            "type": "number"
+          },
+          "objective": {
+            "const": "multiclass",
+            "title": "Objective",
+            "type": "string"
+          },
+          "per_class": {
+            "items": {
+              "$ref": "#/components/schemas/PerClassMetrics"
+            },
+            "title": "Per Class",
+            "type": "array"
+          }
+        },
+        "required": [
+          "objective",
+          "confusion_matrix",
+          "per_class",
+          "macro_f1",
+          "accuracy"
+        ],
+        "title": "MulticlassEval",
+        "type": "object"
+      },
+      "NDCGAtK": {
+        "additionalProperties": false,
+        "properties": {
+          "k": {
+            "title": "K",
+            "type": "integer"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "k",
+          "value"
+        ],
+        "title": "NDCGAtK",
+        "type": "object"
+      },
+      "PDPFeature": {
+        "additionalProperties": false,
+        "description": "Partial dependence profile for one feature.",
+        "properties": {
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "feature_index": {
+            "title": "Feature Index",
+            "type": "integer"
+          },
+          "grid": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Grid",
+            "type": "array"
+          },
+          "is_categorical": {
+            "title": "Is Categorical",
+            "type": "boolean"
+          },
+          "values": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Values",
+            "type": "array"
+          }
+        },
+        "required": [
+          "feature",
+          "feature_index",
+          "grid",
+          "values",
+          "is_categorical"
+        ],
+        "title": "PDPFeature",
+        "type": "object"
+      },
+      "PerClassMetrics": {
+        "additionalProperties": false,
+        "properties": {
+          "class_index": {
+            "title": "Class Index",
+            "type": "integer"
+          },
+          "f1": {
+            "title": "F1",
+            "type": "number"
+          },
+          "precision": {
+            "title": "Precision",
+            "type": "number"
+          },
+          "recall": {
+            "title": "Recall",
+            "type": "number"
+          },
+          "support": {
+            "title": "Support",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "class_index",
+          "precision",
+          "recall",
+          "f1",
+          "support"
+        ],
+        "title": "PerClassMetrics",
+        "type": "object"
+      },
+      "ROCPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "fpr": {
+            "title": "Fpr",
+            "type": "number"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "number"
+          },
+          "tpr": {
+            "title": "Tpr",
+            "type": "number"
+          }
+        },
+        "required": [
+          "fpr",
+          "tpr",
+          "threshold"
+        ],
+        "title": "ROCPoint",
+        "type": "object"
+      },
+      "RankingEval": {
+        "additionalProperties": false,
+        "description": "Ranking (lambdarank) evaluation metrics.",
+        "properties": {
+          "mean_average_precision": {
+            "title": "Mean Average Precision",
+            "type": "number"
+          },
+          "ndcg_at_k": {
+            "items": {
+              "$ref": "#/components/schemas/NDCGAtK"
+            },
+            "title": "Ndcg At K",
+            "type": "array"
+          },
+          "objective": {
+            "const": "lambdarank",
+            "title": "Objective",
+            "type": "string"
+          },
+          "per_query_ndcg": {
+            "items": {
+              "type": "number"
+            },
+            "title": "Per Query Ndcg",
+            "type": "array"
+          }
+        },
+        "required": [
+          "objective",
+          "ndcg_at_k",
+          "mean_average_precision",
+          "per_query_ndcg"
+        ],
+        "title": "RankingEval",
+        "type": "object"
+      },
+      "RegressionEval": {
+        "additionalProperties": false,
+        "description": "Regression evaluation metrics.",
+        "properties": {
+          "interval_band": {
+            "items": {
+              "$ref": "#/components/schemas/IntervalPoint"
+            },
+            "title": "Interval Band",
+            "type": "array"
+          },
+          "mae": {
+            "title": "Mae",
+            "type": "number"
+          },
+          "objective": {
+            "const": "regression",
+            "title": "Objective",
+            "type": "string"
+          },
+          "r2": {
+            "title": "R2",
+            "type": "number"
+          },
+          "residuals_histogram": {
+            "items": {
+              "$ref": "#/components/schemas/HistogramBin"
+            },
+            "title": "Residuals Histogram",
+            "type": "array"
+          },
+          "rmse": {
+            "title": "Rmse",
+            "type": "number"
+          },
+          "scatter": {
+            "items": {
+              "$ref": "#/components/schemas/ScatterPoint"
+            },
+            "title": "Scatter",
+            "type": "array"
+          }
+        },
+        "required": [
+          "objective",
+          "rmse",
+          "mae",
+          "r2",
+          "residuals_histogram",
+          "scatter",
+          "interval_band"
+        ],
+        "title": "RegressionEval",
+        "type": "object"
+      },
+      "ScatterPoint": {
+        "additionalProperties": false,
+        "properties": {
+          "actual": {
+            "title": "Actual",
+            "type": "number"
+          },
+          "predicted": {
+            "title": "Predicted",
+            "type": "number"
+          }
+        },
+        "required": [
+          "predicted",
+          "actual"
+        ],
+        "title": "ScatterPoint",
+        "type": "object"
+      },
+      "SectionStatus": {
+        "properties": {
+          "data_profile": {
+            "title": "Data Profile",
+            "type": "boolean"
+          },
+          "evaluation": {
+            "title": "Evaluation",
+            "type": "boolean"
+          },
+          "importance": {
+            "title": "Importance",
+            "type": "boolean"
+          },
+          "shap": {
+            "title": "Shap",
+            "type": "boolean"
+          },
+          "trees": {
+            "title": "Trees",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "trees",
+          "importance",
+          "shap",
+          "evaluation",
+          "data_profile"
+        ],
+        "title": "SectionStatus",
+        "type": "object"
+      },
+      "ShapResult": {
+        "additionalProperties": false,
+        "description": "SHAP values for a set of samples.\n\n`shap_values` has shape (n_samples, n_features) for binary and regression\nmodels. For multiclass it has shape (n_samples, n_classes, n_features),\nstored as a nested list.\n`expected_value` is a scalar for binary/regression; a list of per-class\nbase values for multiclass.",
+        "properties": {
+          "background_sample_count": {
+            "title": "Background Sample Count",
+            "type": "integer"
+          },
+          "expected_value": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Expected Value"
+          },
+          "feature_names": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Feature Names",
+            "type": "array"
+          },
+          "sample_count": {
+            "title": "Sample Count",
+            "type": "integer"
+          },
+          "shap_values": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "items": {
+                  "items": {
+                    "items": {
+                      "type": "number"
+                    },
+                    "type": "array"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              }
+            ],
+            "title": "Shap Values"
+          }
+        },
+        "required": [
+          "expected_value",
+          "shap_values",
+          "feature_names",
+          "sample_count",
+          "background_sample_count"
+        ],
+        "title": "ShapResult",
         "type": "object"
       },
       "Source": {
@@ -430,6 +1562,45 @@
         ],
         "title": "ValidationError",
         "type": "object"
+      },
+      "VersionSummary": {
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "created_at": {
+            "title": "Created At",
+            "type": "string"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "section_status": {
+            "$ref": "#/components/schemas/SectionStatus"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "artifact_id",
+          "section_status",
+          "notes",
+          "created_at"
+        ],
+        "title": "VersionSummary",
+        "type": "object"
       }
     }
   },
@@ -440,6 +1611,44 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/artifacts/ingest": {
+      "post": {
+        "operationId": "ingest_artifacts_ingest_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_artifacts_ingest_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IngestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Ingest"
+      }
+    },
     "/artifacts/{artifact_id}": {
       "get": {
         "description": "Return the canonical artifact for `artifact_id`.",
@@ -478,6 +1687,190 @@
           }
         },
         "summary": "Get Artifact",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/data-profile": {
+      "get": {
+        "description": "Return the data profile section for `artifact_id`.\n\nReturns column distributions, missingness rates, and pairwise Pearson\ncorrelations from the training table. When no training table was provided\nat extraction time, returns HTTP 200 with a detail message.",
+        "operationId": "get_data_profile_artifacts__artifact_id__data_profile_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Data Profile Artifacts  Artifact Id  Data Profile Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Data Profile",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/enrich": {
+      "patch": {
+        "description": "Add a data profile section to an existing artifact.\n\nSHAP and evaluation enrichment require re-ingesting the model file via\nPOST /artifacts/ingest \u2014 the API layer cannot import LightGBM (invariant #2).",
+        "operationId": "enrich_artifacts__artifact_id__enrich_patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_enrich_artifacts__artifact_id__enrich_patch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrichResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Enrich"
+      }
+    },
+    "/artifacts/{artifact_id}/evaluation": {
+      "get": {
+        "description": "Return the evaluation section for `artifact_id`.\n\nReturns objective-aware evaluation metrics (ROC/confusion matrix for\nbinary, NxN confusion + per-class metrics for multiclass, residuals\nfor regression, nDCG@k for ranking). When evaluation was not computed,\nreturns HTTP 200 with a detail message.",
+        "operationId": "get_evaluation_artifacts__artifact_id__evaluation_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Evaluation Artifacts  Artifact Id  Evaluation Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Evaluation",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/explanations": {
+      "get": {
+        "description": "Return the explanations section for `artifact_id`.\n\nReturns the SHAP values, decision paths, and partial dependence profiles\nstored at extraction time. When explanations were not computed, returns\nHTTP 200 with a detail message (not 404 \u2014 the artifact exists).",
+        "operationId": "get_explanations_artifacts__artifact_id__explanations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Get Explanations Artifacts  Artifact Id  Explanations Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Explanations",
         "tags": [
           "artifacts"
         ]
@@ -558,6 +1951,183 @@
         "summary": "Health",
         "tags": [
           "system"
+        ]
+      }
+    },
+    "/models": {
+      "get": {
+        "operationId": "list_models_models_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "framework",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Framework"
+            }
+          },
+          {
+            "in": "query",
+            "name": "objective",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Objective"
+            }
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "required": false,
+            "schema": {
+              "default": 0,
+              "title": "Offset",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ModelSummary"
+                  },
+                  "title": "Response List Models Models Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Models",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/models/{model_id}": {
+      "get": {
+        "operationId": "get_model_models__model_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelDetail"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Model",
+        "tags": [
+          "models"
+        ]
+      }
+    },
+    "/models/{model_id}/versions": {
+      "get": {
+        "operationId": "list_versions_models__model_id__versions_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "model_id",
+            "required": true,
+            "schema": {
+              "title": "Model Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/VersionSummary"
+                  },
+                  "title": "Response List Versions Models  Model Id  Versions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Versions",
+        "tags": [
+          "models"
         ]
       }
     }

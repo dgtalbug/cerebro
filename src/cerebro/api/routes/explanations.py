@@ -20,8 +20,7 @@ from cerebro.schema.v1 import CerebroArtifact
 router = APIRouter(tags=["artifacts"])
 
 _NO_EXPLANATIONS_DETAIL = (
-    "explanations were not computed — "
-    "no samples were provided at extraction time"
+    "explanations were not computed — no samples were provided at extraction time"
 )
 
 

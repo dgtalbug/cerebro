@@ -16,6 +16,8 @@ from cerebro.exceptions import (
     ArtifactNotFoundError,
     CerebroError,
     CorruptArtifactError,
+    EnrichmentError,
+    ModelNotFoundError,
     RegistryError,
     SchemaValidationError,
     UnsupportedFrameworkError,
@@ -31,10 +33,12 @@ _LOG = get_logger(__name__)
 # future `ArtifactNotFoundError` subclass still maps to 404).
 _STATUS_BY_EXCEPTION: dict[type[CerebroError], int] = {
     ArtifactNotFoundError: 404,
+    ModelNotFoundError: 404,
     CorruptArtifactError: 422,
     SchemaValidationError: 422,
     UnsupportedObjectiveError: 422,
     UnsupportedFrameworkError: 422,
+    EnrichmentError: 400,
     RegistryError: 500,
 }
 

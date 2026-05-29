@@ -188,18 +188,22 @@ def extract(
             typer.echo("error: --samples and --labels must be used together", err=True)
             raise typer.Exit(code=1)
         from cerebro.data.loader import load_table
+
         with load_table(samples) as h:
             np_samples = h.relation.fetchnumpy()
-            np_samples = np.column_stack(list(np_samples.values()))
+            np_samples = np.column_stack(list(np_samples.values()))  # type: ignore[union-attr]
         with load_table(labels) as h:
             cols = h.relation.fetchnumpy()
             np_labels = next(iter(cols.values()))
 
     if eval_samples is not None or eval_labels is not None:
         if eval_samples is None or eval_labels is None:
-            typer.echo("error: --eval-samples and --eval-labels required together", err=True)  # noqa: E501
+            typer.echo(
+                "error: --eval-samples and --eval-labels required together", err=True
+            )
             raise typer.Exit(code=1)
         from cerebro.data.loader import load_table
+
         with load_table(eval_samples) as h:
             np_eval_samples = np.column_stack(list(h.relation.fetchnumpy().values()))
         with load_table(eval_labels) as h:
@@ -231,6 +235,92 @@ def validate(
     """Read and validate a canonical artifact end to end."""
     loaded = read_artifact(artifact)
     typer.echo(f"valid: schema={loaded.schema_version} {_format_summary(loaded)}")
+
+
+@app.command()
+@_handle_cerebro_errors
+def index(
+    directory: Annotated[
+        Path,
+        typer.Option(
+            "--directory",
+            "-d",
+            help="Root directory containing model/version sub-directories.",
+        ),
+    ] = Path("./data/artifacts"),
+    rebuild: Annotated[
+        bool,
+        typer.Option(
+            "--rebuild",
+            help=(
+                "Drop all tables, reinitialise from v2 schema, "
+                "and rescan from scratch. Required after upgrading from schema v1."
+            ),
+        ),
+    ] = False,
+    db: Annotated[
+        Path,
+        typer.Option(
+            "--db",
+            help="Path to the SQLite registry database.",
+        ),
+    ] = Path("./data/cerebro.db"),
+) -> None:
+    """Index (or re-index) .cerebro.json artifacts into the registry.
+
+    Expects the layout: <directory>/<model_name>/v<N>/<file>.cerebro.json
+    Files not matching this layout are skipped with a warning.
+
+    Without --rebuild: registers new files and updates last_seen_at for existing ones.
+    With --rebuild: drops all tables, reinitialises from v2 schema, and rescans.
+    """
+    import os
+
+    os.environ.setdefault("CEREBRO_DB_PATH", str(db))
+
+    from cerebro.storage.registry import Registry
+
+    db.parent.mkdir(parents=True, exist_ok=True)
+    registry = Registry(db)
+    registry.init()
+
+    if rebuild:
+        typer.echo(f"rebuild: dropping and reinitialising {db} …")
+        report = registry.rebuild_from_files(directory)
+        typer.echo(
+            f"rebuild complete: "
+            f"models={report.models_created} "
+            f"versions={report.versions_created} "
+            f"artifacts={report.artifacts_registered} "
+            f"skipped={len(report.skipped_paths)}"
+        )
+        if report.skipped_paths:
+            for path in report.skipped_paths:
+                typer.echo(f"  skipped: {path}", err=True)
+    else:
+        if not directory.exists():
+            typer.echo(f"error: directory {directory} does not exist", err=True)
+            raise typer.Exit(code=1)
+        count = 0
+        for cerebro_file in sorted(directory.rglob("*.cerebro.json")):
+            import gzip as _gzip
+
+            try:
+                raw = _gzip.decompress(cerebro_file.read_bytes())
+            except Exception:
+                typer.echo(f"  skip (corrupt): {cerebro_file}", err=True)
+                continue
+            import hashlib
+
+            sha256 = hashlib.sha256(raw).hexdigest()
+            artifact_id = sha256[:7]
+            registry.update_artifact_sections(
+                artifact_id,
+                content_sha256=sha256,
+                size_bytes=len(cerebro_file.read_bytes()),
+            )
+            count += 1
+        typer.echo(f"index: updated last_seen_at for {count} artifact(s)")
 
 
 if __name__ == "__main__":

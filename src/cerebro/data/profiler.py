@@ -42,7 +42,7 @@ def profile_table(handle: TableHandle) -> DataProfile:
 
     columns_info = rel.dtypes
     column_names: list[str] = rel.columns
-    row_count: int = rel.count("*").fetchone()[0]  # type: ignore[index]
+    row_count: int = rel.count("*").fetchone()[0]
 
     column_profiles: list[ColumnProfile] = []
     numeric_columns: list[str] = []
@@ -89,10 +89,11 @@ def profile_table(handle: TableHandle) -> DataProfile:
             )
         )
 
+    correlations: list[CorrelationCell]
     if len(numeric_columns) >= 2:
         correlations = _pearson_correlations(conn, numeric_columns)
     else:
-        correlations: list[CorrelationCell] = []
+        correlations = []
 
     log.info(
         "table.profiled",
@@ -113,7 +114,14 @@ def _is_numeric_type(dtype: str) -> bool:
     """Return True for DuckDB numeric types (integer variants and floats)."""
     lower = dtype.lower()
     numeric_markers = (
-        "int", "float", "double", "decimal", "real", "numeric", "hugeint", "ubigint"
+        "int",
+        "float",
+        "double",
+        "decimal",
+        "real",
+        "numeric",
+        "hugeint",
+        "ubigint",
     )
     return any(m in lower for m in numeric_markers)
 
@@ -143,8 +151,10 @@ def _numeric_stats(conn: Any, col_name: str) -> dict[str, float | None]:
         return float(v)
 
     return {
-        "min": _safe(row[0]), "max": _safe(row[1]),
-        "mean": _safe(row[2]), "std": _safe(row[3]),
+        "min": _safe(row[0]),
+        "max": _safe(row[1]),
+        "mean": _safe(row[2]),
+        "std": _safe(row[3]),
     }
 
 

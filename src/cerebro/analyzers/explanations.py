@@ -121,7 +121,7 @@ def _select_background(
 
     if labels is None or len(np.unique(labels)) < 2:
         idx = rng.sample(range(len(samples)), n)
-        return samples[np.array(idx)]
+        return samples[np.array(idx)]  # type: ignore[no-any-return]
 
     # Stratified by quintile — works for continuous and categorical labels
     quintiles = np.percentile(labels, [20, 40, 60, 80])
@@ -142,7 +142,7 @@ def _select_background(
         pool = [i for i in range(len(samples)) if i not in set(chosen)]
         chosen.extend(rng.sample(pool, min(remaining, len(pool))))
 
-    return samples[np.array(chosen[:n])]
+    return samples[np.array(chosen[:n])]  # type: ignore[no-any-return]
 
 
 # ---------------------------------------------------------------------------
@@ -211,7 +211,7 @@ def _count_features(node: Any) -> int:
         return 0
     left_max = _count_features(node.left)
     right_max = _count_features(node.right)
-    return max(node.split_feature + 1, left_max, right_max)
+    return max(node.split_feature + 1, left_max, right_max)  # type: ignore[no-any-return]
 
 
 # ---------------------------------------------------------------------------

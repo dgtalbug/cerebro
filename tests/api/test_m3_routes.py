@@ -26,6 +26,7 @@ def client_with_artifact(
     artifact_dir: Path, binary_artifact: CerebroArtifact
 ) -> TestClient:
     from cerebro.api.app import create_app
+
     write_artifact(binary_artifact, artifact_dir / f"{_ARTIFACT_ID}.cerebro.json")
     app = create_app()
     app.dependency_overrides[get_artifact_dir] = lambda: artifact_dir

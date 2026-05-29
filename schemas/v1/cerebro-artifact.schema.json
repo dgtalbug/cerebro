@@ -1,5 +1,420 @@
 {
   "$defs": {
+    "BinaryEval": {
+      "additionalProperties": false,
+      "description": "Binary classification evaluation metrics.",
+      "properties": {
+        "auc": {
+          "title": "Auc",
+          "type": "number"
+        },
+        "confusion_matrix": {
+          "items": {
+            "$ref": "#/$defs/ConfusionCell"
+          },
+          "title": "Confusion Matrix",
+          "type": "array"
+        },
+        "f1": {
+          "title": "F1",
+          "type": "number"
+        },
+        "objective": {
+          "const": "binary",
+          "title": "Objective",
+          "type": "string"
+        },
+        "precision": {
+          "title": "Precision",
+          "type": "number"
+        },
+        "recall": {
+          "title": "Recall",
+          "type": "number"
+        },
+        "roc_curve": {
+          "items": {
+            "$ref": "#/$defs/ROCPoint"
+          },
+          "title": "Roc Curve",
+          "type": "array"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "number"
+        }
+      },
+      "required": [
+        "objective",
+        "auc",
+        "roc_curve",
+        "confusion_matrix",
+        "threshold",
+        "precision",
+        "recall",
+        "f1"
+      ],
+      "title": "BinaryEval",
+      "type": "object"
+    },
+    "CategoryCount": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "count"
+      ],
+      "title": "CategoryCount",
+      "type": "object"
+    },
+    "ColumnProfile": {
+      "additionalProperties": false,
+      "description": "Per-column statistical profile.",
+      "properties": {
+        "dtype": {
+          "title": "Dtype",
+          "type": "string"
+        },
+        "histogram": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/HistogramBin"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Histogram"
+        },
+        "is_categorical": {
+          "title": "Is Categorical",
+          "type": "boolean"
+        },
+        "is_numeric": {
+          "title": "Is Numeric",
+          "type": "boolean"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "mean": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mean"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "missingness": {
+          "title": "Missingness",
+          "type": "number"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "null_count": {
+          "title": "Null Count",
+          "type": "integer"
+        },
+        "std": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Std"
+        },
+        "top_categories": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/CategoryCount"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Top Categories"
+        },
+        "total_rows": {
+          "title": "Total Rows",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "dtype",
+        "is_numeric",
+        "is_categorical",
+        "total_rows",
+        "null_count",
+        "missingness"
+      ],
+      "title": "ColumnProfile",
+      "type": "object"
+    },
+    "ConfusionCell": {
+      "additionalProperties": false,
+      "properties": {
+        "actual": {
+          "title": "Actual",
+          "type": "integer"
+        },
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "predicted": {
+          "title": "Predicted",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "predicted",
+        "actual",
+        "count"
+      ],
+      "title": "ConfusionCell",
+      "type": "object"
+    },
+    "CorrelationCell": {
+      "additionalProperties": false,
+      "properties": {
+        "feature_a": {
+          "title": "Feature A",
+          "type": "string"
+        },
+        "feature_b": {
+          "title": "Feature B",
+          "type": "string"
+        },
+        "pearson": {
+          "title": "Pearson",
+          "type": "number"
+        }
+      },
+      "required": [
+        "feature_a",
+        "feature_b",
+        "pearson"
+      ],
+      "title": "CorrelationCell",
+      "type": "object"
+    },
+    "DataProfile": {
+      "additionalProperties": false,
+      "description": "Statistical summary of the training table.",
+      "properties": {
+        "column_count": {
+          "title": "Column Count",
+          "type": "integer"
+        },
+        "columns": {
+          "items": {
+            "$ref": "#/$defs/ColumnProfile"
+          },
+          "title": "Columns",
+          "type": "array"
+        },
+        "correlations": {
+          "items": {
+            "$ref": "#/$defs/CorrelationCell"
+          },
+          "title": "Correlations",
+          "type": "array"
+        },
+        "row_count": {
+          "title": "Row Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "row_count",
+        "column_count",
+        "columns",
+        "correlations"
+      ],
+      "title": "DataProfile",
+      "type": "object"
+    },
+    "DecisionPath": {
+      "additionalProperties": false,
+      "description": "Traced path through a single tree for one sample.",
+      "properties": {
+        "leaf_value": {
+          "title": "Leaf Value",
+          "type": "number"
+        },
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/DecisionStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        },
+        "tree_index": {
+          "title": "Tree Index",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "tree_index",
+        "steps",
+        "leaf_value"
+      ],
+      "title": "DecisionPath",
+      "type": "object"
+    },
+    "DecisionStep": {
+      "additionalProperties": false,
+      "description": "One split node on the path from root to leaf.",
+      "properties": {
+        "decision_type": {
+          "title": "Decision Type",
+          "type": "string"
+        },
+        "feature_index": {
+          "title": "Feature Index",
+          "type": "integer"
+        },
+        "feature_name": {
+          "title": "Feature Name",
+          "type": "string"
+        },
+        "node_id": {
+          "title": "Node Id",
+          "type": "integer"
+        },
+        "sample_value": {
+          "title": "Sample Value",
+          "type": "number"
+        },
+        "threshold": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Threshold"
+        },
+        "went_left": {
+          "title": "Went Left",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "node_id",
+        "feature_index",
+        "feature_name",
+        "threshold",
+        "decision_type",
+        "sample_value",
+        "went_left"
+      ],
+      "title": "DecisionStep",
+      "type": "object"
+    },
+    "Explanations": {
+      "additionalProperties": false,
+      "description": "Full explanations bundle stored in the artifact.",
+      "properties": {
+        "decision_paths": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "$ref": "#/$defs/DecisionPath"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decision Paths"
+        },
+        "partial_dependence": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/PDPFeature"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Partial Dependence"
+        },
+        "shap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShapResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Explanations",
+      "type": "object"
+    },
     "FeatureSchema": {
       "additionalProperties": false,
       "description": "The features the model sees, in input order.\n\n`monotone_constraints` has the same length as `names`. A value of 0 means\nno monotonicity is enforced; +1 / -1 enforce increasing / decreasing\nrelationships between the feature and the prediction.",
@@ -32,6 +447,30 @@
         "monotone_constraints"
       ],
       "title": "FeatureSchema",
+      "type": "object"
+    },
+    "HistogramBin": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "lower": {
+          "title": "Lower",
+          "type": "number"
+        },
+        "upper": {
+          "title": "Upper",
+          "type": "number"
+        }
+      },
+      "required": [
+        "lower",
+        "upper",
+        "count"
+      ],
+      "title": "HistogramBin",
       "type": "object"
     },
     "Importance": {
@@ -106,6 +545,30 @@
       "title": "Importance",
       "type": "object"
     },
+    "IntervalPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "title": "Lower",
+          "type": "number"
+        },
+        "predicted": {
+          "title": "Predicted",
+          "type": "number"
+        },
+        "upper": {
+          "title": "Upper",
+          "type": "number"
+        }
+      },
+      "required": [
+        "predicted",
+        "lower",
+        "upper"
+      ],
+      "title": "IntervalPoint",
+      "type": "object"
+    },
     "Model": {
       "additionalProperties": false,
       "description": "Booster-level metadata: objective, parameters, feature shape.\n\n`params` is typed as `dict[str, Any]` because LightGBM stores a mix of\nscalars, lists, and nested dicts; tightening this would require enumerating\nevery LightGBM parameter and would still need updates when LightGBM adds\nparameters. The booster contract is what enforces shape \u2014 the extractor\nforwards what LightGBM gives us.",
@@ -146,6 +609,347 @@
         "feature_schema"
       ],
       "title": "Model",
+      "type": "object"
+    },
+    "MulticlassEval": {
+      "additionalProperties": false,
+      "description": "Multiclass classification evaluation metrics.",
+      "properties": {
+        "accuracy": {
+          "title": "Accuracy",
+          "type": "number"
+        },
+        "confusion_matrix": {
+          "items": {
+            "$ref": "#/$defs/ConfusionCell"
+          },
+          "title": "Confusion Matrix",
+          "type": "array"
+        },
+        "macro_f1": {
+          "title": "Macro F1",
+          "type": "number"
+        },
+        "objective": {
+          "const": "multiclass",
+          "title": "Objective",
+          "type": "string"
+        },
+        "per_class": {
+          "items": {
+            "$ref": "#/$defs/PerClassMetrics"
+          },
+          "title": "Per Class",
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective",
+        "confusion_matrix",
+        "per_class",
+        "macro_f1",
+        "accuracy"
+      ],
+      "title": "MulticlassEval",
+      "type": "object"
+    },
+    "NDCGAtK": {
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "title": "K",
+          "type": "integer"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "k",
+        "value"
+      ],
+      "title": "NDCGAtK",
+      "type": "object"
+    },
+    "PDPFeature": {
+      "additionalProperties": false,
+      "description": "Partial dependence profile for one feature.",
+      "properties": {
+        "feature": {
+          "title": "Feature",
+          "type": "string"
+        },
+        "feature_index": {
+          "title": "Feature Index",
+          "type": "integer"
+        },
+        "grid": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Grid",
+          "type": "array"
+        },
+        "is_categorical": {
+          "title": "Is Categorical",
+          "type": "boolean"
+        },
+        "values": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "feature",
+        "feature_index",
+        "grid",
+        "values",
+        "is_categorical"
+      ],
+      "title": "PDPFeature",
+      "type": "object"
+    },
+    "PerClassMetrics": {
+      "additionalProperties": false,
+      "properties": {
+        "class_index": {
+          "title": "Class Index",
+          "type": "integer"
+        },
+        "f1": {
+          "title": "F1",
+          "type": "number"
+        },
+        "precision": {
+          "title": "Precision",
+          "type": "number"
+        },
+        "recall": {
+          "title": "Recall",
+          "type": "number"
+        },
+        "support": {
+          "title": "Support",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "class_index",
+        "precision",
+        "recall",
+        "f1",
+        "support"
+      ],
+      "title": "PerClassMetrics",
+      "type": "object"
+    },
+    "ROCPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "fpr": {
+          "title": "Fpr",
+          "type": "number"
+        },
+        "threshold": {
+          "title": "Threshold",
+          "type": "number"
+        },
+        "tpr": {
+          "title": "Tpr",
+          "type": "number"
+        }
+      },
+      "required": [
+        "fpr",
+        "tpr",
+        "threshold"
+      ],
+      "title": "ROCPoint",
+      "type": "object"
+    },
+    "RankingEval": {
+      "additionalProperties": false,
+      "description": "Ranking (lambdarank) evaluation metrics.",
+      "properties": {
+        "mean_average_precision": {
+          "title": "Mean Average Precision",
+          "type": "number"
+        },
+        "ndcg_at_k": {
+          "items": {
+            "$ref": "#/$defs/NDCGAtK"
+          },
+          "title": "Ndcg At K",
+          "type": "array"
+        },
+        "objective": {
+          "const": "lambdarank",
+          "title": "Objective",
+          "type": "string"
+        },
+        "per_query_ndcg": {
+          "items": {
+            "type": "number"
+          },
+          "title": "Per Query Ndcg",
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective",
+        "ndcg_at_k",
+        "mean_average_precision",
+        "per_query_ndcg"
+      ],
+      "title": "RankingEval",
+      "type": "object"
+    },
+    "RegressionEval": {
+      "additionalProperties": false,
+      "description": "Regression evaluation metrics.",
+      "properties": {
+        "interval_band": {
+          "items": {
+            "$ref": "#/$defs/IntervalPoint"
+          },
+          "title": "Interval Band",
+          "type": "array"
+        },
+        "mae": {
+          "title": "Mae",
+          "type": "number"
+        },
+        "objective": {
+          "const": "regression",
+          "title": "Objective",
+          "type": "string"
+        },
+        "r2": {
+          "title": "R2",
+          "type": "number"
+        },
+        "residuals_histogram": {
+          "items": {
+            "$ref": "#/$defs/HistogramBin"
+          },
+          "title": "Residuals Histogram",
+          "type": "array"
+        },
+        "rmse": {
+          "title": "Rmse",
+          "type": "number"
+        },
+        "scatter": {
+          "items": {
+            "$ref": "#/$defs/ScatterPoint"
+          },
+          "title": "Scatter",
+          "type": "array"
+        }
+      },
+      "required": [
+        "objective",
+        "rmse",
+        "mae",
+        "r2",
+        "residuals_histogram",
+        "scatter",
+        "interval_band"
+      ],
+      "title": "RegressionEval",
+      "type": "object"
+    },
+    "ScatterPoint": {
+      "additionalProperties": false,
+      "properties": {
+        "actual": {
+          "title": "Actual",
+          "type": "number"
+        },
+        "predicted": {
+          "title": "Predicted",
+          "type": "number"
+        }
+      },
+      "required": [
+        "predicted",
+        "actual"
+      ],
+      "title": "ScatterPoint",
+      "type": "object"
+    },
+    "ShapResult": {
+      "additionalProperties": false,
+      "description": "SHAP values for a set of samples.\n\n`shap_values` has shape (n_samples, n_features) for binary and regression\nmodels. For multiclass it has shape (n_samples, n_classes, n_features),\nstored as a nested list.\n`expected_value` is a scalar for binary/regression; a list of per-class\nbase values for multiclass.",
+      "properties": {
+        "background_sample_count": {
+          "title": "Background Sample Count",
+          "type": "integer"
+        },
+        "expected_value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Expected Value"
+        },
+        "feature_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Feature Names",
+          "type": "array"
+        },
+        "sample_count": {
+          "title": "Sample Count",
+          "type": "integer"
+        },
+        "shap_values": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "items": {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          ],
+          "title": "Shap Values"
+        }
+      },
+      "required": [
+        "expected_value",
+        "shap_values",
+        "feature_names",
+        "sample_count",
+        "background_sample_count"
+      ],
+      "title": "ShapResult",
       "type": "object"
     },
     "Source": {
@@ -308,15 +1112,48 @@
   "additionalProperties": false,
   "description": "The whole canonical artifact \u2014 the contract every layer agrees on.",
   "properties": {
+    "data_profile": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/DataProfile"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
     "evaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BinaryEval"
+        },
+        {
+          "$ref": "#/$defs/MulticlassEval"
+        },
+        {
+          "$ref": "#/$defs/RegressionEval"
+        },
+        {
+          "$ref": "#/$defs/RankingEval"
+        },
+        {
+          "type": "null"
+        }
+      ],
       "default": null,
-      "title": "Evaluation",
-      "type": "null"
+      "title": "Evaluation"
     },
     "explanations": {
-      "default": null,
-      "title": "Explanations",
-      "type": "null"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Explanations"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "importance": {
       "$ref": "#/$defs/Importance"

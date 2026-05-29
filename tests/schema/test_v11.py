@@ -96,7 +96,10 @@ def test_artifact_with_data_profile_validates(
                 "missingness": 0.0,
                 "histogram": [{"lower": 300.0, "upper": 850.0, "count": 1000}],
                 "top_categories": None,
-                "min": 300.0, "max": 850.0, "mean": 650.0, "std": 80.0,
+                "min": 300.0,
+                "max": 850.0,
+                "mean": 650.0,
+                "std": 80.0,
             },
             {
                 "name": "annual_income",
@@ -108,12 +111,18 @@ def test_artifact_with_data_profile_validates(
                 "missingness": 0.02,
                 "histogram": None,
                 "top_categories": None,
-                "min": 10000.0, "max": 200000.0,
-                "mean": 75000.0, "std": 30000.0,
+                "min": 10000.0,
+                "max": 200000.0,
+                "mean": 75000.0,
+                "std": 30000.0,
             },
         ],
         "correlations": [
-            {"feature_a": "credit_score", "feature_b": "annual_income", "pearson": 0.45},  # noqa: E501
+            {
+                "feature_a": "credit_score",
+                "feature_b": "annual_income",
+                "pearson": 0.45,
+            },
         ],
     }
     art = CerebroArtifact.model_validate(d)
