@@ -191,15 +191,14 @@ async def ingest(
 @router.patch("/artifacts/{artifact_id}/enrich", response_model=EnrichResponse)
 async def enrich(
     artifact_id: str,
-    model_file: Annotated[
-        UploadFile | None,
-        File(description="Model .txt file (required for SHAP/evaluation)"),
-    ] = None,
-    samples: Annotated[UploadFile | None, File()] = None,
-    labels: Annotated[UploadFile | None, File()] = None,
     training_table: Annotated[UploadFile | None, File()] = None,
     registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> EnrichResponse:
+    """Add a data profile section to an existing artifact.
+
+    SHAP and evaluation enrichment require re-ingesting the model file via
+    POST /artifacts/ingest — the API layer cannot import LightGBM (invariant #2).
+    """
     row = registry.get_artifact_row(artifact_id)
     if row is None:
         raise ArtifactNotFoundError(
@@ -210,88 +209,18 @@ async def enrich(
     artifact_path = Path(row["path"])
     existing = read_artifact(artifact_path)
 
-    has_model = model_file is not None
-    has_samples = samples is not None
-    has_labels = labels is not None
-    has_training = training_table is not None
+    needs_profile = training_table is not None and existing.data_profile is None
 
-    needs_shap = has_model and has_samples and existing.explanations is None
-    needs_eval = (
-        has_model and has_samples and has_labels and existing.evaluation is None
-    )
-    needs_profile = has_training and existing.data_profile is None
-
-    if not (needs_shap or needs_eval or needs_profile):
+    if not needs_profile:
         raise EnrichmentError(
-            "artifact already has all requested sections"
-            " or required files were not provided",
+            "artifact already has a data profile or no training table was provided",
             context={"artifact_id": artifact_id},
         )
 
-    model_bytes = await _read(model_file)
-    samples_bytes = await _read(samples)
-    labels_bytes = await _read(labels)
     training_table_bytes = await _read(training_table)
-
-    np_samples = _to_ndarray(samples_bytes, "samples")
-    np_labels = _to_ndarray(labels_bytes, "labels")
 
     sections_added: list[str] = []
     updated_data = existing.model_dump()
-
-    if needs_shap or needs_eval:
-        with tempfile.TemporaryDirectory() as tmp:
-            model_path = Path(tmp) / (model_file.filename or "model.txt")  # type: ignore[union-attr]
-            model_path.write_bytes(model_bytes)  # type: ignore[arg-type]
-
-            try:
-                import lightgbm as lgb
-
-                booster = lgb.Booster(model_file=str(model_path))
-            except Exception as exc:
-                raise EnrichmentError(
-                    "could not load model file for enrichment",
-                    context={"artifact_id": artifact_id},
-                ) from exc
-
-            if needs_shap and np_samples is not None:
-                try:
-                    from cerebro.analyzers.explanations import build_explanations
-
-                    explanations = build_explanations(
-                        booster=booster,
-                        canonical_trees=existing.trees,
-                        samples=np_samples,
-                        labels=np_labels,
-                        feature_names=existing.model.feature_schema.names,
-                        gain_importance=existing.importance.gain,
-                        categorical_indices=existing.model.feature_schema.categorical_indices,
-                    )
-                    updated_data["explanations"] = explanations.model_dump()
-                    sections_added.append("shap")
-                except Exception as exc:
-                    raise EnrichmentError(
-                        "SHAP computation failed",
-                        context={"artifact_id": artifact_id},
-                    ) from exc
-
-            if needs_eval and np_samples is not None and np_labels is not None:
-                try:
-                    from cerebro.analyzers.evaluation import evaluate
-
-                    predictions = booster.predict(np_samples)
-                    evaluation = evaluate(
-                        np.array(predictions),
-                        np_labels,
-                        existing.model.objective,
-                    )
-                    updated_data["evaluation"] = evaluation.model_dump()
-                    sections_added.append("evaluation")
-                except Exception as exc:
-                    raise EnrichmentError(
-                        "evaluation computation failed",
-                        context={"artifact_id": artifact_id},
-                    ) from exc
 
     if needs_profile and training_table_bytes is not None:
         with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:

@@ -129,6 +129,10 @@ source_modules = [
     "cerebro.agent",
 ]
 forbidden_modules = ["lightgbm"]
+# ingest is a write/extraction endpoint, not a consumption route.
+ignore_imports = [
+    "cerebro.api.routes.ingest -> cerebro.extractors",
+]
 
 [[tool.importlinter.contracts]]
 name = "Consumption must not import the extractor implementation"
@@ -139,3 +143,7 @@ source_modules = [
     "cerebro.agent",
 ]
 forbidden_modules = ["cerebro.extractors"]
+# ingest is a write/extraction endpoint, not a consumption route.
+ignore_imports = [
+    "cerebro.api.routes.ingest -> cerebro.extractors",
+]
