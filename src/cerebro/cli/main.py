@@ -191,7 +191,7 @@ def extract(
 
         with load_table(samples) as h:
             np_samples = h.relation.fetchnumpy()
-            np_samples = np.column_stack(list(np_samples.values()))
+            np_samples = np.column_stack(list(np_samples.values()))  # type: ignore[union-attr]
         with load_table(labels) as h:
             cols = h.relation.fetchnumpy()
             np_labels = next(iter(cols.values()))

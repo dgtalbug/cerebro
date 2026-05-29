@@ -42,7 +42,7 @@ def profile_table(handle: TableHandle) -> DataProfile:
 
     columns_info = rel.dtypes
     column_names: list[str] = rel.columns
-    row_count: int = rel.count("*").fetchone()[0]  # type: ignore[index]
+    row_count: int = rel.count("*").fetchone()[0]
 
     column_profiles: list[ColumnProfile] = []
     numeric_columns: list[str] = []
@@ -89,10 +89,11 @@ def profile_table(handle: TableHandle) -> DataProfile:
             )
         )
 
+    correlations: list[CorrelationCell]
     if len(numeric_columns) >= 2:
         correlations = _pearson_correlations(conn, numeric_columns)
     else:
-        correlations: list[CorrelationCell] = []
+        correlations = []
 
     log.info(
         "table.profiled",

@@ -25,7 +25,7 @@ async def list_models(
     objective: str | None = None,
     offset: int = 0,
     limit: int = 50,
-    registry: Annotated[Registry, Depends(get_registry)] = ...,
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> list[ModelSummary]:
     return registry.list_models(
         offset=offset, limit=limit, framework=framework, objective=objective
@@ -35,7 +35,7 @@ async def list_models(
 @router.get("/models/{model_id}", response_model=ModelDetail)
 async def get_model(
     model_id: str,
-    registry: Annotated[Registry, Depends(get_registry)] = ...,
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> ModelDetail:
     model = registry.get_model(model_id)
     if model is None:
@@ -49,7 +49,7 @@ async def get_model(
 @router.get("/models/{model_id}/versions", response_model=list[VersionSummary])
 async def list_versions(
     model_id: str,
-    registry: Annotated[Registry, Depends(get_registry)] = ...,
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> list[VersionSummary]:
     model = registry.get_model(model_id)
     if model is None:

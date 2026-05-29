@@ -71,6 +71,7 @@ def evaluate(
     Raises:
         UnsupportedObjectiveError: For unknown objective strings.
     """
+    result: BinaryEval | MulticlassEval | RegressionEval | RankingEval
     if objective == "binary":
         result = _evaluate_binary(predictions, labels)
     elif objective == "multiclass":
