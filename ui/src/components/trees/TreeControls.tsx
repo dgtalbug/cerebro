@@ -11,6 +11,7 @@ interface Props {
   depth: number | null;
   nodeCount: number;
   leafCount: number;
+  treeMaxDepth: number;
   onTreeChange: (index: number) => void;
   onDepthChange: (depth: number | null) => void;
 }
@@ -28,13 +29,15 @@ export function TreeControls({
   depth,
   nodeCount,
   leafCount,
+  treeMaxDepth,
   onTreeChange,
   onDepthChange,
 }: Props) {
   return (
     <div className="tree-controls">
+      {/* Tree selector */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label>
+        <label style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-dim)" }}>
           Tree
         </label>
         <select
@@ -51,9 +54,10 @@ export function TreeControls({
         </select>
       </div>
 
+      {/* Depth filter */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label>
-          Depth
+        <label style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-dim)" }}>
+          Show depth
         </label>
         <div style={{ display: "flex", gap: "4px" }}>
           {DEPTH_OPTIONS.map((opt) => (
@@ -79,26 +83,23 @@ export function TreeControls({
         </div>
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label>
-          Highlight
-        </label>
-        <select defaultValue="leaf">
-          <option value="leaf">Leaf value</option>
-          <option value="samples">Sample count</option>
-          <option value="gain">Gain</option>
-        </select>
-      </div>
-
+      {/* Stats */}
       <div
         style={{
           marginLeft: "auto",
-          fontSize: "11px",
+          display: "flex",
+          gap: "16px",
           fontFamily: "var(--font-mono)",
+          fontSize: "11px",
           color: "var(--text-dim)",
         }}
       >
-        {nodeCount} nodes · {leafCount} leaves
+        <span>depth <strong style={{ color: "var(--text)" }}>{treeMaxDepth}</strong></span>
+        <span>nodes <strong style={{ color: "var(--text)" }}>{nodeCount}</strong></span>
+        <span>leaves <strong style={{ color: "var(--text)" }}>{leafCount}</strong></span>
+        <span style={{ color: "var(--text-dim)", opacity: 0.5 }}>
+          {trees.length} tree{trees.length !== 1 ? "s" : ""} total
+        </span>
       </div>
     </div>
   );

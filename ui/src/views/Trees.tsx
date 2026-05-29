@@ -24,11 +24,23 @@ interface SelectedNode {
   leaf_value: number | null;
 }
 
-function countNodes(node: CanonicalNode): { nodes: number; leaves: number } {
-  if (node.left === null && node.right === null) return { nodes: 1, leaves: 1 };
-  const left = node.left ? countNodes(node.left) : { nodes: 0, leaves: 0 };
-  const right = node.right ? countNodes(node.right) : { nodes: 0, leaves: 0 };
-  return { nodes: 1 + left.nodes + right.nodes, leaves: left.leaves + right.leaves };
+function countNodes(
+  node: CanonicalNode,
+  depth = 0,
+): { nodes: number; leaves: number; maxDepth: number } {
+  if (node.left === null && node.right === null)
+    return { nodes: 1, leaves: 1, maxDepth: depth };
+  const left = node.left
+    ? countNodes(node.left, depth + 1)
+    : { nodes: 0, leaves: 0, maxDepth: depth };
+  const right = node.right
+    ? countNodes(node.right, depth + 1)
+    : { nodes: 0, leaves: 0, maxDepth: depth };
+  return {
+    nodes: 1 + left.nodes + right.nodes,
+    leaves: left.leaves + right.leaves,
+    maxDepth: Math.max(left.maxDepth, right.maxDepth),
+  };
 }
 
 export function Trees() {
@@ -49,8 +61,11 @@ export function Trees() {
   const featureNames = artifact?.model.feature_schema.names ?? [];
   const selectedTree = trees[selectedTreeIndex] ?? trees[0];
 
-  const { nodes: nodeCount, leaves: leafCount } = useMemo(
-    () => (selectedTree ? countNodes(selectedTree.root) : { nodes: 0, leaves: 0 }),
+  const { nodes: nodeCount, leaves: leafCount, maxDepth: treeMaxDepth } = useMemo(
+    () =>
+      selectedTree
+        ? countNodes(selectedTree.root)
+        : { nodes: 0, leaves: 0, maxDepth: 0 },
     [selectedTree],
   );
 
@@ -105,6 +120,7 @@ export function Trees() {
         depth={maxDepth}
         nodeCount={nodeCount}
         leafCount={leafCount}
+        treeMaxDepth={treeMaxDepth}
         onTreeChange={(idx) => {
           setSelectedTreeIndex(idx);
           setSelectedNode(null);
@@ -122,6 +138,7 @@ export function Trees() {
       >
         {selectedTree && (
           <TreeViz
+            key={`${selectedTree.index}-${maxDepth ?? "all"}`}
             tree={selectedTree}
             featureNames={featureNames}
             maxDepth={maxDepth ?? 99}

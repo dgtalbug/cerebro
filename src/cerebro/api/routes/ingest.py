@@ -52,13 +52,16 @@ async def _read(upload: UploadFile | None) -> bytes | None:
 def _to_ndarray(raw: bytes | None, label: str) -> np.ndarray | None:
     if raw is None:
         return None
-    import io
+    import os
 
     import duckdb
 
-    conn = duckdb.connect()
+    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
+        tf.write(raw)
+        tmp_path = tf.name
     try:
-        rel = conn.read_csv(io.BytesIO(raw))
+        conn = duckdb.connect()
+        rel = conn.read_csv(tmp_path)
         cols = rel.fetchnumpy()
         if label == "labels":
             return np.asarray(next(iter(cols.values())))
@@ -67,6 +70,8 @@ def _to_ndarray(raw: bytes | None, label: str) -> np.ndarray | None:
         raise HTTPException(
             status_code=422, detail=f"Could not parse {label}: {exc}"
         ) from exc
+    finally:
+        os.unlink(tmp_path)
 
 
 def _sha256(data: bytes) -> str:
