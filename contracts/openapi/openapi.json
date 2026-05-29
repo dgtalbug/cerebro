@@ -155,7 +155,7 @@
           },
           "model": {
             "contentMediaType": "application/octet-stream",
-            "description": "LightGBM .txt model file",
+            "description": "LightGBM model file (.txt, .lgb, .pkl)",
             "title": "Model",
             "type": "string"
           },

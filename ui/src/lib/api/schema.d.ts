@@ -308,7 +308,7 @@ export interface components {
             labels?: string | null;
             /**
              * Model
-             * @description LightGBM .txt model file
+             * @description LightGBM model file (.txt, .lgb, .pkl)
              */
             model: string;
             /**
