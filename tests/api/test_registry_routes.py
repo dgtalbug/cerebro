@@ -8,10 +8,8 @@ Covers:
 
 from __future__ import annotations
 
-import io
 from collections.abc import Iterator
 from pathlib import Path
-from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
@@ -19,7 +17,6 @@ from fastapi.testclient import TestClient
 from cerebro.api import create_app
 from cerebro.api.deps import get_artifact_dir, get_registry
 from cerebro.storage.registry import Registry
-
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -177,7 +174,8 @@ def test_get_models_after_ingest(
 
 
 def test_enrich_rejects_already_complete_artifact(
-    client: TestClient, registry: Registry, artifact_dir: Path, binary_booster_file: Path
+    client: TestClient,
+    binary_booster_file: Path,
 ) -> None:
     # Ingest once
     with binary_booster_file.open("rb") as f:

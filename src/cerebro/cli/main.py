@@ -249,8 +249,8 @@ def index(
         typer.Option(
             "--rebuild",
             help=(
-                "Drop all tables, reinitialise from v2 schema, and rescan from scratch. "
-                "Required after upgrading from schema v1."
+                "Drop all tables, reinitialise from v2 schema, "
+                "and rescan from scratch. Required after upgrading from schema v1."
             ),
         ),
     ] = False,
