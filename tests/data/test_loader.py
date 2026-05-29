@@ -40,6 +40,7 @@ def json_columnar_file(tmp_path: Path) -> Path:
 @pytest.fixture
 def parquet_file(tmp_path: Path) -> Path:
     import duckdb
+
     p = tmp_path / "data.parquet"
     conn = duckdb.connect(":memory:")
     conn.execute("COPY (SELECT 1 AS x, 2.0 AS y) TO ? (FORMAT PARQUET)", [str(p)])

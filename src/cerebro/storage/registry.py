@@ -120,11 +120,7 @@ def _drop_all(db_path: Path) -> None:
 
 
 def _now() -> str:
-    return (
-        datetime.now(UTC)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _short_hash(content: bytes) -> str:
@@ -245,8 +241,8 @@ class Registry:
                 params.append(objective)
 
             where_sql = (
-                "WHERE " + " AND ".join(where_clauses)
-            ) if where_clauses else ""
+                ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+            )
 
             # Latest version per model via correlated subquery
             sql = f"""
@@ -437,12 +433,24 @@ class Registry:
                 ON CONFLICT(id) DO UPDATE SET last_seen_at = excluded.last_seen_at
                 """,
                 (
-                    artifact_id, str(path), framework, framework_ver, objective,
-                    num_class, num_trees, num_features,
-                    schema_version, extractor_ver, extracted_at,
-                    int(has_shap), int(has_evaluation), int(has_data_profile),
-                    size_bytes, content_sha256,
-                    now, now,
+                    artifact_id,
+                    str(path),
+                    framework,
+                    framework_ver,
+                    objective,
+                    num_class,
+                    num_trees,
+                    num_features,
+                    schema_version,
+                    extractor_ver,
+                    extracted_at,
+                    int(has_shap),
+                    int(has_evaluation),
+                    int(has_data_profile),
+                    size_bytes,
+                    content_sha256,
+                    now,
+                    now,
                 ),
             )
             conn.commit()

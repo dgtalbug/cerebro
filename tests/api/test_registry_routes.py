@@ -143,9 +143,7 @@ def test_ingest_empty_model_name_returns_422(
 # ---------------------------------------------------------------------------
 
 
-def test_get_models_after_ingest(
-    client: TestClient, binary_booster_file: Path
-) -> None:
+def test_get_models_after_ingest(client: TestClient, binary_booster_file: Path) -> None:
     with binary_booster_file.open("rb") as f:
         client.post(
             "/artifacts/ingest",

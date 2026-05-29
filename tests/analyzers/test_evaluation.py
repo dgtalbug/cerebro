@@ -61,9 +61,14 @@ def test_binary_confusion_matrix_is_2x2() -> None:
 
 
 def test_multiclass_returns_correct_type() -> None:
-    preds = np.array([
-        [0.8, 0.1, 0.1], [0.1, 0.8, 0.1], [0.1, 0.1, 0.8], [0.7, 0.2, 0.1],
-    ])
+    preds = np.array(
+        [
+            [0.8, 0.1, 0.1],
+            [0.1, 0.8, 0.1],
+            [0.1, 0.1, 0.8],
+            [0.7, 0.2, 0.1],
+        ]
+    )
     labels = np.array([0.0, 1.0, 2.0, 0.0])
     result = evaluate(preds, labels, "multiclass")
     assert isinstance(result, MulticlassEval)

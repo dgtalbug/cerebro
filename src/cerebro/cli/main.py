@@ -188,6 +188,7 @@ def extract(
             typer.echo("error: --samples and --labels must be used together", err=True)
             raise typer.Exit(code=1)
         from cerebro.data.loader import load_table
+
         with load_table(samples) as h:
             np_samples = h.relation.fetchnumpy()
             np_samples = np.column_stack(list(np_samples.values()))
@@ -197,9 +198,12 @@ def extract(
 
     if eval_samples is not None or eval_labels is not None:
         if eval_samples is None or eval_labels is None:
-            typer.echo("error: --eval-samples and --eval-labels required together", err=True)  # noqa: E501
+            typer.echo(
+                "error: --eval-samples and --eval-labels required together", err=True
+            )
             raise typer.Exit(code=1)
         from cerebro.data.loader import load_table
+
         with load_table(eval_samples) as h:
             np_eval_samples = np.column_stack(list(h.relation.fetchnumpy().values()))
         with load_table(eval_labels) as h:
@@ -271,6 +275,7 @@ def index(
     With --rebuild: drops all tables, reinitialises from v2 schema, and rescans.
     """
     import os
+
     os.environ.setdefault("CEREBRO_DB_PATH", str(db))
 
     from cerebro.storage.registry import Registry
@@ -299,12 +304,14 @@ def index(
         count = 0
         for cerebro_file in sorted(directory.rglob("*.cerebro.json")):
             import gzip as _gzip
+
             try:
                 raw = _gzip.decompress(cerebro_file.read_bytes())
             except Exception:
                 typer.echo(f"  skip (corrupt): {cerebro_file}", err=True)
                 continue
             import hashlib
+
             sha256 = hashlib.sha256(raw).hexdigest()
             artifact_id = sha256[:7]
             registry.update_artifact_sections(

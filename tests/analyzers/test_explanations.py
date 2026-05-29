@@ -32,7 +32,8 @@ def binary_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
     ds = lgb.Dataset(X, y)
     booster = lgb.train(
         {"objective": "binary", "num_leaves": 8, "n_estimators": 10, "verbosity": -1},
-        ds, num_boost_round=5,
+        ds,
+        num_boost_round=5,
     )
     return booster, X.astype(float), y.astype(float)
 
@@ -45,7 +46,8 @@ def regression_booster_and_data() -> tuple[Any, np.ndarray, np.ndarray]:
     ds = lgb.Dataset(X, y)
     booster = lgb.train(
         {"objective": "regression", "num_leaves": 8, "verbosity": -1},
-        ds, num_boost_round=5,
+        ds,
+        num_boost_round=5,
     )
     return booster, X.astype(float), y.astype(float)
 
@@ -156,6 +158,7 @@ def test_compute_pdp_returns_top_n(binary_booster_and_data: tuple) -> None:
 
 def test_compute_pdp_grid_length(binary_booster_and_data: tuple) -> None:
     from cerebro.analyzers.explanations import PDP_GRID_POINTS
+
     booster, X, _ = binary_booster_and_data
     names = booster.feature_name()
     importance_scores = booster.feature_importance(importance_type="gain")

@@ -40,11 +40,7 @@ def _slugify(name: str) -> str:
 
 
 def _now() -> str:
-    return (
-        datetime.now(UTC)
-        .isoformat(timespec="seconds")
-        .replace("+00:00", "Z")
-    )
+    return datetime.now(UTC).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 async def _read(upload: UploadFile | None) -> bytes | None:
@@ -250,6 +246,7 @@ async def enrich(
 
             try:
                 import lightgbm as lgb
+
                 booster = lgb.Booster(model_file=str(model_path))
             except Exception as exc:
                 raise EnrichmentError(

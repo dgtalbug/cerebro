@@ -201,6 +201,7 @@ def _write_minimal_cerebro_json(
     path: Path, binary_artifact_dict: dict[str, Any]
 ) -> None:
     import json
+
     path.parent.mkdir(parents=True, exist_ok=True)
     raw = json.dumps(binary_artifact_dict).encode()
     path.write_bytes(gzip.compress(raw))

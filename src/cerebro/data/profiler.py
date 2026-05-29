@@ -113,7 +113,14 @@ def _is_numeric_type(dtype: str) -> bool:
     """Return True for DuckDB numeric types (integer variants and floats)."""
     lower = dtype.lower()
     numeric_markers = (
-        "int", "float", "double", "decimal", "real", "numeric", "hugeint", "ubigint"
+        "int",
+        "float",
+        "double",
+        "decimal",
+        "real",
+        "numeric",
+        "hugeint",
+        "ubigint",
     )
     return any(m in lower for m in numeric_markers)
 
@@ -143,8 +150,10 @@ def _numeric_stats(conn: Any, col_name: str) -> dict[str, float | None]:
         return float(v)
 
     return {
-        "min": _safe(row[0]), "max": _safe(row[1]),
-        "mean": _safe(row[2]), "std": _safe(row[3]),
+        "min": _safe(row[0]),
+        "max": _safe(row[1]),
+        "mean": _safe(row[2]),
+        "std": _safe(row[3]),
     }
 
 
