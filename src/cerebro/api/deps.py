@@ -16,6 +16,19 @@ from fastapi import Depends
 
 from cerebro.schema.v1 import CerebroArtifact
 from cerebro.storage import read_artifact
+from cerebro.storage.registry import Registry
+
+
+def get_registry() -> Registry:
+    """Resolve the registry database path from `CEREBRO_DB_PATH`.
+
+    Defaults to `./data/cerebro.db` for local dev.
+    """
+    db_path = Path(os.environ.get("CEREBRO_DB_PATH", "./data/cerebro.db"))
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    reg = Registry(db_path)
+    reg.init()
+    return reg
 
 
 def get_artifact_dir() -> Path:

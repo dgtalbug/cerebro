@@ -178,16 +178,151 @@ export function useEvaluation(id: string) {
   });
 }
 
-export interface IngestResponse {
-  artifact_id: string;
+// ---- Model Registry -------------------------------------------------------
+
+export interface SectionStatus {
+  trees: boolean;
+  importance: boolean;
+  shap: boolean;
+  evaluation: boolean;
+  data_profile: boolean;
+}
+
+export interface ModelSummary {
+  id: string;
+  name: string;
+  description: string | null;
+  latest_version: number;
+  latest_version_date: string;
+  framework: string;
   objective: string;
-  num_trees: number;
-  num_features: number;
+  section_status: SectionStatus;
+  created_at: string;
+}
+
+export interface VersionSummary {
+  version: number;
+  artifact_id: string;
+  section_status: SectionStatus;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface ModelDetail {
+  id: string;
+  name: string;
+  description: string | null;
+  versions: VersionSummary[];
+  created_at: string;
+}
+
+export interface ModelFilters {
+  framework?: string;
+  objective?: string;
+}
+
+export function useModels(filters?: ModelFilters) {
+  const params = new URLSearchParams();
+  if (filters?.framework) params.set("framework", filters.framework);
+  if (filters?.objective) params.set("objective", filters.objective);
+  const qs = params.toString();
+
+  return useQuery<ModelSummary[]>({
+    queryKey: ["models", filters] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/models${qs ? `?${qs}` : ""}`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<ModelSummary[]>;
+    },
+    staleTime: 30_000,
+    retry: false,
+  });
+}
+
+export function useModel(id: string) {
+  return useQuery<ModelDetail>({
+    queryKey: ["model", id] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/models/${encodeURIComponent(id)}`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<ModelDetail>;
+    },
+    staleTime: 30_000,
+    retry: false,
+    enabled: !!id,
+  });
+}
+
+export function useModelVersions(modelId: string) {
+  return useQuery<VersionSummary[]>({
+    queryKey: ["model", modelId, "versions"] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/models/${encodeURIComponent(modelId)}/versions`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<VersionSummary[]>;
+    },
+    staleTime: 30_000,
+    retry: false,
+    enabled: !!modelId,
+  });
+}
+
+export interface EnrichParams {
+  artifactId: string;
+  modelFile?: File;
+  samples?: File;
+  labels?: File;
+  trainingTable?: File;
+}
+
+export interface EnrichResponse {
+  artifact_id: string;
+  sections_added: string[];
+  enriched_at: string;
+}
+
+export function useEnrichArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation<EnrichResponse, Error, EnrichParams>({
+    mutationFn: async (params) => {
+      const form = new FormData();
+      if (params.modelFile) form.append("model_file", params.modelFile);
+      if (params.samples) form.append("samples", params.samples);
+      if (params.labels) form.append("labels", params.labels);
+      if (params.trainingTable) form.append("training_table", params.trainingTable);
+
+      const resp = await fetch(
+        `${BASE_URL}/artifacts/${encodeURIComponent(params.artifactId)}/enrich`,
+        { method: "PATCH", body: form }
+      );
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.detail ?? `Enrich failed (${resp.status})`);
+      }
+      return resp.json() as Promise<EnrichResponse>;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["models"] });
+      queryClient.invalidateQueries({ queryKey: ["artifact", variables.artifactId] });
+    },
+  });
+}
+
+export interface IngestResponse {
+  model_id: string;
+  model_name: string;
+  version: number;
+  artifact_id: string;
+  sections: SectionStatus;
 }
 
 export interface IngestParams {
   model: File;
-  artifactId?: string;
+  modelName: string;
+  notes?: string;
   samples?: File;
   labels?: File;
   evalSamples?: File;
@@ -201,7 +336,8 @@ export function useIngest() {
     mutationFn: async (params) => {
       const form = new FormData();
       form.append("model", params.model);
-      if (params.artifactId) form.append("artifact_id", params.artifactId);
+      form.append("model_name", params.modelName);
+      if (params.notes) form.append("notes", params.notes);
       if (params.samples) form.append("samples", params.samples);
       if (params.labels) form.append("labels", params.labels);
       if (params.evalSamples) form.append("eval_samples", params.evalSamples);
@@ -219,6 +355,7 @@ export function useIngest() {
       return resp.json() as Promise<IngestResponse>;
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["models"] });
       queryClient.invalidateQueries({ queryKey: ["artifact", data.artifact_id] });
     },
   });

@@ -70,6 +70,21 @@ class RegistryError(StorageError):
     """The SQLite registry could not satisfy the request."""
 
 
+class ModelNotFoundError(StorageError):
+    """No model matched the requested identifier or name."""
+
+
+class VersionConflictError(StorageError):
+    """Concurrent version creation produced a duplicate (model_id, version) pair."""
+
+
+# -- Enrichment ---------------------------------------------------------------
+
+
+class EnrichmentError(CerebroError):
+    """Section computation failed during artifact enrichment."""
+
+
 # -- Agent ------------------------------------------------------------------
 
 

@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useIngest, type IngestParams } from "../lib/api/queries";
+import { useIngest, useModels, useModelVersions, type IngestParams } from "../lib/api/queries";
 
 function FileZone({
   label,
@@ -106,12 +106,85 @@ function SectionToggle({ label, hint, open, onToggle }: { label: string; hint: s
   );
 }
 
+function ModelNameCombobox({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const { data: models } = useModels();
+  const [open, setOpen] = useState(false);
+  const filtered = (models ?? []).filter((m) =>
+    m.name.toLowerCase().includes(value.toLowerCase())
+  );
+
+  return (
+    <div style={{ position: "relative" }}>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        placeholder="e.g. loan_default_classifier"
+        style={{
+          width: "100%", background: "var(--bg)", border: "1px solid var(--border-strong)",
+          borderRadius: "var(--radius)", color: "var(--text)", fontFamily: "var(--font-mono)",
+          fontSize: "13px", padding: "8px 12px", outline: "none",
+        }}
+        onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--accent-dim)"; setOpen(true); }}
+        onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--border-strong)"; setTimeout(() => setOpen(false), 150); }}
+      />
+      {open && filtered.length > 0 && (
+        <div style={{
+          position: "absolute", top: "100%", left: 0, right: 0, zIndex: 20,
+          background: "var(--bg-elev-2)", border: "1px solid var(--border-strong)",
+          borderRadius: "var(--radius)", marginTop: "2px", overflow: "hidden",
+        }}>
+          {filtered.slice(0, 8).map((m) => (
+            <div
+              key={m.id}
+              onMouseDown={() => { onChange(m.name); setOpen(false); }}
+              style={{
+                padding: "8px 12px", cursor: "pointer",
+                fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--text)",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "var(--bg-hover)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              {m.name}
+              <span style={{ color: "var(--text-dim)", marginLeft: "8px" }}>v{m.latest_version}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function VersionLabel({ modelName }: { modelName: string }) {
+  const { data: models } = useModels();
+  const existing = (models ?? []).find((m) => m.name === modelName.trim());
+  const { data: versions } = useModelVersions(existing?.id ?? "");
+
+  if (!modelName.trim()) return null;
+
+  const next = existing && versions ? versions.length + 1 : 1;
+  return (
+    <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "4px" }}>
+      Will be registered as{" "}
+      <span style={{ color: "var(--accent)" }}>v{next}</span>
+      {existing && " (new version of existing model)"}
+    </div>
+  );
+}
+
 export function Ingest() {
   const navigate = useNavigate();
   const { mutate, isPending, isError, error } = useIngest();
 
   const [modelFile, setModelFile] = useState<File | null>(null);
-  const [artifactId, setArtifactId] = useState("");
+  const [modelName, setModelName] = useState("");
+  const [notes, setNotes] = useState("");
   const [samplesFile, setSamplesFile] = useState<File | null>(null);
   const [labelsFile, setLabelsFile] = useState<File | null>(null);
   const [evalSamplesFile, setEvalSamplesFile] = useState<File | null>(null);
@@ -124,18 +197,19 @@ export function Ingest() {
 
   const handleModelChange = (f: File | null) => {
     setModelFile(f);
-    if (f && !artifactId) {
-      setArtifactId(f.name.replace(/\.txt$/i, "").replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 80));
+    if (f && !modelName) {
+      setModelName(f.name.replace(/\.txt$/i, "").replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 80));
     }
   };
 
-  const canSubmit = !!modelFile && !isPending;
+  const canSubmit = !!modelFile && !!modelName.trim() && !isPending;
 
   const handleSubmit = () => {
-    if (!modelFile) return;
+    if (!modelFile || !modelName.trim()) return;
     const params: IngestParams = {
       model: modelFile,
-      artifactId: artifactId.trim() || undefined,
+      modelName: modelName.trim(),
+      notes: notes.trim() || undefined,
       samples: samplesFile ?? undefined,
       labels: labelsFile ?? undefined,
       evalSamples: evalSamplesFile ?? undefined,
@@ -174,27 +248,33 @@ export function Ingest() {
           />
         </div>
 
-        {/* Artifact ID */}
+        {/* Model name */}
         <div style={{ marginBottom: "8px" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "6px" }}>
-            Artifact ID
+            Model name <span style={{ color: "var(--accent)" }}>required</span>
           </div>
-          <input
-            type="text"
-            value={artifactId}
-            onChange={(e) => setArtifactId(e.target.value)}
-            placeholder="auto-filled from filename"
+          <ModelNameCombobox value={modelName} onChange={setModelName} />
+          <VersionLabel modelName={modelName} />
+        </div>
+
+        {/* Version notes */}
+        <div style={{ marginBottom: "8px" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)", marginBottom: "6px" }}>
+            Version notes <span style={{ color: "var(--text-dim)" }}>optional</span>
+          </div>
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="What changed in this version?"
+            rows={2}
             style={{
               width: "100%", background: "var(--bg)", border: "1px solid var(--border-strong)",
               borderRadius: "var(--radius)", color: "var(--text)", fontFamily: "var(--font-mono)",
-              fontSize: "13px", padding: "8px 12px", outline: "none",
+              fontSize: "12px", padding: "8px 12px", outline: "none", resize: "vertical",
             }}
             onFocus={(e) => (e.target.style.borderColor = "var(--accent-dim)")}
             onBlur={(e) => (e.target.style.borderColor = "var(--border-strong)")}
           />
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "4px" }}>
-            URL will be /artifacts/<span style={{ color: "var(--accent)" }}>{artifactId || "my_model"}</span>/overview
-          </div>
         </div>
 
         {/* Optional: SHAP + permutation importance */}

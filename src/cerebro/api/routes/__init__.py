@@ -7,6 +7,7 @@ from cerebro.api.routes.explanations import router as explanations_router
 from cerebro.api.routes.health import router as health_router
 from cerebro.api.routes.importance import router as importance_router
 from cerebro.api.routes.ingest import router as ingest_router
+from cerebro.api.routes.models import router as models_router
 
 __all__ = [
     "artifacts_router",
@@ -16,4 +17,5 @@ __all__ = [
     "health_router",
     "importance_router",
     "ingest_router",
+    "models_router",
 ]

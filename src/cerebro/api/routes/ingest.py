@@ -1,47 +1,46 @@
 """POST /artifacts/ingest — upload a model file and extract a canonical artifact.
+PATCH /artifacts/{id}/enrich — add missing sections to an existing artifact.
 
-The endpoint accepts a multipart/form-data request. The model file is
-required; all other files (samples, labels, eval_samples, eval_labels,
-training_table) are optional and unlock progressively richer sections of
-the output artifact (SHAP explanations, permutation importance, evaluation
-metrics, data profile).
+Ingest accepts a multipart/form-data request. `model_name` groups artifacts under
+a logical model; each ingest auto-increments the version for that model.
 
-Extraction runs synchronously in the request. Large models with big
-eval/sample sets can take tens of seconds; callers should use a generous
-client timeout.
+Enrich rewrites the on-disk .cerebro.json with newly computed sections and updates
+the registry flags. It does NOT create a new model version.
 """
 
 from __future__ import annotations
 
+import gzip
+import hashlib
 import re
 import tempfile
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Annotated
 
 import numpy as np
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
-from pydantic import BaseModel
 
-from cerebro.api.deps import get_artifact_dir
+from cerebro.api.deps import get_artifact_dir, get_registry
+from cerebro.exceptions import ArtifactNotFoundError, EnrichmentError
 from cerebro.logging import get_logger
-from cerebro.storage import write_artifact
+from cerebro.schema.v1.registry import EnrichResponse, IngestResponse, SectionStatus
+from cerebro.storage import read_artifact, write_artifact
+from cerebro.storage.registry import Registry
 
 router = APIRouter()
 _LOG = get_logger(__name__)
 
-_SAFE_ID = re.compile(r"[^a-zA-Z0-9_\-]")
+_SAFE_NAME = re.compile(r"[^a-zA-Z0-9_\-]")
 
 
 def _slugify(name: str) -> str:
     stem = Path(name).stem
-    return _SAFE_ID.sub("_", stem)[:80]
+    return _SAFE_NAME.sub("_", stem)[:80]
 
 
-class IngestResponse(BaseModel):
-    artifact_id: str
-    objective: str
-    num_trees: int
-    num_features: int
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 async def _read(upload: UploadFile | None) -> bytes | None:
@@ -54,34 +53,42 @@ def _to_ndarray(raw: bytes | None, label: str) -> np.ndarray | None:
     if raw is None:
         return None
     import io
+
     import duckdb
+
     conn = duckdb.connect()
     try:
         rel = conn.read_csv(io.BytesIO(raw))
         cols = rel.fetchnumpy()
         if label == "labels":
-            return next(iter(cols.values()))
-        return np.column_stack(list(cols.values()))
+            return np.asarray(next(iter(cols.values())))
+        return np.column_stack([np.asarray(v) for v in cols.values()])
     except Exception as exc:
         raise HTTPException(status_code=422, detail=f"Could not parse {label}: {exc}") from exc
 
 
-@router.post("/artifacts/ingest", response_model=IngestResponse)
+def _sha256(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
+
+
+@router.post("/artifacts/ingest", response_model=IngestResponse, status_code=201)
 async def ingest(
     model: Annotated[UploadFile, File(description="LightGBM .txt model file")],
-    artifact_id: Annotated[str | None, Form()] = None,
+    model_name: Annotated[str, Form(description="Logical model name, e.g. 'loan_default_classifier'")],
+    notes: Annotated[str | None, Form()] = None,
     samples: Annotated[UploadFile | None, File()] = None,
     labels: Annotated[UploadFile | None, File()] = None,
     eval_samples: Annotated[UploadFile | None, File()] = None,
     eval_labels: Annotated[UploadFile | None, File()] = None,
     training_table: Annotated[UploadFile | None, File()] = None,
-    artifact_dir: Annotated[Path, Depends(get_artifact_dir)] = ...,
+    artifact_dir: Annotated[Path, Depends(get_artifact_dir)] = ...,  # type: ignore[assignment]
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> IngestResponse:
     from cerebro.extractors import get_extractor
 
-    resolved_id = artifact_id.strip() if artifact_id else _slugify(model.filename or "model")
-    if not resolved_id:
-        resolved_id = "model"
+    model_name = model_name.strip()
+    if not model_name:
+        raise HTTPException(status_code=422, detail="model_name must not be empty")
 
     model_bytes = await model.read()
     samples_bytes = await _read(samples)
@@ -90,7 +97,7 @@ async def ingest(
     eval_labels_bytes = await _read(eval_labels)
     training_table_bytes = await _read(training_table)
 
-    _LOG.info("ingest.start", artifact_id=resolved_id, model_size=len(model_bytes))
+    _LOG.info("ingest.start", model_name=model_name, model_size=len(model_bytes))
 
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
@@ -118,20 +125,206 @@ async def ingest(
             training_table_path=training_table_path,
         )
 
-    out_path = artifact_dir / f"{resolved_id}.cerebro.json"
+    db_model = registry.register_model(model_name)
+
+    latest = registry.get_latest_version(db_model.id)
+    next_version = (latest.version if latest else 0) + 1
+
+    out_dir = artifact_dir / model_name / f"v{next_version}"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    filename = f"{model_name}_v{next_version}_{_slugify(model.filename or 'model')}"
+    out_path = out_dir / f"{filename}.cerebro.json"
     write_artifact(artifact, out_path)
+
+    raw_on_disk = out_path.read_bytes()
+    sha256 = _sha256(gzip.decompress(raw_on_disk))
+
+    artifact_id = registry.register_artifact(
+        path=out_path,
+        framework=artifact.source.framework,
+        framework_ver=artifact.source.framework_version,
+        objective=artifact.model.objective,
+        num_class=artifact.model.num_class,
+        num_trees=artifact.model.num_iteration,
+        num_features=len(artifact.model.feature_schema.names),
+        schema_version=artifact.schema_version,
+        extractor_ver=artifact.source.extractor_version,
+        extracted_at=artifact.source.extracted_at,
+        has_shap=artifact.explanations is not None,
+        has_evaluation=artifact.evaluation is not None,
+        has_data_profile=artifact.data_profile is not None,
+        size_bytes=len(raw_on_disk),
+        content_sha256=sha256,
+    )
+
+    version = registry.create_version(db_model.id, artifact_id, notes=notes)
+
+    sections = SectionStatus(
+        trees=True,
+        importance=True,
+        shap=artifact.explanations is not None,
+        evaluation=artifact.evaluation is not None,
+        data_profile=artifact.data_profile is not None,
+    )
 
     _LOG.info(
         "ingest.complete",
-        artifact_id=resolved_id,
-        objective=artifact.model.objective,
-        num_trees=artifact.model.num_iteration,
-        num_features=len(artifact.model.feature_schema.names),
+        model_name=model_name,
+        model_id=db_model.id,
+        version=version.version,
+        artifact_id=artifact_id,
     )
 
     return IngestResponse(
-        artifact_id=resolved_id,
-        objective=artifact.model.objective,
-        num_trees=artifact.model.num_iteration,
-        num_features=len(artifact.model.feature_schema.names),
+        model_id=db_model.id,
+        model_name=model_name,
+        version=version.version,
+        artifact_id=artifact_id,
+        sections=sections,
+    )
+
+
+@router.patch("/artifacts/{artifact_id}/enrich", response_model=EnrichResponse)
+async def enrich(
+    artifact_id: str,
+    model_file: Annotated[UploadFile | None, File(description="Model .txt file (required for SHAP/evaluation)")] = None,
+    samples: Annotated[UploadFile | None, File()] = None,
+    labels: Annotated[UploadFile | None, File()] = None,
+    training_table: Annotated[UploadFile | None, File()] = None,
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
+) -> EnrichResponse:
+    row = registry.get_artifact_row(artifact_id)
+    if row is None:
+        raise ArtifactNotFoundError(
+            f"no artifact with id {artifact_id!r}",
+            context={"artifact_id": artifact_id},
+        )
+
+    artifact_path = Path(row["path"])
+    existing = read_artifact(artifact_path)
+
+    has_model = model_file is not None
+    has_samples = samples is not None
+    has_labels = labels is not None
+    has_training = training_table is not None
+
+    needs_shap = has_model and has_samples and existing.explanations is None
+    needs_eval = has_model and has_samples and has_labels and existing.evaluation is None
+    needs_profile = has_training and existing.data_profile is None
+
+    if not (needs_shap or needs_eval or needs_profile):
+        raise EnrichmentError(
+            "artifact already has all requested sections or required files were not provided",
+            context={"artifact_id": artifact_id},
+        )
+
+    model_bytes = await _read(model_file)
+    samples_bytes = await _read(samples)
+    labels_bytes = await _read(labels)
+    training_table_bytes = await _read(training_table)
+
+    np_samples = _to_ndarray(samples_bytes, "samples")
+    np_labels = _to_ndarray(labels_bytes, "labels")
+
+    sections_added: list[str] = []
+    updated_data = existing.model_dump()
+
+    if needs_shap or needs_eval:
+        with tempfile.TemporaryDirectory() as tmp:
+            model_path = Path(tmp) / (model_file.filename or "model.txt")  # type: ignore[union-attr]
+            model_path.write_bytes(model_bytes)  # type: ignore[arg-type]
+
+            try:
+                import lightgbm as lgb
+                booster = lgb.Booster(model_file=str(model_path))
+            except Exception as exc:
+                raise EnrichmentError(
+                    "could not load model file for enrichment",
+                    context={"artifact_id": artifact_id},
+                ) from exc
+
+            if needs_shap and np_samples is not None:
+                try:
+                    from cerebro.analyzers.explanations import build_explanations
+
+                    explanations = build_explanations(
+                        booster=booster,
+                        canonical_trees=existing.trees,
+                        samples=np_samples,
+                        labels=np_labels,
+                        feature_names=existing.model.feature_schema.names,
+                        gain_importance=existing.importance.gain,
+                        categorical_indices=existing.model.feature_schema.categorical_indices,
+                    )
+                    updated_data["explanations"] = explanations.model_dump()
+                    sections_added.append("shap")
+                except Exception as exc:
+                    raise EnrichmentError(
+                        "SHAP computation failed",
+                        context={"artifact_id": artifact_id},
+                    ) from exc
+
+            if needs_eval and np_samples is not None and np_labels is not None:
+                try:
+                    from cerebro.analyzers.evaluation import evaluate
+
+                    predictions = booster.predict(np_samples)
+                    evaluation = evaluate(
+                        np.array(predictions),
+                        np_labels,
+                        existing.model.objective,
+                    )
+                    updated_data["evaluation"] = evaluation.model_dump()
+                    sections_added.append("evaluation")
+                except Exception as exc:
+                    raise EnrichmentError(
+                        "evaluation computation failed",
+                        context={"artifact_id": artifact_id},
+                    ) from exc
+
+    if needs_profile and training_table_bytes is not None:
+        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
+            tf.write(training_table_bytes)
+            tmp_table_path = Path(tf.name)
+        try:
+            from cerebro.data.loader import load_table
+            from cerebro.data.profiler import profile_table
+
+            with load_table(tmp_table_path) as handle:
+                profile = profile_table(handle)
+            updated_data["data_profile"] = profile.model_dump()
+            sections_added.append("data_profile")
+        except Exception as exc:
+            raise EnrichmentError(
+                "data profile computation failed",
+                context={"artifact_id": artifact_id},
+            ) from exc
+        finally:
+            tmp_table_path.unlink(missing_ok=True)
+
+    from cerebro.schema.v1 import CerebroArtifact
+
+    enriched = CerebroArtifact.model_validate(updated_data)
+    write_artifact(enriched, artifact_path)
+
+    raw_on_disk = artifact_path.read_bytes()
+    new_sha256 = _sha256(gzip.decompress(raw_on_disk))
+    enriched_at = _now()
+
+    registry.update_artifact_sections(
+        artifact_id,
+        has_shap="shap" in sections_added or bool(row["has_shap"]),
+        has_evaluation="evaluation" in sections_added or bool(row["has_evaluation"]),
+        has_data_profile="data_profile" in sections_added or bool(row["has_data_profile"]),
+        content_sha256=new_sha256,
+        size_bytes=len(raw_on_disk),
+        enriched_at=enriched_at,
+    )
+
+    _LOG.info("enrich.complete", artifact_id=artifact_id, sections_added=sections_added)
+
+    return EnrichResponse(
+        artifact_id=artifact_id,
+        sections_added=sections_added,
+        enriched_at=enriched_at,
     )

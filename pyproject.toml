@@ -17,6 +17,7 @@ authors = [{ name = "Bala" }]
 # (see ARCHITECTURE.md).
 dependencies = [
     "pydantic>=2.13,<3",
+    "python-multipart>=0.0.29",
     "structlog>=25.5,<27",
 ]
 
