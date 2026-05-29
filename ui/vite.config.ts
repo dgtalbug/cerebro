@@ -22,5 +22,6 @@ export default defineConfig({
     // Vitest runs files in parallel worker threads by default.
     environment: "node",
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+    setupFiles: ["src/test-setup.ts"],
   },
 });
