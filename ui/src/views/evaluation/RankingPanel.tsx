@@ -2,12 +2,13 @@ import { useMemo } from "react";
 import { BarChart, BarSeries, LinearXAxis, LinearYAxis } from "reaviz";
 import type { ChartShallowDataShape } from "reaviz";
 import type { RankingEval } from "../../lib/api/queries";
+import { useAccentColor } from "../../lib/tokenColors";
 
-const COPPER = "#b87333";
-const ACCENT_COLOR = "var(--accent)";
 const HIGHLIGHT_K = 10;
 
 export default function RankingPanel({ eval: ev }: { eval: RankingEval }) {
+  const accentColor = useAccentColor();
+
   const ndcgData = useMemo<ChartShallowDataShape[]>(() =>
     ev.ndcg_at_k.map(n => ({ key: `@${n.k}`, data: n.value })),
     [ev.ndcg_at_k]
@@ -33,7 +34,7 @@ export default function RankingPanel({ eval: ev }: { eval: RankingEval }) {
             series={
               <BarSeries
                 colorScheme={ndcgData.map(d =>
-                  d.key === `@${HIGHLIGHT_K}` ? COPPER : ACCENT_COLOR
+                  d.key === `@${HIGHLIGHT_K}` ? accentColor : accentColor
                 )}
               />
             }
@@ -53,7 +54,7 @@ export default function RankingPanel({ eval: ev }: { eval: RankingEval }) {
             height={180}
             width={240}
             data={perQueryData}
-            series={<BarSeries colorScheme={[COPPER]} />}
+            series={<BarSeries colorScheme={[accentColor]} />}
             xAxis={<LinearXAxis type="category" />}
             yAxis={<LinearYAxis domain={[0, 1]} />}
           />

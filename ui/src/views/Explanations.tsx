@@ -10,9 +10,7 @@ import {
   type ShapResult,
 } from "../lib/api/queries";
 
-const COPPER = "#b87333";
 const ACCENT = "var(--accent)";
-const MUTED_RED = "#c0392b";
 
 type SampleTab = "shap" | "path" | "raw";
 
@@ -48,31 +46,37 @@ function ShapBreakdown({
     <div>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", padding: "10px 0 14px", borderBottom: "1px solid var(--border)", marginBottom: "12px" }}>
         <div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>expected value</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: "24px" }}>{expectedValue.toFixed(3)}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)" }}>expected value</div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "24px" }} className="tnum">{expectedValue.toFixed(3)}</div>
         </div>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "18px", color: "var(--text-muted)" }}>+</div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "18px", color: "var(--text-dim)" }}>+</div>
         <div>
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)" }}>SHAP sum</div>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: "24px", color: ACCENT }}>{shapSum >= 0 ? "+" : ""}{shapSum.toFixed(3)}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)" }}>SHAP sum</div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "24px", color: ACCENT }} className="tnum">{shapSum >= 0 ? "+" : ""}{shapSum.toFixed(3)}</div>
+        </div>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "18px", color: "var(--text-dim)" }}>=</div>
+        <div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-dim)" }}>prediction</div>
+          <div style={{ fontFamily: "var(--font-display)", fontSize: "24px", color: "var(--green)" }} className="tnum">
+            {(expectedValue + shapSum >= 0 ? "+" : "")}{(expectedValue + shapSum).toFixed(3)}
+          </div>
         </div>
       </div>
 
       {entries.map(({ name, value }) => {
         const pct = (Math.abs(value) / maxAbs) * 100;
         const inPath = pathFeatureNames.has(name);
-        const barColor = value >= 0 ? ACCENT : MUTED_RED;
         return (
-          <div key={name} style={{ display: "grid", gridTemplateColumns: "140px 1fr 64px", gap: "8px", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border)" }}>
-            <div style={{ fontSize: "12px", fontWeight: inPath ? 700 : 400, color: inPath ? COPPER : "var(--text)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          <div key={name} className="shap-row">
+            <span className="shap-name" style={{ color: inPath ? ACCENT : undefined }}>
               {inPath && <span style={{ marginRight: "4px" }}>◆</span>}{name}
+            </span>
+            <div className="shap-bar-wrap">
+              <div className={`shap-bar ${value >= 0 ? "pos" : "neg"}`} style={{ width: `${pct}%` }} />
             </div>
-            <div style={{ height: "4px", background: "var(--bg-elev)", borderRadius: "2px", position: "relative" }}>
-              <div style={{ width: `${pct}%`, height: "100%", background: barColor, borderRadius: "2px", float: value >= 0 ? "left" : "right" }} />
-            </div>
-            <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: value >= 0 ? ACCENT : MUTED_RED, textAlign: "right" }}>
+            <span className={`shap-val ${value >= 0 ? "pos" : "neg"} tnum`}>
               {value >= 0 ? "+" : ""}{value.toFixed(3)}
-            </div>
+            </span>
           </div>
         );
       })}
@@ -94,7 +98,7 @@ function DecisionPathView({ paths, sampleIdx }: { paths: DecisionPath[][]; sampl
         <div key={step.node_id} style={{ display: "flex", gap: "12px", alignItems: "flex-start", padding: "8px 0", borderBottom: "1px solid var(--border)" }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-muted)", minWidth: "20px", paddingTop: "2px" }}>{i + 1}</div>
           <div>
-            <div style={{ fontSize: "13px", fontWeight: 600, color: COPPER }}>{step.feature_name}</div>
+            <div style={{ fontSize: "13px", fontWeight: 600, color: ACCENT }}>{step.feature_name}</div>
             <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)", marginTop: "2px" }}>
               {step.sample_value.toFixed(4)} {step.decision_type} {step.threshold?.toFixed(4) ?? "?"} → {step.went_left ? "left" : "right"}
             </div>
@@ -203,16 +207,12 @@ export function Explanations() {
             </span>
           </div>
 
-          <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+          <div className="sample-tabs">
             {(["shap", "path", "raw"] as SampleTab[]).map(t => (
               <button
                 key={t}
                 onClick={() => setTab(t)}
-                style={{
-                  padding: "4px 12px", borderRadius: "4px", border: "1px solid var(--border)",
-                  background: tab === t ? "var(--accent)" : "transparent",
-                  color: tab === t ? "#fff" : "var(--text)", cursor: "pointer", fontSize: "12px",
-                }}
+                className={`sample-tab${tab === t ? " active" : ""}`}
               >
                 {t === "shap" ? "SHAP breakdown" : t === "path" ? "Decision path" : "Raw features"}
               </button>

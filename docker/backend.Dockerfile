@@ -8,15 +8,19 @@ ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     CEREBRO_DATA_DIR=/data
 
+# libgomp is required by LightGBM at runtime (OpenMP threading).
+# python-multipart is required by FastAPI for multipart/form-data uploads.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY pyproject.toml uv.lock README.md ./
 COPY src ./src
 
-# Install core runtime + the API/CLI surface (fastapi, uvicorn, typer).
-# The [ml] extra (lightgbm, shap, numpy) is intentionally excluded from
-# the image — artifacts are extracted on the host and fed in via the
-# mounted /data volume.
-RUN uv sync --frozen --no-dev --extra api
+# Install API surface + full ML stack so the /ingest endpoint can run
+# extraction server-side without requiring a local Python environment.
+RUN uv sync --frozen --no-dev --extra api --extra ml
 
 RUN mkdir -p /data/artifacts /data/logs
 EXPOSE 8000

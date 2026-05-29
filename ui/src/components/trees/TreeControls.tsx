@@ -32,37 +32,15 @@ export function TreeControls({
   onDepthChange,
 }: Props) {
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "16px",
-        padding: "10px 0 14px",
-        borderBottom: "1px solid var(--border)",
-        marginBottom: "16px",
-        flexWrap: "wrap",
-      }}
-    >
+    <div className="tree-controls">
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label
-          style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.08em" }}
-        >
+        <label>
           Tree
         </label>
         <select
           data-testid="tree-selector"
           value={selectedIndex}
           onChange={(e) => onTreeChange(Number(e.target.value))}
-          style={{
-            background: "var(--bg-elev)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            color: "var(--text)",
-            fontSize: "12px",
-            fontFamily: "var(--font-mono)",
-            padding: "4px 8px",
-            cursor: "pointer",
-          }}
         >
           {trees.map((t) => (
             <option key={t.index} value={t.index}>
@@ -74,9 +52,7 @@ export function TreeControls({
       </div>
 
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <label
-          style={{ fontSize: "11px", fontFamily: "var(--font-mono)", color: "var(--text-dim)", textTransform: "uppercase", letterSpacing: "0.08em" }}
-        >
+        <label>
           Depth
         </label>
         <div style={{ display: "flex", gap: "4px" }}>
@@ -101,6 +77,17 @@ export function TreeControls({
             </button>
           ))}
         </div>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <label>
+          Highlight
+        </label>
+        <select defaultValue="leaf">
+          <option value="leaf">Leaf value</option>
+          <option value="samples">Sample count</option>
+          <option value="gain">Gain</option>
+        </select>
       </div>
 
       <div

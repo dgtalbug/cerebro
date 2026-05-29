@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
 import { Home } from "./views/Home";
+import { Ingest } from "./views/Ingest";
 import { Overview } from "./views/Overview";
 import { Importance } from "./views/Importance";
 import { Trees } from "./views/Trees";
@@ -13,6 +14,7 @@ export default function App() {
     <Routes>
       <Route element={<AppShell />}>
         <Route index element={<Home />} />
+        <Route path="/ingest" element={<Ingest />} />
         <Route path="/artifacts/:id/overview" element={<Overview />} />
         <Route path="/artifacts/:id/importance" element={<Importance />} />
         <Route path="/artifacts/:id/trees" element={<Trees />} />

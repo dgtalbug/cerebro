@@ -4,8 +4,7 @@ import { BarChart, BarSeries, LinearXAxis, LinearYAxis, Heatmap, HeatmapSeries }
 import type { ChartShallowDataShape, ChartNestedDataShape, ChartDataTypes } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
 import { useDataProfile, type ColumnProfile, type CorrelationCell, type DataProfileResponse } from "../lib/api/queries";
-
-const COPPER = "#b87333";
+import { useAccentColor, useHeatmapColors } from "../lib/tokenColors";
 
 function MissingnessTable({ columns }: { columns: ColumnProfile[] }) {
   const sorted = [...columns].sort((a, b) => b.missingness - a.missingness);
@@ -25,7 +24,7 @@ function MissingnessTable({ columns }: { columns: ColumnProfile[] }) {
               <td style={{ padding: "6px 8px", fontWeight: 500 }}>{col.name}</td>
               <td style={{ padding: "6px 8px", color: "var(--text-muted)" }}>{col.dtype}</td>
               <td style={{ padding: "6px 8px" }}>
-                <span style={{ color: col.missingness > 0.1 ? COPPER : "var(--text)" }}>
+                <span style={{ color: col.missingness > 0.1 ? "var(--accent)" : "var(--text)" }}>
                   {(col.missingness * 100).toFixed(1)}%
                 </span>
               </td>
@@ -41,6 +40,7 @@ function MissingnessTable({ columns }: { columns: ColumnProfile[] }) {
 }
 
 function ColumnDistributionChart({ col }: { col: ColumnProfile }) {
+  const accentColor = useAccentColor();
   const data = useMemo<ChartShallowDataShape[]>(() => {
     if (col.is_numeric && col.histogram) {
       return col.histogram.map(bin => ({
@@ -63,7 +63,7 @@ function ColumnDistributionChart({ col }: { col: ColumnProfile }) {
       width={280}
       height={120}
       data={data}
-      series={<BarSeries colorScheme={[COPPER]} />}
+      series={<BarSeries colorScheme={[accentColor]} />}
       xAxis={<LinearXAxis type="category" />}
       yAxis={<LinearYAxis />}
     />
@@ -71,6 +71,7 @@ function ColumnDistributionChart({ col }: { col: ColumnProfile }) {
 }
 
 function CorrelationMatrix({ correlations, columns }: { correlations: CorrelationCell[]; columns: string[] }) {
+  const [colorLow, colorHigh] = useHeatmapColors();
   const data = useMemo<ChartNestedDataShape[]>(() => {
     const map = new Map<string, number>();
     for (const c of correlations) {
@@ -98,7 +99,7 @@ function CorrelationMatrix({ correlations, columns }: { correlations: Correlatio
       height={sz}
       width={sz}
       data={data}
-      series={<HeatmapSeries colorScheme={["#1a2a40", COPPER]} />}
+      series={<HeatmapSeries colorScheme={[colorLow, colorHigh]} />}
     />
   );
 }

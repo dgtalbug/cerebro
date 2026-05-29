@@ -16,14 +16,14 @@ export function DivergenceCallout({ warnings }: Props) {
         marginTop: "16px",
         padding: "12px 14px",
         borderRadius: "var(--radius)",
-        border: "1px solid var(--red, #c0392b)",
+        border: "1px solid var(--red)",
         background: "rgba(192, 57, 43, 0.08)",
         fontFamily: "var(--font-mono)",
         fontSize: "12px",
         color: "var(--text)",
       }}
     >
-      <div style={{ fontWeight: 600, color: "var(--red, #c0392b)", marginBottom: "4px" }}>
+      <div style={{ fontWeight: 600, color: "var(--red)", marginBottom: "4px" }}>
         Heads up.
       </div>
       <div>

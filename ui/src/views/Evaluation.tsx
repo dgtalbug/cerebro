@@ -15,6 +15,54 @@ const MulticlassPanel = lazy(() => import("./evaluation/MulticlassPanel"));
 const RegressionPanel = lazy(() => import("./evaluation/RegressionPanel"));
 const RankingPanel = lazy(() => import("./evaluation/RankingPanel"));
 
+const OBJECTIVES = ["binary", "multiclass", "regression", "lambdarank"] as const;
+const OBJECTIVE_LABELS: Record<string, string> = {
+  binary: "binary",
+  multiclass: "multiclass",
+  regression: "regression",
+  lambdarank: "ranking",
+};
+const OBJECTIVE_FULL: Record<string, string> = {
+  binary: "Binary classification",
+  multiclass: "Multiclass classification",
+  regression: "Regression",
+  lambdarank: "Ranking (lambdarank)",
+};
+
+function ObjectiveBar({ objective }: { objective: string }) {
+  return (
+    <div style={{
+      display: "flex",
+      alignItems: "center",
+      gap: "12px",
+      marginBottom: "24px",
+      padding: "10px 14px",
+      background: "var(--bg-elev)",
+      border: "1px solid var(--border)",
+      borderRadius: "var(--radius-lg)",
+    }}>
+      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--text-dim)" }}>
+        objective
+      </span>
+      <div className="panel-tabs">
+        {OBJECTIVES.map(obj => (
+          <button
+            key={obj}
+            className={`panel-tab${obj === objective ? " active" : ""}`}
+            disabled={obj !== objective}
+            style={{ opacity: obj !== objective ? 0.4 : undefined }}
+          >
+            {OBJECTIVE_LABELS[obj] ?? obj}
+          </button>
+        ))}
+      </div>
+      <span style={{ marginLeft: "auto", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)" }}>
+        artifact objective: <span style={{ color: "var(--accent)" }}>{objective}</span>
+      </span>
+    </div>
+  );
+}
+
 function PanelFallback() {
   return (
     <div style={{ padding: "24px", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "12px" }}>
@@ -81,20 +129,15 @@ export function Evaluation() {
   }
 
   const evalData = data as AnyEval;
-  const objectiveLabel: Record<string, string> = {
-    binary: "Binary classification",
-    multiclass: "Multiclass classification",
-    regression: "Regression",
-    lambdarank: "Ranking (lambdarank)",
-  };
 
   return (
     <div className="view">
       <ViewHeader
         title="Model"
         titleEmphasis="evaluation"
-        subtitle={`${objectiveLabel[evalData.objective] ?? evalData.objective} · frozen at extraction time`}
+        subtitle={`${OBJECTIVE_FULL[evalData.objective] ?? evalData.objective} · frozen at extraction time`}
       />
+      <ObjectiveBar objective={evalData.objective} />
       <EvalPanel data={evalData} />
     </div>
   );

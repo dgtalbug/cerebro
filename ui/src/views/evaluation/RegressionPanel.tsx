@@ -2,12 +2,11 @@ import { useMemo } from "react";
 import { BarChart, BarSeries, LinearXAxis, LinearYAxis } from "reaviz";
 import type { ChartShallowDataShape } from "reaviz";
 import type { RegressionEval } from "../../lib/api/queries";
-
-const COPPER = "#b87333";
+import { useAccentColor } from "../../lib/tokenColors";
 
 function MetricBadge({ label, value }: { label: string; value: string }) {
   return (
-    <div style={{ textAlign: "center", padding: "10px 14px", background: "var(--bg-elev)", borderRadius: "6px" }}>
+    <div style={{ textAlign: "center", padding: "10px 14px", background: "var(--bg-elev)", borderRadius: "var(--radius)" }}>
       <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.1em", color: "var(--text-muted)", marginBottom: "4px" }}>{label}</div>
       <div style={{ fontFamily: "var(--font-display)", fontSize: "20px" }}>{value}</div>
     </div>
@@ -15,6 +14,8 @@ function MetricBadge({ label, value }: { label: string; value: string }) {
 }
 
 export default function RegressionPanel({ eval: ev }: { eval: RegressionEval }) {
+  const accentColor = useAccentColor();
+
   const histData = useMemo<ChartShallowDataShape[]>(() =>
     ev.residuals_histogram.map(bin => ({
       key: bin.lower.toFixed(2),
@@ -47,7 +48,7 @@ export default function RegressionPanel({ eval: ev }: { eval: RegressionEval }) 
               height={200}
               width={280}
               data={histData}
-              series={<BarSeries colorScheme={[COPPER]} />}
+              series={<BarSeries colorScheme={[accentColor]} />}
               xAxis={<LinearXAxis type="category" />}
               yAxis={<LinearYAxis />}
             />
@@ -64,7 +65,7 @@ export default function RegressionPanel({ eval: ev }: { eval: RegressionEval }) 
               height={200}
               width={280}
               data={scatterData}
-              series={<BarSeries colorScheme={[COPPER]} />}
+              series={<BarSeries colorScheme={[accentColor]} />}
               xAxis={<LinearXAxis type="value" />}
               yAxis={<LinearYAxis />}
             />

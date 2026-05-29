@@ -1,4 +1,5 @@
-import { NavLink, useParams } from "react-router-dom";
+import { NavLink, useNavigate, useParams } from "react-router-dom";
+import { useArtifact } from "../../lib/api/queries";
 
 interface NavItemDef {
   label: string;
@@ -141,16 +142,36 @@ function NavSection({ label, items }: { label: string; items: NavItemDef[] }) {
 }
 
 export function Sidebar() {
+  const { id } = useParams<{ id?: string }>();
+  const { data } = useArtifact(id ?? "");
+  const artifact = id ? data?.data : undefined;
+  const navigate = useNavigate();
+
+  const extractedAt = artifact
+    ? artifact.source.extracted_at.replace("T", " ").replace("Z", " UTC")
+    : "—";
+  const extractorVer = artifact ? artifact.source.extractor_version : "—";
+
   return (
     <aside className="sidebar">
+      <button
+        className="btn primary"
+        onClick={() => navigate("/ingest")}
+        style={{ width: "100%", justifyContent: "center", marginBottom: "20px", gap: "8px" }}
+      >
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Load model
+      </button>
       <NavSection label="Introspection" items={introspectionItems} />
       <NavSection label="Reasoning" items={reasoningItems} />
       <NavSection label="Artifact" items={artifactItems} />
 
       <div className="sidebar-footer">
-        <div><span className="footer-label">extracted</span> —</div>
+        <div><span className="footer-label">extracted</span> {extractedAt}</div>
         <div><span className="footer-label">size</span> —</div>
-        <div><span className="footer-label">extractor</span> —</div>
+        <div><span className="footer-label">extractor</span> {extractorVer}</div>
       </div>
     </aside>
   );

@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { Heatmap, HeatmapSeries } from "reaviz";
 import type { ChartShallowDataShape, ChartNestedDataShape, ChartDataTypes } from "reaviz";
 import type { MulticlassEval } from "../../lib/api/queries";
-
-const COPPER = "#b87333";
+import { useHeatmapColors } from "../../lib/tokenColors";
 
 export default function MulticlassPanel({ eval: ev }: { eval: MulticlassEval }) {
+  const [colorLow, colorHigh] = useHeatmapColors();
   const n = ev.per_class.length;
 
   const cmData = useMemo<ChartNestedDataShape[]>(() => {
@@ -34,7 +34,7 @@ export default function MulticlassPanel({ eval: ev }: { eval: MulticlassEval }) 
           height={Math.min(320, n * 40 + 40)}
           width={Math.min(320, n * 40 + 40)}
           data={cmData}
-          series={<HeatmapSeries colorScheme={["#1a2a40", COPPER]} />}
+          series={<HeatmapSeries colorScheme={[colorLow, colorHigh]} />}
         />
       </div>
 
@@ -57,7 +57,7 @@ export default function MulticlassPanel({ eval: ev }: { eval: MulticlassEval }) 
                 <td style={{ padding: "6px 8px" }}>{c.class_index}</td>
                 <td style={{ padding: "6px 8px" }}>{c.precision.toFixed(3)}</td>
                 <td style={{ padding: "6px 8px" }}>{c.recall.toFixed(3)}</td>
-                <td style={{ padding: "6px 8px", color: COPPER }}>{c.f1.toFixed(3)}</td>
+                <td style={{ padding: "6px 8px", color: "var(--accent)" }}>{c.f1.toFixed(3)}</td>
                 <td style={{ padding: "6px 8px", color: "var(--text-muted)" }}>{c.support}</td>
               </tr>
             ))}

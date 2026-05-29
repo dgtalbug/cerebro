@@ -73,7 +73,7 @@ export function Trees() {
           titleEmphasis="topology"
           subtitle={error?.message?.includes?.("404") ? "Artifact not found." : "Failed to load artifact."}
         />
-        <div style={{ color: "var(--red, #e74c3c)", fontSize: "12px" }}>
+        <div style={{ color: "var(--red)", fontSize: "12px" }}>
           Could not load artifact.
         </div>
       </section>

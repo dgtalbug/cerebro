@@ -87,14 +87,14 @@ function CustomNode({ nodeDatum }: CustomNodeElementProps) {
     <g>
       <circle
         r={isLeaf ? 6 : 10}
-        fill={isLeaf ? "var(--text-dim, #666)" : "var(--accent, #d4a574)"}
-        stroke="var(--border, #333)"
+        fill={isLeaf ? "var(--text-dim)" : "var(--accent)"}
+        stroke="var(--border)"
         strokeWidth={1.5}
       />
       <text
         dy={isLeaf ? 20 : -16}
         textAnchor="middle"
-        style={{ fontSize: "9px", fontFamily: "var(--font-mono, monospace)", fill: "var(--text, #ccc)" }}
+        style={{ fontSize: "9px", fontFamily: "var(--font-mono)", fill: "var(--text)" }}
       >
         {nodeDatum.name}
       </text>
@@ -119,7 +119,8 @@ export function TreeViz({ tree, featureNames, maxDepth = 99, onNodeClick }: Prop
   return (
     <div
       data-testid="tree-viz-container"
-      style={{ width: "100%", height: "400px", background: "var(--bg-elev)", borderRadius: "var(--radius)" }}
+      className="tree-viz"
+      style={{ height: "400px" }}
     >
       <Suspense
         fallback={

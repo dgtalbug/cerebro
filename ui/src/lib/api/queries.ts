@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { paths } from "./schema";
 
 const BASE_URL: string = import.meta.env.VITE_API_URL ?? "/api";
@@ -175,5 +175,51 @@ export function useEvaluation(id: string) {
     },
     staleTime: Infinity,
     retry: false,
+  });
+}
+
+export interface IngestResponse {
+  artifact_id: string;
+  objective: string;
+  num_trees: number;
+  num_features: number;
+}
+
+export interface IngestParams {
+  model: File;
+  artifactId?: string;
+  samples?: File;
+  labels?: File;
+  evalSamples?: File;
+  evalLabels?: File;
+  trainingTable?: File;
+}
+
+export function useIngest() {
+  const queryClient = useQueryClient();
+  return useMutation<IngestResponse, Error, IngestParams>({
+    mutationFn: async (params) => {
+      const form = new FormData();
+      form.append("model", params.model);
+      if (params.artifactId) form.append("artifact_id", params.artifactId);
+      if (params.samples) form.append("samples", params.samples);
+      if (params.labels) form.append("labels", params.labels);
+      if (params.evalSamples) form.append("eval_samples", params.evalSamples);
+      if (params.evalLabels) form.append("eval_labels", params.evalLabels);
+      if (params.trainingTable) form.append("training_table", params.trainingTable);
+
+      const resp = await fetch(`${BASE_URL}/artifacts/ingest`, {
+        method: "POST",
+        body: form,
+      });
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({}));
+        throw new Error(body.detail ?? `Extraction failed (${resp.status})`);
+      }
+      return resp.json() as Promise<IngestResponse>;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["artifact", data.artifact_id] });
+    },
   });
 }

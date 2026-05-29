@@ -13,48 +13,14 @@ const TABS: { key: ImportanceType; label: string }[] = [
 function FeatureBar({ name, value, max }: { name: string; value: number; max: number }) {
   const pct = max > 0 ? (value / max) * 100 : 0;
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 120px",
-        gap: "12px",
-        alignItems: "center",
-        padding: "6px 0",
-        borderBottom: "1px solid var(--border)",
-      }}
-    >
-      <div>
-        <div style={{ fontSize: "13px", fontWeight: 500, marginBottom: "4px" }}>{name}</div>
-        <div
-          style={{
-            height: "4px",
-            background: "var(--bg-elev)",
-            borderRadius: "2px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              width: `${pct}%`,
-              height: "100%",
-              background: "var(--accent)",
-              borderRadius: "2px",
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
+    <div className="fi-row">
+      <span className="fi-name">{name}</span>
+      <div className="fi-bar-wrap">
+        <div className="fi-bar" style={{ width: `${pct}%` }} />
       </div>
-      <div
-        style={{
-          fontFamily: "var(--font-mono)",
-          fontSize: "12px",
-          color: "var(--text-muted)",
-          textAlign: "right",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {value.toFixed(2)}
-      </div>
+      <span className="fi-value tnum">
+        {value.toLocaleString(undefined, { maximumFractionDigits: 1 })}
+      </span>
     </div>
   );
 }
@@ -88,7 +54,7 @@ function DivergenceBar({
       <span style={{ color: "var(--text-muted)" }}>#{permRank}</span>
       <span
         style={{
-          color: isDivergent ? "var(--red, #e74c3c)" : "var(--green, #2ecc71)",
+          color: isDivergent ? "var(--red)" : "var(--green)",
           fontWeight: isDivergent ? 600 : 400,
         }}
       >
@@ -112,7 +78,7 @@ function ImportancePanel({ id, type }: { id: string; type: ImportanceType }) {
   }
   if (isError || !data) {
     return (
-      <div style={{ color: "var(--red, #e74c3c)", fontSize: "12px" }}>
+      <div style={{ color: "var(--red)", fontSize: "12px" }}>
         Failed to load importance data.
       </div>
     );
@@ -229,71 +195,35 @@ export function Importance() {
         subtitle="Built-in LightGBM importance plus permutation importance computed on the held-out evaluation set."
       />
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "24px",
-          alignItems: "start",
-        }}
-      >
+      <div className="grid grid-2" style={{ alignItems: "start" }}>
         {/* Left panel — aggregate importance */}
-        <div
-          style={{
-            background: "var(--bg-elev)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            padding: "20px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: "16px",
-            }}
-          >
-            <h3 style={{ fontSize: "13px", fontWeight: 600 }}>Aggregate importance</h3>
-            <div style={{ display: "flex", gap: "4px" }}>
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Aggregate importance</h3>
+            <div className="panel-tabs">
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
                   data-testid={`tab-${tab.key}`}
                   onClick={() => setActiveTab(tab.key)}
-                  style={{
-                    padding: "3px 10px",
-                    fontSize: "11px",
-                    fontFamily: "var(--font-mono)",
-                    border: "1px solid var(--border)",
-                    borderRadius: "100px",
-                    cursor: "pointer",
-                    background: activeTab === tab.key ? "var(--accent)" : "var(--bg-elev-2)",
-                    color: activeTab === tab.key ? "var(--bg)" : "var(--text-muted)",
-                    fontWeight: activeTab === tab.key ? 600 : 400,
-                    transition: "all 0.12s",
-                  }}
+                  className={`panel-tab${activeTab === tab.key ? " active" : ""}`}
                 >
                   {tab.label}
                 </button>
               ))}
             </div>
           </div>
-          <ImportancePanel id={artifactId} type={activeTab} />
+          <div className="fi-list">
+            <ImportancePanel id={artifactId} type={activeTab} />
+          </div>
         </div>
 
         {/* Right panel — gain vs permutation */}
-        <div
-          style={{
-            background: "var(--bg-elev)",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius)",
-            padding: "20px",
-          }}
-        >
-          <h3 style={{ fontSize: "13px", fontWeight: 600, marginBottom: "16px" }}>
-            Gain vs permutation
-          </h3>
+        <div className="panel">
+          <div className="panel-header">
+            <h3 className="panel-title">Gain vs permutation</h3>
+            <span className="panel-subtitle">divergence</span>
+          </div>
           <GainVsPermPanel id={artifactId} />
         </div>
       </div>
