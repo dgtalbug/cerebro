@@ -9,6 +9,7 @@ import numpy as np
 
 from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
+    _BINARY_OBJECTIVES,
     _build_feature_schema,
     _build_importance,
     _build_m3_sections,
@@ -43,16 +44,17 @@ class LGBBinaryExtractor:
         booster = _load_booster(path)
         dumped: dict[str, Any] = booster.dump_model()
         objective = _resolve_objective(dumped)
-        if objective != "binary":
+        if objective not in _BINARY_OBJECTIVES:
             raise UnsupportedObjectiveError(
-                f"LGBBinaryExtractor requires binary objective; got {objective!r}",
+                f"LGBBinaryExtractor requires a binary-family objective; "
+                f"got {objective!r}",
                 context={"objective": objective},
             )
 
         source = _build_source()
         feature_schema = _build_feature_schema(dumped, booster)
         model = Model(
-            objective="binary",
+            objective=objective,
             num_class=1,
             num_iteration=len(dumped.get("tree_info", [])),
             params=_extract_params(booster),
@@ -91,13 +93,13 @@ class LGBBinaryExtractor:
             eval_samples=eval_samples,
             eval_labels=eval_labels,
             training_table_path=training_table_path,
-            objective="binary",
+            objective=objective,
         )
 
         _LOG.info(
             "artifact.extracted",
             framework="lightgbm",
-            objective="binary",
+            objective=objective,
             num_trees=len(trees),
             num_features=len(feature_schema.names),
             has_explanations=explanations is not None,

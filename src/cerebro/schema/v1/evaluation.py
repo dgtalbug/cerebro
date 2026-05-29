@@ -33,7 +33,7 @@ class BinaryEval(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    objective: Literal["binary"]
+    objective: Literal["binary", "cross_entropy", "binary_crossentropy"]
     auc: float
     roc_curve: list[ROCPoint]
     confusion_matrix: list[ConfusionCell]
@@ -93,7 +93,7 @@ class RegressionEval(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    objective: Literal["regression"]
+    objective: Literal["regression", "quantile", "mape", "huber", "poisson", "tweedie"]
     rmse: float
     mae: float
     r2: float

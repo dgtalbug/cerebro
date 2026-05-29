@@ -21,23 +21,16 @@ from cerebro import __version__ as _CEREBRO_VERSION
 from cerebro.exceptions import CorruptArtifactError, UnsupportedObjectiveError
 from cerebro.schema.v1 import FeatureSchema, Importance, Source, Tree, TreeNode
 
-_OBJECTIVE_KEYWORDS: frozenset[str] = frozenset(
-    {
-        "binary",
-        "multiclass",
-        "regression",
-        "lambdarank",
-        "multi_output",
-        # Regression-family objectives — same tree structure, handled by LGBRegressionExtractor
-        "quantile",
-        "mape",
-        "huber",
-        "poisson",
-        "tweedie",
-        # Binary-family objectives — same tree structure, handled by LGBBinaryExtractor
-        "cross_entropy",
-        "binary_crossentropy",
-    }
+_REGRESSION_OBJECTIVES: frozenset[str] = frozenset(
+    {"regression", "quantile", "mape", "huber", "poisson", "tweedie"}
+)
+_BINARY_OBJECTIVES: frozenset[str] = frozenset(
+    {"binary", "cross_entropy", "binary_crossentropy"}
+)
+_OBJECTIVE_KEYWORDS: frozenset[str] = (
+    _REGRESSION_OBJECTIVES
+    | _BINARY_OBJECTIVES
+    | frozenset({"multiclass", "lambdarank", "multi_output"})
 )
 
 

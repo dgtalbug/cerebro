@@ -72,16 +72,18 @@ def evaluate(
         UnsupportedObjectiveError: For unknown objective strings.
     """
     result: BinaryEval | MulticlassEval | RegressionEval | RankingEval
-    if objective == "binary":
-        result = _evaluate_binary(predictions, labels)
+    if objective in ("binary", "cross_entropy", "binary_crossentropy"):
+        result = _evaluate_binary(predictions, labels, objective)
     elif objective == "multiclass":
         if predictions.ndim == 2:
             n_classes = int(predictions.shape[1])
         else:
             n_classes = len(np.unique(labels))
         result = _evaluate_multiclass(predictions, labels, n_classes)
-    elif objective in ("regression", "multi_output"):
-        result = _evaluate_regression(predictions, labels)
+    elif objective in (
+        "regression", "multi_output", "quantile", "mape", "huber", "poisson", "tweedie"
+    ):
+        result = _evaluate_regression(predictions, labels, objective)
     elif objective == "lambdarank":
         if query_ids is None:
             raise ValueError("query_ids is required for lambdarank evaluation")
@@ -101,7 +103,9 @@ def evaluate(
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_binary(predictions: np.ndarray, labels: np.ndarray) -> BinaryEval:
+def _evaluate_binary(
+    predictions: np.ndarray, labels: np.ndarray, objective: str = "binary"
+) -> BinaryEval:
     probs = predictions.ravel()
     hard = (probs >= 0.5).astype(int)
 
@@ -116,7 +120,7 @@ def _evaluate_binary(predictions: np.ndarray, labels: np.ndarray) -> BinaryEval:
     cm_cells = _cm_to_cells(cm)
 
     return BinaryEval(
-        objective="binary",
+        objective=objective,
         auc=auc,
         roc_curve=roc_points,
         confusion_matrix=cm_cells,
@@ -176,7 +180,9 @@ def _evaluate_multiclass(
 # ---------------------------------------------------------------------------
 
 
-def _evaluate_regression(predictions: np.ndarray, labels: np.ndarray) -> RegressionEval:
+def _evaluate_regression(
+    predictions: np.ndarray, labels: np.ndarray, objective: str = "regression"
+) -> RegressionEval:
     preds = predictions.ravel()
     lbls = labels.ravel()
 
@@ -222,7 +228,7 @@ def _evaluate_regression(predictions: np.ndarray, labels: np.ndarray) -> Regress
     ]
 
     return RegressionEval(
-        objective="regression",
+        objective=objective,
         rmse=rmse,
         mae=mae,
         r2=r2,

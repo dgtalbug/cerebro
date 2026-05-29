@@ -7,7 +7,18 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict
 
 ObjectiveLiteral = Literal[
-    "binary", "multiclass", "regression", "lambdarank", "multi_output"
+    "binary",
+    "multiclass",
+    "regression",
+    "lambdarank",
+    "multi_output",
+    "quantile",
+    "mape",
+    "huber",
+    "poisson",
+    "tweedie",
+    "cross_entropy",
+    "binary_crossentropy",
 ]
 
 

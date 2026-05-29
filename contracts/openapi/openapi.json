@@ -60,7 +60,11 @@
             "type": "number"
           },
           "objective": {
-            "const": "binary",
+            "enum": [
+              "binary",
+              "cross_entropy",
+              "binary_crossentropy"
+            ],
             "title": "Objective",
             "type": "string"
           },
@@ -924,7 +928,14 @@
               "multiclass",
               "regression",
               "lambdarank",
-              "multi_output"
+              "multi_output",
+              "quantile",
+              "mape",
+              "huber",
+              "poisson",
+              "tweedie",
+              "cross_entropy",
+              "binary_crossentropy"
             ],
             "title": "Objective",
             "type": "string"
@@ -1262,7 +1273,14 @@
             "type": "number"
           },
           "objective": {
-            "const": "regression",
+            "enum": [
+              "regression",
+              "quantile",
+              "mape",
+              "huber",
+              "poisson",
+              "tweedie"
+            ],
             "title": "Objective",
             "type": "string"
           },

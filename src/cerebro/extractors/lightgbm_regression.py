@@ -14,6 +14,7 @@ import numpy as np
 
 from cerebro.exceptions import UnsupportedObjectiveError
 from cerebro.extractors._lightgbm_base import (
+    _REGRESSION_OBJECTIVES,
     _build_feature_schema,
     _build_importance,
     _build_m3_sections,
@@ -48,9 +49,9 @@ class LGBRegressionExtractor:
         booster = _load_booster(path)
         dumped: dict[str, Any] = booster.dump_model()
         objective = _resolve_objective(dumped)
-        if objective != "regression":
+        if objective not in _REGRESSION_OBJECTIVES:
             raise UnsupportedObjectiveError(
-                "LGBRegressionExtractor requires regression objective; "
+                f"LGBRegressionExtractor requires a regression-family objective; "
                 f"got {objective!r}",
                 context={"objective": objective},
             )
@@ -59,7 +60,7 @@ class LGBRegressionExtractor:
         feature_schema = _build_feature_schema(dumped, booster)
         tree_infos = dumped.get("tree_info", [])
         model = Model(
-            objective="regression",
+            objective=objective,
             num_class=1,
             num_iteration=len(tree_infos),
             params=_extract_params(booster),
@@ -98,13 +99,13 @@ class LGBRegressionExtractor:
             eval_samples=eval_samples,
             eval_labels=eval_labels,
             training_table_path=training_table_path,
-            objective="regression",
+            objective=objective,
         )
 
         _LOG.info(
             "artifact.extracted",
             framework="lightgbm",
-            objective="regression",
+            objective=objective,
             num_trees=len(trees),
             num_features=len(feature_schema.names),
             has_explanations=explanations is not None,

@@ -281,9 +281,9 @@ export interface components {
             f1: number;
             /**
              * Objective
-             * @constant
+             * @enum {string}
              */
-            objective: "binary";
+            objective: "binary" | "cross_entropy" | "binary_crossentropy";
             /** Precision */
             precision: number;
             /** Recall */
@@ -588,7 +588,7 @@ export interface components {
              * Objective
              * @enum {string}
              */
-            objective: "binary" | "multiclass" | "regression" | "lambdarank" | "multi_output";
+            objective: "binary" | "multiclass" | "regression" | "lambdarank" | "multi_output" | "quantile" | "mape" | "huber" | "poisson" | "tweedie" | "cross_entropy" | "binary_crossentropy";
             /** Params */
             params: {
                 [key: string]: unknown;
@@ -725,9 +725,9 @@ export interface components {
             mae: number;
             /**
              * Objective
-             * @constant
+             * @enum {string}
              */
-            objective: "regression";
+            objective: "regression" | "quantile" | "mape" | "huber" | "poisson" | "tweedie";
             /** R2 */
             r2: number;
             /** Residuals Histogram */
