@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useIngest, useModels, useModelVersions, type IngestParams } from "../lib/api/queries";
 
@@ -17,12 +17,13 @@ function FileZone({
   required?: boolean;
   onChange: (f: File | null) => void;
 }) {
-  const ref = useRef<HTMLInputElement>(null);
+  const inputId = useId();
   const [dragging, setDragging] = useState(false);
+  const [inputKey, setInputKey] = useState(0);
 
   return (
-    <div
-      onClick={() => ref.current?.click()}
+    <label
+      htmlFor={inputId}
       onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
       onDragLeave={() => setDragging(false)}
       onDrop={(e) => {
@@ -44,7 +45,8 @@ function FileZone({
       }}
     >
       <input
-        ref={ref}
+        key={inputKey}
+        id={inputId}
         type="file"
         accept={accept}
         style={{ display: "none" }}
@@ -74,14 +76,14 @@ function FileZone({
       </div>
       {file && (
         <button
-          onClick={(e) => { e.stopPropagation(); onChange(null); if (ref.current) ref.current.value = ""; }}
+          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(null); setInputKey((k) => k + 1); }}
           style={{ background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer", padding: "4px", lineHeight: 1 }}
           title="Clear"
         >
           ✕
         </button>
       )}
-    </div>
+    </label>
   );
 }
 

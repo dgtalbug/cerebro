@@ -28,6 +28,15 @@ _REGISTRY: dict[str, type] = {
     "regression": LGBRegressionExtractor,
     "lambdarank": LGBRankerExtractor,
     "multi_output": LGBMultiOutputExtractor,
+    # Regression-family: same tree structure, reuse LGBRegressionExtractor
+    "quantile": LGBRegressionExtractor,
+    "mape": LGBRegressionExtractor,
+    "huber": LGBRegressionExtractor,
+    "poisson": LGBRegressionExtractor,
+    "tweedie": LGBRegressionExtractor,
+    # Binary-family: same tree structure, reuse LGBBinaryExtractor
+    "cross_entropy": LGBBinaryExtractor,
+    "binary_crossentropy": LGBBinaryExtractor,
 }
 
 
