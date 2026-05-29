@@ -78,7 +78,13 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Enrich */
+        /**
+         * Enrich
+         * @description Add a data profile section to an existing artifact.
+         *
+         *     SHAP and evaluation enrichment require re-ingesting the model file via
+         *     POST /artifacts/ingest — the API layer cannot import LightGBM (invariant #2).
+         */
         patch: operations["enrich_artifacts__artifact_id__enrich_patch"];
         trace?: never;
     };
@@ -258,15 +264,6 @@ export interface components {
         };
         /** Body_enrich_artifacts__artifact_id__enrich_patch */
         Body_enrich_artifacts__artifact_id__enrich_patch: {
-            /** Labels */
-            labels?: string | null;
-            /**
-             * Model File
-             * @description Model .txt file (required for SHAP/evaluation)
-             */
-            model_file?: string | null;
-            /** Samples */
-            samples?: string | null;
             /** Training Table */
             training_table?: string | null;
         };

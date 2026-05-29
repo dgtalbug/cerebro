@@ -60,43 +60,6 @@
       },
       "Body_enrich_artifacts__artifact_id__enrich_patch": {
         "properties": {
-          "labels": {
-            "anyOf": [
-              {
-                "contentMediaType": "application/octet-stream",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Labels"
-          },
-          "model_file": {
-            "anyOf": [
-              {
-                "contentMediaType": "application/octet-stream",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Model .txt file (required for SHAP/evaluation)",
-            "title": "Model File"
-          },
-          "samples": {
-            "anyOf": [
-              {
-                "contentMediaType": "application/octet-stream",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Samples"
-          },
           "training_table": {
             "anyOf": [
               {
@@ -1776,6 +1739,7 @@
     },
     "/artifacts/{artifact_id}/enrich": {
       "patch": {
+        "description": "Add a data profile section to an existing artifact.\n\nSHAP and evaluation enrichment require re-ingesting the model file via\nPOST /artifacts/ingest \u2014 the API layer cannot import LightGBM (invariant #2).",
         "operationId": "enrich_artifacts__artifact_id__enrich_patch",
         "parameters": [
           {
