@@ -323,5 +323,49 @@ def index(
         typer.echo(f"index: updated last_seen_at for {count} artifact(s)")
 
 
+@app.command()
+@_handle_cerebro_errors
+def ask(
+    artifact: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to a .cerebro.json artifact file.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    question: Annotated[
+        str,
+        typer.Argument(help="Question to ask about the artifact."),
+    ],
+) -> None:
+    """Ask the agent a question about a canonical artifact."""
+    import asyncio
+
+    from cerebro.agent.context import shape_context
+    from cerebro.agent.prompts import SYSTEM_PROMPT
+    from cerebro.agent.providers import build_provider
+
+    provider = build_provider()
+    if provider is None:
+        typer.echo(
+            "error: CEREBRO_LLM_PROVIDER is not set. "
+            "Set it to 'ollama' or 'copilot' before using cerebro ask.",
+            err=True,
+        )
+        raise typer.Exit(code=1)
+
+    loaded = read_artifact(artifact)
+    context = shape_context(loaded)
+    response = asyncio.run(provider.reason(SYSTEM_PROMPT, context, question))
+
+    typer.echo(response.answer)
+    if response.citations:
+        typer.echo("\nCitations:")
+        for cite in response.citations:
+            typer.echo(f"  - {cite}")
+
+
 if __name__ == "__main__":
     app()

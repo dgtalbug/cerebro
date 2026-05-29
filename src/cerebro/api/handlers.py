@@ -13,10 +13,13 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 
 from cerebro.exceptions import (
+    AgentError,
     ArtifactNotFoundError,
     CerebroError,
+    ContextTooLargeError,
     CorruptArtifactError,
     EnrichmentError,
+    LLMProviderError,
     ModelNotFoundError,
     RegistryError,
     SchemaValidationError,
@@ -40,6 +43,9 @@ _STATUS_BY_EXCEPTION: dict[type[CerebroError], int] = {
     UnsupportedFrameworkError: 422,
     EnrichmentError: 400,
     RegistryError: 500,
+    LLMProviderError: 502,
+    ContextTooLargeError: 422,
+    AgentError: 503,
 }
 
 

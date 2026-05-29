@@ -16,6 +16,7 @@ authors = [{ name = "Bala" }]
 # optional-dependencies so `uv sync` stays light by default
 # (see ARCHITECTURE.md).
 dependencies = [
+    "openai>=1.109.1",
     "pydantic>=2.13,<3",
     "python-multipart>=0.0.29",
     "structlog>=25.5,<27",
@@ -36,6 +37,7 @@ api = [
     "uvicorn[standard]>=0.48,<1",
     "typer>=0.26,<1",
     "python-multipart>=0.0.20,<1",
+    "openai>=1.55,<2",
 ]
 # AI agent provider (default impl).
 agent = [
@@ -66,6 +68,7 @@ dev = [
     "typer>=0.26,<1",
     "fastapi>=0.136,<1",
     "uvicorn[standard]>=0.48,<1",
+    "openai>=1.55,<2",
 ]
 
 [project.scripts]
@@ -96,7 +99,7 @@ plugins = ["pydantic.mypy"]
 # Any inside the extractor / tests; the canonical schema (which is fully
 # typed) is what consumers see, so untyped boundaries here are acceptable.
 [[tool.mypy.overrides]]
-module = ["lightgbm", "lightgbm.*", "sklearn", "sklearn.*", "shap", "shap.*", "duckdb", "duckdb.*"]
+module = ["lightgbm", "lightgbm.*", "sklearn", "sklearn.*", "shap", "shap.*", "duckdb", "duckdb.*", "openai", "openai.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

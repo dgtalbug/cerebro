@@ -6,9 +6,8 @@ A provider-agnostic LLM layer that reasons about model behavior in natural
 language by reading a `CerebroArtifact` — never by calling LightGBM. The agent
 receives the artifact (shaped into a token-efficient context) plus a question,
 and returns a structured answer with citations back to specific artifact paths.
-It is BYOK and provider-agnostic: Anthropic Claude is the reference
-implementation, with OpenAI or local (Ollama) implementations addable behind the
-same interface.
+It is provider-agnostic: the supported providers for MVP 1 are Ollama (local
+inference) and the GitHub Copilot Models API.
 
 ### Source references
 
@@ -39,14 +38,16 @@ knowledge of the model comes only from the canonical JSON.
 
 ### Requirement: Provider-agnostic interface
 
-The agent SHALL define an `LLMProvider` protocol (`reason(system_prompt,
-artifact_context, question) -> AgentResponse`) so providers are swappable. The
-default implementation uses the Anthropic SDK; the interface MUST allow OpenAI
-or local providers without changing callers.
+The agent SHALL define an `LLMProvider` protocol
+(`reason(system_prompt, artifact_context, question) -> AgentResponse`) so
+providers are swappable. For MVP 1, the supported providers are **Ollama**
+(local inference) and the **GitHub Copilot Models API** (via `GITHUB_TOKEN`).
+No Anthropic, OpenAI, or other external API is required or supported in this
+release. The interface MUST allow future providers without changing callers.
 
 #### Scenario: Swapping the provider
 
-- **WHEN** a different provider implementation is configured
+- **WHEN** `CEREBRO_LLM_PROVIDER` is changed between `ollama` and `copilot`
 - **THEN** callers (CLI `cerebro ask`, `POST /agent/query`) work unchanged
   because they depend on the protocol, not a concrete provider
 
@@ -95,11 +96,18 @@ returning `{answer, citations}`).
 When no provider credential is configured, the agent surface SHALL fail clearly
 rather than crash or hang.
 
-#### Scenario: Agent endpoint with no API key
+#### Scenario: Agent endpoint with no provider configured
 
-- **WHEN** `ANTHROPIC_API_KEY` is absent and `POST /agent/query` is called
-- **THEN** the endpoint returns HTTP 503 (service unavailable) indicating the
-  agent is not configured
+- **WHEN** `CEREBRO_LLM_PROVIDER` is unset and `POST /agent/query` is called
+- **THEN** the endpoint returns HTTP 503 with problem JSON containing
+  `"type": "agent-unavailable"` and a message explaining that
+  `CEREBRO_LLM_PROVIDER` must be set to `ollama` or `copilot`
+
+#### Scenario: Copilot token absent
+
+- **WHEN** `CEREBRO_LLM_PROVIDER=copilot` but `GITHUB_TOKEN` is unset
+- **THEN** `build_provider()` raises `ValueError` at startup with a message
+  naming the missing variable
 
 #### Scenario: Provider call fails
 

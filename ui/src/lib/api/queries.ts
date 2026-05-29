@@ -360,3 +360,39 @@ export function useIngest() {
     },
   });
 }
+
+// ---- Agent ---------------------------------------------------------------
+
+export interface AgentQueryRequest {
+  artifact_id: string;
+  question: string;
+}
+
+export interface AgentQueryResponse {
+  answer: string;
+  citations: string[];
+}
+
+export function useAgentQuery() {
+  return useMutation<AgentQueryResponse, Error, AgentQueryRequest>({
+    mutationFn: async (params) => {
+      const resp = await fetch(`${BASE_URL}/agent/query`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(params),
+      });
+      if (resp.status === 503) {
+        const body = await resp.json().catch(() => ({})) as { detail?: string };
+        throw Object.assign(
+          new Error(body.detail ?? "Agent not configured"),
+          { status: 503 }
+        );
+      }
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({})) as { detail?: string };
+        throw new Error(body.detail ?? `Agent query failed (${resp.status})`);
+      }
+      return resp.json() as Promise<AgentQueryResponse>;
+    },
+  });
+}
