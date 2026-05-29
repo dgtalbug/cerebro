@@ -13,6 +13,7 @@ from fastapi import FastAPI
 from cerebro import __version__
 from cerebro.api.handlers import cerebro_error_handler
 from cerebro.api.routes import (
+    agent_router,
     artifacts_router,
     data_profile_router,
     evaluation_router,
@@ -56,6 +57,7 @@ def create_app() -> FastAPI:
     app.include_router(data_profile_router)
     app.include_router(ingest_router)
     app.include_router(models_router)
+    app.include_router(agent_router)
 
     return app
 

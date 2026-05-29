@@ -1,6 +1,45 @@
 {
   "components": {
     "schemas": {
+      "AgentQueryRequest": {
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "question"
+        ],
+        "title": "AgentQueryRequest",
+        "type": "object"
+      },
+      "AgentQueryResponse": {
+        "properties": {
+          "answer": {
+            "title": "Answer",
+            "type": "string"
+          },
+          "citations": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Citations",
+            "type": "array"
+          }
+        },
+        "required": [
+          "answer",
+          "citations"
+        ],
+        "title": "AgentQueryResponse",
+        "type": "object"
+      },
       "BinaryEval": {
         "additionalProperties": false,
         "description": "Binary classification evaluation metrics.",
@@ -116,7 +155,7 @@
           },
           "model": {
             "contentMediaType": "application/octet-stream",
-            "description": "LightGBM .txt model file",
+            "description": "LightGBM model file (.txt, .lgb, .pkl)",
             "title": "Model",
             "type": "string"
           },
@@ -681,6 +720,15 @@
       "HealthBody": {
         "description": "Response shape for `GET /health`.",
         "properties": {
+          "agent_status": {
+            "enum": [
+              "available",
+              "unconfigured",
+              "unreachable"
+            ],
+            "title": "Agent Status",
+            "type": "string"
+          },
           "schema_version": {
             "const": "1.0.0",
             "title": "Schema Version",
@@ -699,7 +747,8 @@
         "required": [
           "status",
           "version",
-          "schema_version"
+          "schema_version",
+          "agent_status"
         ],
         "title": "HealthBody",
         "type": "object"
@@ -1611,6 +1660,47 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/agent/query": {
+      "post": {
+        "operationId": "agent_query_agent_query_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AgentQueryRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AgentQueryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Agent Query",
+        "tags": [
+          "agent"
+        ]
+      }
+    },
     "/artifacts/ingest": {
       "post": {
         "operationId": "ingest_artifacts_ingest_post",

@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/agent/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Agent Query */
+        post: operations["agent_query_agent_query_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/ingest": {
         parameters: {
             query?: never;
@@ -237,6 +254,20 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AgentQueryRequest */
+        AgentQueryRequest: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Question */
+            question: string;
+        };
+        /** AgentQueryResponse */
+        AgentQueryResponse: {
+            /** Answer */
+            answer: string;
+            /** Citations */
+            citations: string[];
+        };
         /**
          * BinaryEval
          * @description Binary classification evaluation metrics.
@@ -277,7 +308,7 @@ export interface components {
             labels?: string | null;
             /**
              * Model
-             * @description LightGBM .txt model file
+             * @description LightGBM model file (.txt, .lgb, .pkl)
              */
             model: string;
             /**
@@ -465,6 +496,11 @@ export interface components {
          * @description Response shape for `GET /health`.
          */
         HealthBody: {
+            /**
+             * Agent Status
+             * @enum {string}
+             */
+            agent_status: "available" | "unconfigured" | "unreachable";
             /**
              * Schema Version
              * @constant
@@ -828,6 +864,39 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    agent_query_agent_query_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AgentQueryRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AgentQueryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     ingest_artifacts_ingest_post: {
         parameters: {
             query?: never;

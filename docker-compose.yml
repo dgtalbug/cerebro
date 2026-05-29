@@ -24,7 +24,11 @@ services:
     environment:
       CEREBRO_DATA_DIR: /data
       CEREBRO_LOG_LEVEL: ${CEREBRO_LOG_LEVEL:-INFO}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      CEREBRO_LLM_PROVIDER: ${CEREBRO_LLM_PROVIDER:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_COPILOT_MODEL: ${GITHUB_COPILOT_MODEL:-}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-}
     volumes:
       - ./data:/data
     ports:

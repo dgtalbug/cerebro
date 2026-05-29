@@ -45,6 +45,8 @@ def _resolve_objective(dumped: dict[str, Any]) -> str:
 
 
 def _load_booster(path: Path) -> lgb.Booster:
+    if path.suffix.lower() in {".pkl", ".pickle"}:
+        return _load_booster_from_pickle(path)
     try:
         return lgb.Booster(model_file=str(path))
     except (lgb.basic.LightGBMError, FileNotFoundError, OSError) as original:
@@ -52,6 +54,30 @@ def _load_booster(path: Path) -> lgb.Booster:
             f"could not load LightGBM booster from {path}",
             context={"model_path": str(path)},
         ) from original
+
+
+def _load_booster_from_pickle(path: Path) -> lgb.Booster:
+    import pickle
+
+    try:
+        with open(path, "rb") as fh:
+            obj = pickle.load(fh)
+    except Exception as original:
+        raise CorruptArtifactError(
+            f"could not unpickle model from {path}",
+            context={"model_path": str(path)},
+        ) from original
+
+    if isinstance(obj, lgb.Booster):
+        return obj
+    booster = getattr(obj, "booster_", None)
+    if isinstance(booster, lgb.Booster):
+        return booster
+    raise CorruptArtifactError(
+        f"pickle at {path} does not contain an lgb.Booster "
+        "or fitted LightGBM estimator",
+        context={"model_path": str(path), "pickled_type": type(obj).__name__},
+    )
 
 
 def _resolve_categorical_indices(

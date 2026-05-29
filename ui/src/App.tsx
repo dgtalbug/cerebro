@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
 import { AppShell } from "./components/layout/AppShell";
+import { Agent } from "./views/Agent";
 import { Ingest } from "./views/Ingest";
 import { ModelDetail } from "./views/ModelDetail";
 import { Overview } from "./views/Overview";
@@ -39,6 +40,7 @@ export default function App() {
         <Route path="/artifacts/:id/data" element={<Data />} />
         <Route path="/artifacts/:id/explanations" element={<Explanations />} />
         <Route path="/artifacts/:id/evaluation" element={<Evaluation />} />
+        <Route path="/artifacts/:id/agent" element={<Agent />} />
         <Route
           path="*"
           element={

@@ -14,7 +14,7 @@ UI_PORT  ?= 3000
 API_PORT ?= 8000
 
 .PHONY: help \
-        up down build rebuild restart ps logs shell-backend shell-ui clean seed \
+        up down build rebuild restart ps logs shell-backend shell-ui clean seed examples \
         lint fmt test contracts open
 
 # ----------------------------------------------------------------------------
@@ -52,6 +52,9 @@ shell-ui: ## Open a shell in the ui container
 
 seed: ## Seed example artifacts into ./data/artifacts/ (run once before first `make up`)
 	uv run python scripts/seed_dev_data.py
+
+examples: ## (Re)generate example .cerebro.json artifacts into examples/
+	uv run python scripts/generate_examples.py
 
 clean: ## Stop containers AND remove ./data/ volume directory (DATA LOSS)
 	$(COMPOSE) down

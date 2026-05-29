@@ -12,11 +12,10 @@ def test_health_returns_ok(client: TestClient) -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body == {
-        "status": "ok",
-        "version": __version__,
-        "schema_version": "1.0.0",
-    }
+    assert body["status"] == "ok"
+    assert body["version"] == __version__
+    assert body["schema_version"] == "1.0.0"
+    assert body["agent_status"] in ("available", "unconfigured", "unreachable")
 
 
 def test_health_echoes_correlation_id_on_response(client: TestClient) -> None:

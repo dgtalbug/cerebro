@@ -1,0 +1,46 @@
+# docker-compose.dev.yml — Development overrides for hot-reload.
+#
+# Layer on top of the base compose file:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# The backend mounts ./src so Python changes trigger uvicorn --reload.
+# The UI service runs pnpm dev instead of serving pre-built nginx assets.
+
+services:
+  backend:
+    build:
+      target: builder
+    volumes:
+      - ./src:/app/src
+      - ./data:/data
+    environment:
+      CEREBRO_LOG_LEVEL: DEBUG
+    command:
+      - uv
+      - run
+      - uvicorn
+      - cerebro.api.app:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+      - --log-level
+      - debug
+
+  ui:
+    build:
+      context: .
+      dockerfile: docker/ui.Dockerfile
+      target: deps
+    volumes:
+      - ./ui/src:/app/ui/src
+      - ./ui/public:/app/ui/public
+    ports:
+      - "${UI_PORT:-3000}:5173"
+    command:
+      - pnpm
+      - --filter
+      - ui
+      - dev
+      - --host
