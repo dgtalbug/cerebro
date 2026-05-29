@@ -8,9 +8,8 @@ from typing import Any
 
 import pytest
 
-from cerebro.exceptions import ModelNotFoundError, VersionConflictError
-from cerebro.storage.registry import RebuildReport, Registry
-
+from cerebro.exceptions import ModelNotFoundError
+from cerebro.storage.registry import Registry
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -165,7 +164,9 @@ def test_update_artifact_sections_flips_flags(tmp_path: Path) -> None:
     assert row_before["has_shap"] == 0
     assert row_before["extracted_at"] == "2026-05-28T12:00:00Z"
 
-    reg.update_artifact_sections(artifact_id, has_shap=True, enriched_at="2026-05-29T10:00:00Z")
+    reg.update_artifact_sections(
+        artifact_id, has_shap=True, enriched_at="2026-05-29T10:00:00Z"
+    )
 
     row_after = reg.get_artifact_row(artifact_id)
     assert row_after is not None
@@ -196,7 +197,9 @@ def test_update_artifact_sections_does_not_touch_model_versions(tmp_path: Path) 
 # ---------------------------------------------------------------------------
 
 
-def _write_minimal_cerebro_json(path: Path, binary_artifact_dict: dict[str, Any]) -> None:
+def _write_minimal_cerebro_json(
+    path: Path, binary_artifact_dict: dict[str, Any]
+) -> None:
     import json
     path.parent.mkdir(parents=True, exist_ok=True)
     raw = json.dumps(binary_artifact_dict).encode()
@@ -211,7 +214,7 @@ def test_rebuild_reconstructs_models_and_versions(
     # Layout: loan_default/v1/<file>.cerebro.json
     f1 = artifacts_dir / "loan_default" / "v1" / "loan_default_v1_abc.cerebro.json"
     f2 = artifacts_dir / "loan_default" / "v2" / "loan_default_v2_def.cerebro.json"
-    f3 = artifacts_dir / "revenue_forecast" / "v1" / "revenue_forecast_v1_xyz.cerebro.json"
+    f3 = artifacts_dir / "revenue_forecast" / "v1" / "rev_v1_xyz.cerebro.json"
 
     _write_minimal_cerebro_json(f1, binary_artifact_dict)
     _write_minimal_cerebro_json(f2, binary_artifact_dict)

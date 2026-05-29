@@ -14,7 +14,7 @@ import gzip
 import hashlib
 import re
 import tempfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Annotated
 
@@ -40,7 +40,11 @@ def _slugify(name: str) -> str:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        datetime.now(UTC)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
 
 
 async def _read(upload: UploadFile | None) -> bytes | None:
@@ -64,7 +68,9 @@ def _to_ndarray(raw: bytes | None, label: str) -> np.ndarray | None:
             return np.asarray(next(iter(cols.values())))
         return np.column_stack([np.asarray(v) for v in cols.values()])
     except Exception as exc:
-        raise HTTPException(status_code=422, detail=f"Could not parse {label}: {exc}") from exc
+        raise HTTPException(
+            status_code=422, detail=f"Could not parse {label}: {exc}"
+        ) from exc
 
 
 def _sha256(data: bytes) -> str:
@@ -74,7 +80,9 @@ def _sha256(data: bytes) -> str:
 @router.post("/artifacts/ingest", response_model=IngestResponse, status_code=201)
 async def ingest(
     model: Annotated[UploadFile, File(description="LightGBM .txt model file")],
-    model_name: Annotated[str, Form(description="Logical model name, e.g. 'loan_default_classifier'")],
+    model_name: Annotated[
+        str, Form(description="Logical model name, e.g. 'loan_default_classifier'")
+    ],
     notes: Annotated[str | None, Form()] = None,
     samples: Annotated[UploadFile | None, File()] = None,
     labels: Annotated[UploadFile | None, File()] = None,
@@ -187,7 +195,10 @@ async def ingest(
 @router.patch("/artifacts/{artifact_id}/enrich", response_model=EnrichResponse)
 async def enrich(
     artifact_id: str,
-    model_file: Annotated[UploadFile | None, File(description="Model .txt file (required for SHAP/evaluation)")] = None,
+    model_file: Annotated[
+        UploadFile | None,
+        File(description="Model .txt file (required for SHAP/evaluation)"),
+    ] = None,
     samples: Annotated[UploadFile | None, File()] = None,
     labels: Annotated[UploadFile | None, File()] = None,
     training_table: Annotated[UploadFile | None, File()] = None,
@@ -209,12 +220,15 @@ async def enrich(
     has_training = training_table is not None
 
     needs_shap = has_model and has_samples and existing.explanations is None
-    needs_eval = has_model and has_samples and has_labels and existing.evaluation is None
+    needs_eval = (
+        has_model and has_samples and has_labels and existing.evaluation is None
+    )
     needs_profile = has_training and existing.data_profile is None
 
     if not (needs_shap or needs_eval or needs_profile):
         raise EnrichmentError(
-            "artifact already has all requested sections or required files were not provided",
+            "artifact already has all requested sections"
+            " or required files were not provided",
             context={"artifact_id": artifact_id},
         )
 
@@ -315,7 +329,9 @@ async def enrich(
         artifact_id,
         has_shap="shap" in sections_added or bool(row["has_shap"]),
         has_evaluation="evaluation" in sections_added or bool(row["has_evaluation"]),
-        has_data_profile="data_profile" in sections_added or bool(row["has_data_profile"]),
+        has_data_profile=(
+            "data_profile" in sections_added or bool(row["has_data_profile"])
+        ),
         content_sha256=new_sha256,
         size_bytes=len(raw_on_disk),
         enriched_at=enriched_at,

@@ -198,7 +198,7 @@ export function Ingest() {
   const handleModelChange = (f: File | null) => {
     setModelFile(f);
     if (f && !modelName) {
-      setModelName(f.name.replace(/\.txt$/i, "").replace(/[^a-zA-Z0-9_\-]/g, "_").slice(0, 80));
+      setModelName(f.name.replace(/\.txt$/i, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80));
     }
   };
 

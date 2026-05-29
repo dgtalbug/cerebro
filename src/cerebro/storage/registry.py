@@ -18,7 +18,7 @@ import re
 import sqlite3
 import uuid
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -120,7 +120,11 @@ def _drop_all(db_path: Path) -> None:
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        datetime.now(UTC)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
 
 
 def _short_hash(content: bytes) -> str:
@@ -182,15 +186,20 @@ class Registry:
                 conn.rollback()
                 return _Model(**dict(existing))
             conn.execute(
-                "INSERT INTO models (id, name, description, created_at) VALUES (?, ?, ?, ?)",
+                "INSERT INTO models (id, name, description, created_at)"
+                " VALUES (?, ?, ?, ?)",
                 (model_id, name, description, now),
             )
             conn.commit()
             _LOG.info("registry.model_created", model_id=model_id, name=name)
-            return _Model(id=model_id, name=name, description=description, created_at=now)
+            return _Model(
+                id=model_id, name=name, description=description, created_at=now
+            )
         except sqlite3.Error as exc:
             conn.rollback()
-            raise RegistryError("failed to register model", context={"name": name}) from exc
+            raise RegistryError(
+                "failed to register model", context={"name": name}
+            ) from exc
         finally:
             conn.close()
 
@@ -235,7 +244,9 @@ class Registry:
                 where_clauses.append("a.objective = ?")
                 params.append(objective)
 
-            where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
+            where_sql = (
+                "WHERE " + " AND ".join(where_clauses)
+            ) if where_clauses else ""
 
             # Latest version per model via correlated subquery
             sql = f"""
@@ -248,7 +259,8 @@ class Registry:
                 FROM models m
                 JOIN model_versions mv ON mv.model_id = m.id
                     AND mv.version = (
-                        SELECT MAX(v2.version) FROM model_versions v2 WHERE v2.model_id = m.id
+                        SELECT MAX(v2.version) FROM model_versions v2
+                        WHERE v2.model_id = m.id
                     )
                 JOIN artifacts a ON a.id = mv.artifact_id
                 {where_sql}
@@ -290,13 +302,15 @@ class Registry:
         try:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
-                "SELECT COALESCE(MAX(version), 0) AS max_v FROM model_versions WHERE model_id = ?",
+                "SELECT COALESCE(MAX(version), 0) AS max_v"
+                " FROM model_versions WHERE model_id = ?",
                 (model_id,),
             ).fetchone()
             next_version = (row["max_v"] if row else 0) + 1
             conn.execute(
                 """
-                INSERT INTO model_versions (id, model_id, version, artifact_id, notes, created_at)
+                INSERT INTO model_versions
+                    (id, model_id, version, artifact_id, notes, created_at)
                 VALUES (?, ?, ?, ?, ?, ?)
                 """,
                 (version_id, model_id, next_version, artifact_id, notes, now),
@@ -484,7 +498,7 @@ class Registry:
         try:
             conn.execute("BEGIN IMMEDIATE")
             conn.execute(
-                f"UPDATE artifacts SET {', '.join(updates)} WHERE id = ?",  # noqa: S608
+                f"UPDATE artifacts SET {', '.join(updates)} WHERE id = ?",
                 params,
             )
             conn.commit()
@@ -554,7 +568,7 @@ class Registry:
 
         for cerebro_file in sorted(artifacts_dir.rglob("*.cerebro.json")):
             parts = cerebro_file.relative_to(artifacts_dir).parts
-            if len(parts) != 3:  # noqa: PLR2004
+            if len(parts) != 3:
                 _LOG.warning("rebuild.skip_bad_layout", path=str(cerebro_file))
                 report.skipped_paths.append(str(cerebro_file))
                 continue
@@ -604,7 +618,7 @@ class Registry:
                 report.models_created += 1
             model_id = model_cache[model_name]
 
-            # Insert version row directly (bypass auto-increment to preserve exact number)
+            # Insert version row directly (preserve exact number from directory layout)
             version_uuid = str(uuid.uuid4())
             now = _now()
             conn = self._conn()
@@ -622,7 +636,11 @@ class Registry:
                 report.versions_created += 1
             except sqlite3.Error as exc:
                 conn.rollback()
-                _LOG.warning("rebuild.version_insert_failed", path=str(cerebro_file), error=str(exc))
+                _LOG.warning(
+                    "rebuild.version_insert_failed",
+                    path=str(cerebro_file),
+                    error=str(exc),
+                )
             finally:
                 conn.close()
 
