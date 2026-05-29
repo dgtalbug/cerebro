@@ -198,7 +198,7 @@ export function Ingest() {
   const handleModelChange = (f: File | null) => {
     setModelFile(f);
     if (f && !modelName) {
-      setModelName(f.name.replace(/\.txt$/i, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80));
+      setModelName(f.name.replace(/\.(txt|lgb|pkl|pickle)$/i, "").replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 80));
     }
   };
 
@@ -228,7 +228,7 @@ export function Ingest() {
       <div className="view-header">
         <div>
           <h1 className="view-title">Load <em>model</em></h1>
-          <p className="view-subtitle">Upload a LightGBM .txt file to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view.</p>
+          <p className="view-subtitle">Upload a LightGBM model file (.txt, .lgb, or .pkl) to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view.</p>
         </div>
       </div>
 
@@ -239,9 +239,9 @@ export function Ingest() {
             Model file <span style={{ color: "var(--accent)" }}>required</span>
           </div>
           <FileZone
-            label="Drop your LightGBM .txt file here, or click to browse"
-            hint="LightGBM text format — saved with booster.save_model('model.txt')"
-            accept=".txt"
+            label="Drop your LightGBM model file here, or click to browse"
+            hint=".txt / .lgb (text format) or .pkl (pickled Booster or sklearn wrapper)"
+            accept=".txt,.lgb,.pkl,.pickle"
             file={modelFile}
             required
             onChange={handleModelChange}
