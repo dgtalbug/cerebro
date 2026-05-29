@@ -75,7 +75,9 @@ def _sha256(data: bytes) -> str:
 
 @router.post("/artifacts/ingest", response_model=IngestResponse, status_code=201)
 async def ingest(
-    model: Annotated[UploadFile, File(description="LightGBM .txt model file")],
+    model: Annotated[
+        UploadFile, File(description="LightGBM model file (.txt, .lgb, .pkl)")
+    ],
     model_name: Annotated[
         str, Form(description="Logical model name, e.g. 'loan_default_classifier'")
     ],

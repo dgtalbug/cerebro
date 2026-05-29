@@ -104,7 +104,7 @@ def extract(
     model: Annotated[
         Path,
         typer.Argument(
-            help="Path to the framework-native model file (e.g. a LightGBM .txt).",
+            help="Path to the framework-native model file (.txt, .lgb, or .pkl).",
             exists=True,
             dir_okay=False,
             readable=True,
