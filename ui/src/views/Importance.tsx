@@ -64,6 +64,26 @@ function DivergenceBar({
   );
 }
 
+function UnnamedFeaturesNotice() {
+  return (
+    <div
+      style={{
+        padding: "8px 12px",
+        marginBottom: "12px",
+        borderRadius: "6px",
+        background: "var(--bg-elev-2)",
+        border: "1px solid var(--border)",
+        fontSize: "11px",
+        fontFamily: "var(--font-mono)",
+        color: "var(--text-dim)",
+      }}
+    >
+      Feature names were not set at training time — showing auto-generated column IDs.
+      Pass a named DataFrame or set <code>feature_name=</code> in LightGBM to fix this.
+    </div>
+  );
+}
+
 function ImportancePanel({ id, type }: { id: string; type: ImportanceType }) {
   const { data, isLoading, isError } = useImportance(id, type);
 
@@ -98,9 +118,11 @@ function ImportancePanel({ id, type }: { id: string; type: ImportanceType }) {
     );
   }
 
+  const isUnnamed = data.features.length > 0 && data.features.every((f) => /^Column_\d+$/.test(f.name));
   const max = Math.max(...data.features.map((f) => f.value), 0);
   return (
     <div>
+      {isUnnamed && <UnnamedFeaturesNotice />}
       {data.features.map((f) => (
         <FeatureBar key={f.name} name={f.name} value={f.value} max={max} />
       ))}

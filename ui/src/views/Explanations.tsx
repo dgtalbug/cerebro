@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMemo, useState } from "react";
 import { BarSparklineChart } from "reaviz";
 import type { ChartShallowDataShape } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { SectionLockedState } from "../components/SectionLockedState";
 import {
   useExplanations,
   type DecisionPath,
@@ -154,6 +155,7 @@ function PDPSparklines({ features }: { features: PDPFeature[] }) {
 
 export function Explanations() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useExplanations(id ?? "");
   const [tab, setTab] = useState<SampleTab>("shap");
   const [sampleIdx, setSampleIdx] = useState(0);
@@ -166,11 +168,16 @@ export function Explanations() {
     return (
       <div className="view">
         <ViewHeader title="Local" titleEmphasis="explanations" subtitle="SHAP values and decision paths" />
-        <div style={{ padding: "48px", textAlign: "center", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "13px" }}>
-          Explanations were not computed at extraction time.
-          <br />
-          Re-extract with <code>--samples &lt;path&gt; --labels &lt;path&gt;</code> to enable this view.
-        </div>
+        <SectionLockedState
+          title="SHAP explanations not computed"
+          description="Re-ingest this model with feature samples to unlock SHAP values, decision paths, and partial dependence plots."
+          files={[
+            { label: "Features (samples)", hint: "CSV/Parquet — one row per sample, columns matching the model's feature names (post-encoding if applicable). 200–1000 rows recommended." },
+            { label: "Labels (optional)", hint: "Single-column CSV with ground-truth targets — enables stratified SHAP background sampling and permutation importance." },
+          ]}
+          onAction={() => navigate("/ingest")}
+          actionLabel="Re-ingest with samples →"
+        />
       </div>
     );
   }

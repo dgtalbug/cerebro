@@ -87,24 +87,72 @@ function FileZone({
   );
 }
 
-function SectionToggle({ label, hint, open, onToggle }: { label: string; hint: string; open: boolean; onToggle: () => void }) {
+interface InstructionStep {
+  text?: string;
+  code?: string;
+}
+
+function SectionToggle({
+  label,
+  hint,
+  open,
+  onToggle,
+  instructions,
+}: {
+  label: string;
+  hint: string;
+  open: boolean;
+  onToggle: () => void;
+  instructions?: InstructionStep[];
+}) {
   return (
-    <button
-      onClick={onToggle}
-      style={{
-        display: "flex", alignItems: "center", gap: "10px", width: "100%",
-        background: "none", border: "none", cursor: "pointer", padding: "10px 0",
-        borderTop: "1px solid var(--border)",
-        color: open ? "var(--text)" : "var(--text-muted)",
-        textAlign: "left",
-      }}
-    >
-      <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", transition: "transform 0.15s", display: "inline-block", transform: open ? "rotate(90deg)" : "none" }}>▶</span>
-      <div>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", fontWeight: 500 }}>{label}</div>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px" }}>{hint}</div>
-      </div>
-    </button>
+    <div>
+      <button
+        onClick={onToggle}
+        style={{
+          display: "flex", alignItems: "center", gap: "10px", width: "100%",
+          background: "none", border: "none", cursor: "pointer", padding: "10px 0",
+          borderTop: "1px solid var(--border)",
+          color: open ? "var(--text)" : "var(--text-muted)",
+          textAlign: "left",
+        }}
+      >
+        <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", transition: "transform 0.15s", display: "inline-block", transform: open ? "rotate(90deg)" : "none" }}>▶</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", fontWeight: 500 }}>{label}</div>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px" }}>{hint}</div>
+        </div>
+      </button>
+      {open && instructions && instructions.length > 0 && (
+        <div
+          style={{
+            marginTop: "2px",
+            marginBottom: "8px",
+            padding: "10px 14px",
+            background: "var(--bg-elev-2)",
+            border: "1px solid var(--border)",
+            borderRadius: "var(--radius)",
+            fontSize: "11px",
+            color: "var(--text-dim)",
+            lineHeight: "1.6",
+          }}
+        >
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px", color: "var(--text-dim)", opacity: 0.7 }}>
+            How to generate
+          </div>
+          {instructions.map((step, i) => (
+            <div key={i} style={{ marginBottom: step.code ? "6px" : "2px" }}>
+              <span>{step.text}</span>
+              {step.code && (
+                <pre style={{ marginTop: "4px", padding: "6px 8px", background: "var(--bg)", borderRadius: "4px", fontFamily: "var(--font-mono)", fontSize: "10px", overflowX: "auto" }}>
+                  {step.code}
+                </pre>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -285,6 +333,13 @@ export function Ingest() {
           hint="Requires sample features + ground-truth labels"
           open={showShap}
           onToggle={() => setShowShap((v) => !v)}
+          instructions={[
+            { text: "Export the feature matrix your model was trained on (post-encoding, same column order the model expects):" },
+            { code: "X_train.to_csv('samples.csv', index=False)" },
+            { text: "Export the target column as a single-column CSV:" },
+            { code: "y_train.to_frame('label').to_csv('labels.csv', index=False)" },
+            { text: "200–1000 rows recommended. Column names must match booster.feature_name()." },
+          ]}
         />
         {showShap && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "4px" }}>
@@ -299,6 +354,12 @@ export function Ingest() {
           hint="Held-out eval set — unlocks ROC, confusion matrix, residuals"
           open={showEval}
           onToggle={() => setShowEval((v) => !v)}
+          instructions={[
+            { text: "Use a held-out set the model has never seen (val / test split):" },
+            { code: "X_eval.to_csv('eval_samples.csv', index=False)\ny_eval.to_frame('label').to_csv('eval_labels.csv', index=False)" },
+            { text: "Labels must be integers for binary (0/1) or multiclass (0…N-1). For multiclass: apply your LabelEncoder before exporting." },
+            { text: "Minimum 500 rows for stable metrics." },
+          ]}
         />
         {showEval && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "4px" }}>
@@ -313,6 +374,11 @@ export function Ingest() {
           hint="Full training table — unlocks distribution charts and correlation matrix"
           open={showData}
           onToggle={() => setShowData((v) => !v)}
+          instructions={[
+            { text: "Export your raw or lightly processed training dataframe — no encoding needed. Column names do not need to match model features." },
+            { code: "# Drop nested/struct columns first\nflat = df[[c for c in df.columns if df[c].dtype != object\n           or df[c].apply(type).eq(str).all()]]\nflat.to_parquet('training_table.parquet', index=False)" },
+            { text: "CSV, Parquet, and JSON are all accepted. Parquet is recommended for large tables." },
+          ]}
         />
         {showData && (
           <div style={{ marginBottom: "4px" }}>

@@ -1,6 +1,7 @@
 import { Suspense, lazy } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { SectionLockedState } from "../components/SectionLockedState";
 import {
   useEvaluation,
   type AnyEval,
@@ -71,43 +72,33 @@ function PanelFallback() {
   );
 }
 
+const BINARY_OBJECTIVES = new Set(["binary", "cross_entropy", "binary_crossentropy"]);
+const REGRESSION_OBJECTIVES = new Set(["regression", "multi_output", "quantile", "mape", "huber", "poisson", "tweedie"]);
+
 function EvalPanel({ data }: { data: AnyEval }) {
-  switch (data.objective) {
-    case "binary":
-      return (
-        <Suspense fallback={<PanelFallback />}>
-          <BinaryPanel eval={data as BinaryEval} />
-        </Suspense>
-      );
-    case "multiclass":
-      return (
-        <Suspense fallback={<PanelFallback />}>
-          <MulticlassPanel eval={data as MulticlassEval} />
-        </Suspense>
-      );
-    case "regression":
-      return (
-        <Suspense fallback={<PanelFallback />}>
-          <RegressionPanel eval={data as RegressionEval} />
-        </Suspense>
-      );
-    case "lambdarank":
-      return (
-        <Suspense fallback={<PanelFallback />}>
-          <RankingPanel eval={data as RankingEval} />
-        </Suspense>
-      );
-    default:
-      return (
-        <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "12px", padding: "24px 0" }}>
-          Unknown objective.
-        </div>
-      );
+  const obj = data.objective;
+  if (BINARY_OBJECTIVES.has(obj)) {
+    return <Suspense fallback={<PanelFallback />}><BinaryPanel eval={data as BinaryEval} /></Suspense>;
   }
+  if (obj === "multiclass") {
+    return <Suspense fallback={<PanelFallback />}><MulticlassPanel eval={data as MulticlassEval} /></Suspense>;
+  }
+  if (REGRESSION_OBJECTIVES.has(obj)) {
+    return <Suspense fallback={<PanelFallback />}><RegressionPanel eval={data as RegressionEval} /></Suspense>;
+  }
+  if (obj === "lambdarank") {
+    return <Suspense fallback={<PanelFallback />}><RankingPanel eval={data as RankingEval} /></Suspense>;
+  }
+  return (
+    <div style={{ color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "12px", padding: "24px 0" }}>
+      Unknown objective: {obj}
+    </div>
+  );
 }
 
 export function Evaluation() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useEvaluation(id ?? "");
 
   if (isLoading) return <div className="view-loading">Loading evaluation…</div>;
@@ -118,12 +109,17 @@ export function Evaluation() {
   if (isAbsent) {
     return (
       <div className="view">
-        <ViewHeader title="Model" titleEmphasis="evaluation" subtitle="Computed against held-out eval set at extraction time" />
-        <div style={{ padding: "48px", textAlign: "center", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "13px" }}>
-          Evaluation was not computed at extraction time.
-          <br />
-          Re-extract with <code>--eval-samples &lt;path&gt; --eval-labels &lt;path&gt;</code> to enable this view.
-        </div>
+        <ViewHeader title="Model" titleEmphasis="evaluation" subtitle="Objective-aware metrics against a held-out eval set" />
+        <SectionLockedState
+          title="Evaluation not computed"
+          description="Re-ingest this model with a held-out evaluation set to unlock ROC curves, confusion matrices, residual plots, and nDCG scores."
+          files={[
+            { label: "Eval features", hint: "CSV/Parquet — held-out samples the model has never seen. Must have the same columns as the training feature matrix (post-encoding)." },
+            { label: "Eval labels", hint: "Single-column CSV with ground-truth targets aligned to eval features. Binary: 0/1 integers. Multiclass: integer class indices. Regression: floats." },
+          ]}
+          onAction={() => navigate("/ingest")}
+          actionLabel="Re-ingest with eval set →"
+        />
       </div>
     );
   }

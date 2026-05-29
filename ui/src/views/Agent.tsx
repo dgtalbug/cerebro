@@ -24,35 +24,37 @@ function MessageBubble({ msg }: { msg: Message }) {
         flexDirection: "column",
         alignItems: isUser ? "flex-end" : "flex-start",
         gap: "4px",
-        marginBottom: "16px",
+        marginBottom: "12px",
       }}
     >
       <div
         style={{
-          maxWidth: "80%",
+          maxWidth: "78%",
           padding: "10px 14px",
-          borderRadius: "8px",
-          background: isUser ? "var(--accent-dim)" : "var(--surface-2)",
-          color: "var(--text)",
+          borderRadius: isUser ? "12px 12px 4px 12px" : "4px 12px 12px 12px",
+          background: isUser ? "var(--accent)" : "var(--bg-elev-2)",
+          color: isUser ? "var(--bg)" : "var(--text)",
           fontSize: "13px",
           lineHeight: "1.6",
           whiteSpace: "pre-wrap",
+          border: isUser ? "none" : "1px solid var(--border)",
         }}
       >
         {msg.text}
       </div>
       {msg.citations && msg.citations.length > 0 && (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", maxWidth: "80%" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", maxWidth: "78%" }}>
           {msg.citations.map((c) => (
             <code
               key={c}
               style={{
                 fontSize: "10px",
-                padding: "1px 5px",
-                borderRadius: "3px",
-                background: "var(--surface-3)",
+                padding: "2px 6px",
+                borderRadius: "4px",
+                background: "var(--bg-elev-2)",
                 color: "var(--text-dim)",
-                fontFamily: "monospace",
+                border: "1px solid var(--border)",
+                fontFamily: "var(--font-mono)",
               }}
             >
               {c}
@@ -70,17 +72,21 @@ function UnconfiguredBanner() {
       style={{
         padding: "12px 16px",
         borderRadius: "6px",
-        background: "var(--surface-2)",
+        background: "var(--bg-elev-2)",
         border: "1px solid var(--border)",
         fontSize: "12px",
-        color: "var(--text-dim)",
+        color: "var(--text-muted)",
         marginBottom: "16px",
+        lineHeight: 1.6,
       }}
     >
       Agent not configured — set{" "}
-      <code style={{ fontFamily: "monospace" }}>CEREBRO_LLM_PROVIDER</code> to{" "}
-      <code style={{ fontFamily: "monospace" }}>ollama</code> or{" "}
-      <code style={{ fontFamily: "monospace" }}>copilot</code> to enable reasoning.
+      <code style={{ fontFamily: "var(--font-mono)", background: "var(--bg-elev)", padding: "1px 4px", borderRadius: "3px" }}>CEREBRO_LLM_PROVIDER</code>{" "}
+      to{" "}
+      <code style={{ fontFamily: "var(--font-mono)", background: "var(--bg-elev)", padding: "1px 4px", borderRadius: "3px" }}>ollama</code>{" "}
+      or{" "}
+      <code style={{ fontFamily: "var(--font-mono)", background: "var(--bg-elev)", padding: "1px 4px", borderRadius: "3px" }}>copilot</code>{" "}
+      in your <code style={{ fontFamily: "var(--font-mono)", background: "var(--bg-elev)", padding: "1px 4px", borderRadius: "3px" }}>.env</code> to enable reasoning.
     </div>
   );
 }
@@ -91,13 +97,18 @@ export function Agent() {
   const [input, setInput] = useState("");
   const [unconfigured, setUnconfigured] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const mutation = useAgentQuery();
+
+  const scrollToBottom = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
   const submit = (question: string) => {
     if (!question.trim() || !id) return;
     setMessages((prev) => [...prev, { role: "user", text: question }]);
     setInput("");
     setUnconfigured(false);
+    setTimeout(scrollToBottom, 50);
 
     mutation.mutate(
       { artifact_id: id, question },
@@ -107,6 +118,7 @@ export function Agent() {
             ...prev,
             { role: "assistant", text: data.answer, citations: data.citations },
           ]);
+          setTimeout(scrollToBottom, 50);
         },
         onError: (err) => {
           const is503 = (err as Error & { status?: number }).status === 503;
@@ -118,54 +130,111 @@ export function Agent() {
               { role: "assistant", text: `Error: ${err.message}` },
             ]);
           }
+          setTimeout(scrollToBottom, 50);
         },
       }
     );
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
-      <ViewHeader title="Reasoning" titleEmphasis="agent" subtitle="Reason over the canonical artifact" />
+    <section
+      className="view"
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "calc(100vh - 56px)",
+        paddingBottom: 0,
+        boxSizing: "border-box",
+        overflow: "hidden",
+      }}
+    >
+      <ViewHeader
+        title="Reasoning"
+        titleEmphasis="agent"
+        subtitle="Ask questions about this model — the agent reads the canonical artifact, never the live model."
+      />
 
       {unconfigured && <UnconfiguredBanner />}
 
+      {/* Message list */}
       <div
         style={{
           flex: 1,
           overflowY: "auto",
-          padding: "16px 0",
+          paddingRight: "4px",
           minHeight: 0,
         }}
       >
         {messages.length === 0 && (
           <div
             style={{
-              color: "var(--text-muted)",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              gap: "8px",
+              color: "var(--text-dim)",
+              fontFamily: "var(--font-mono)",
               fontSize: "12px",
               textAlign: "center",
-              marginTop: "40px",
             }}
           >
-            Ask a question about this artifact. History is session-only.
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3">
+              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+            </svg>
+            Ask a question about this artifact.
+            <span style={{ opacity: 0.6 }}>History is session-only.</span>
           </div>
         )}
         {messages.map((msg, i) => (
           <MessageBubble key={i} msg={msg} />
         ))}
         {mutation.isPending && (
-          <div style={{ color: "var(--text-dim)", fontSize: "12px", marginBottom: "8px" }}>
-            Thinking…
+          <div
+            style={{
+              display: "flex",
+              gap: "6px",
+              padding: "10px 14px",
+              background: "var(--bg-elev-2)",
+              border: "1px solid var(--border)",
+              borderRadius: "4px 12px 12px 12px",
+              width: "fit-content",
+              marginBottom: "12px",
+            }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                style={{
+                  width: "6px",
+                  height: "6px",
+                  borderRadius: "50%",
+                  background: "var(--text-dim)",
+                  animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
+                }}
+              />
+            ))}
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
-      <div style={{ borderTop: "1px solid var(--border)", paddingTop: "12px" }}>
+      {/* Input area */}
+      <div
+        style={{
+          borderTop: "1px solid var(--border)",
+          paddingTop: "12px",
+          paddingBottom: "20px",
+          background: "var(--bg)",
+        }}
+      >
         <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
           {SUGGESTED_QUESTIONS.map((q) => (
             <button
               key={q}
               className="btn secondary"
-              style={{ fontSize: "11px", padding: "3px 8px" }}
+              style={{ fontSize: "11px", padding: "3px 10px" }}
               onClick={() => {
                 setInput(q);
                 inputRef.current?.focus();
@@ -191,23 +260,27 @@ export function Agent() {
             disabled={mutation.isPending}
             style={{
               flex: 1,
-              padding: "8px 10px",
-              borderRadius: "6px",
+              padding: "9px 12px",
+              borderRadius: "8px",
               border: "1px solid var(--border)",
-              background: "var(--surface-1)",
+              background: "var(--bg-elev)",
               color: "var(--text)",
               fontSize: "13px",
+              outline: "none",
             }}
+            onFocus={(e) => (e.target.style.borderColor = "var(--accent-dim)")}
+            onBlur={(e) => (e.target.style.borderColor = "var(--border)")}
           />
           <button
             type="submit"
             className="btn primary"
             disabled={mutation.isPending || !input.trim()}
+            style={{ minWidth: "64px", justifyContent: "center" }}
           >
-            Ask
+            Send
           </button>
         </form>
       </div>
-    </div>
+    </section>
   );
 }

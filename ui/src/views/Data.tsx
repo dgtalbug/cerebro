@@ -1,8 +1,9 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useMemo } from "react";
 import { BarChart, BarSeries, LinearXAxis, LinearYAxis, Heatmap, HeatmapSeries } from "reaviz";
 import type { ChartShallowDataShape, ChartNestedDataShape, ChartDataTypes } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { SectionLockedState } from "../components/SectionLockedState";
 import { useDataProfile, type ColumnProfile, type CorrelationCell, type DataProfileResponse } from "../lib/api/queries";
 import { useAccentColor, useHeatmapColors } from "../lib/tokenColors";
 
@@ -106,6 +107,7 @@ function CorrelationMatrix({ correlations, columns }: { correlations: Correlatio
 
 export function Data() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { data, isLoading, isError } = useDataProfile(id ?? "");
 
   if (isLoading) return <div className="view-loading">Loading data profile…</div>;
@@ -116,11 +118,15 @@ export function Data() {
     return (
       <div className="view">
         <ViewHeader title="Training" titleEmphasis="data" subtitle="Statistical profile of the training distribution" />
-        <div style={{ padding: "48px", textAlign: "center", color: "var(--text-muted)", fontFamily: "var(--font-mono)", fontSize: "13px" }}>
-          No training table was provided at extraction time.
-          <br />
-          Re-extract with <code>--training-table &lt;path&gt;</code> to enable this view.
-        </div>
+        <SectionLockedState
+          title="Data profile not computed"
+          description="Re-ingest this model with a training table to unlock per-column statistics, histograms, and the pairwise correlation matrix."
+          files={[
+            { label: "Training table", hint: "CSV, Parquet, or JSON — any flat tabular file representing your training distribution. Column names do not need to match model features. Exclude nested/struct columns (arrays, JSON objects)." },
+          ]}
+          onAction={() => navigate("/ingest")}
+          actionLabel="Re-ingest with training table →"
+        />
       </div>
     );
   }
