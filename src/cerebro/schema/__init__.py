@@ -1,12 +1,13 @@
 """Canonical artifact schema.
 
-Imports re-exported here resolve to the current frozen version. Future
-versions live alongside as `v2`, `v1.1`, etc.; this module continues to
-re-export the latest stable.
+Imports re-exported here resolve to the current stable version (v1.1.0).
+Previous versions remain available at `cerebro.schema.v1` for consumers
+that need backward compatibility.
 """
 
-from cerebro.schema.v1 import (
+from cerebro.schema.v1_1 import (
     CerebroArtifact,
+    FeatureDiagnostics,
     FeatureSchema,
     Importance,
     Model,
@@ -17,6 +18,7 @@ from cerebro.schema.v1 import (
 
 __all__ = [
     "CerebroArtifact",
+    "FeatureDiagnostics",
     "FeatureSchema",
     "Importance",
     "Model",

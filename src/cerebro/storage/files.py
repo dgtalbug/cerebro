@@ -20,7 +20,7 @@ import pydantic
 
 from cerebro.exceptions import ArtifactNotFoundError, CorruptArtifactError
 from cerebro.logging import get_logger
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 _LOG = get_logger(__name__)
 

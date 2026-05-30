@@ -13,7 +13,10 @@ def test_write_then_read(tmp_path: Path, binary_artifact: CerebroArtifact) -> No
     write_artifact(binary_artifact, path)
     recovered = read_artifact(path)
 
-    assert recovered.model_dump() == binary_artifact.model_dump()
+    # v1_1 adds feature_diagnostics=None; exclude it when comparing to v1 fixture
+    v1_fields = set(type(binary_artifact).model_fields)
+    recovered_dict = {k: v for k, v in recovered.model_dump().items() if k in v1_fields}
+    assert recovered_dict == binary_artifact.model_dump()
 
 
 def test_on_disk_bytes_are_gzip(

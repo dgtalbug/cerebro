@@ -26,7 +26,7 @@ from cerebro.exceptions import (
 )
 from cerebro.extractors import get_extractor
 from cerebro.logging import configure_logging, get_logger
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 from cerebro.storage import read_artifact, write_artifact
 
 configure_logging(level=logging.INFO)
@@ -452,6 +452,114 @@ def ask(
         typer.echo("\nCitations:")
         for cite in response.citations:
             typer.echo(f"  - {cite}")
+
+
+@app.command()
+@_handle_cerebro_errors
+def diff(
+    artifact_a: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to the base artifact (.cerebro.json).",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    artifact_b: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to the comparison artifact (.cerebro.json).",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit full CerebroDiff as JSON to stdout."),
+    ] = False,
+) -> None:
+    """Compare two canonical artifacts section by section."""
+    import json as _json
+
+    from cerebro.analyzers.diff import diff_artifacts
+
+    a = read_artifact(artifact_a)
+    b = read_artifact(artifact_b)
+    result = diff_artifacts(a, b)
+
+    if json_output:
+        typer.echo(result.model_dump_json(indent=2))
+        return
+
+    typer.echo(f"Diff: {artifact_a.name}  →  {artifact_b.name}\n")
+    typer.echo(f"  Objective : {result.objective_a} → {result.objective_b}")
+    typer.echo(f"  Trees     : Δ{result.tree_count_delta:+d}")
+
+    if result.feature_schema_diff.added:
+        typer.echo(f"  Added     : {', '.join(result.feature_schema_diff.added)}")
+    if result.feature_schema_diff.removed:
+        typer.echo(f"  Removed   : {', '.join(result.feature_schema_diff.removed)}")
+
+    if result.importance_deltas:
+        typer.echo("\n  Importance (gain Δ, top 10):")
+        for d in result.importance_deltas[:10]:
+            typer.echo(f"    {d.feature:<30s}  {d.gain_delta:+.4f}")
+
+    if result.metric_deltas:
+        typer.echo("\n  Metrics:")
+        for m in result.metric_deltas:
+            typer.echo(f"    {m.metric:<20s}  {m.value_a:.4f} → {m.value_b:.4f}  ({m.delta:+.4f})")
+
+
+@app.command()
+@_handle_cerebro_errors
+def diagnostics(
+    artifact: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to a .cerebro.json artifact file.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    persist: Annotated[
+        bool,
+        typer.Option("--persist", help="Write diagnostics back to the artifact file."),
+    ] = False,
+) -> None:
+    """Compute feature diagnostics for a canonical artifact."""
+    from cerebro.analyzers.feature_diagnostics import compute_diagnostics
+
+    art = read_artifact(artifact)
+    diag = compute_diagnostics(art)
+
+    if diag.notes:
+        for note in diag.notes:
+            typer.echo(f"  note: {note}")
+
+    typer.echo(f"\n  Redundancy warnings : {len(diag.redundancy_warnings)}")
+    for w in diag.redundancy_warnings:
+        typer.echo(f"    {w.weak_feature} ← dominated by {w.dominant_feature} (corr={w.correlation:.2f})")
+
+    typer.echo(f"  Leakage warnings    : {len(diag.leakage_warnings)}")
+    for w in diag.leakage_warnings:
+        typer.echo(f"    {w.feature} (gain_rank={w.gain_rank}, perm_rank={w.permutation_rank})")
+
+    typer.echo(f"  Unused features     : {len(diag.unused_features)}")
+    if diag.unused_features:
+        typer.echo(f"    {', '.join(diag.unused_features)}")
+
+    typer.echo(f"  Recommendations     : {len(diag.recommendations)}")
+    for r in diag.recommendations[:5]:
+        typer.echo(f"    [{r.kind}] {r.feature}: {r.reason}")
+
+    if persist:
+        updated = art.model_copy(update={"feature_diagnostics": diag, "schema_version": "1.1.0"})
+        write_artifact(updated, artifact)
+        typer.echo(f"\n  Diagnostics persisted to {artifact}")
 
 
 if __name__ == "__main__":
