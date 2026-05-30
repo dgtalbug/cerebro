@@ -133,10 +133,8 @@ source_modules = [
 ]
 forbidden_modules = ["lightgbm"]
 # ingest is a write/extraction endpoint, not a consumption route.
-# synthetic analyzer needs to load the booster from the model file (indirectly via _lightgbm_base).
 ignore_imports = [
     "cerebro.api.routes.ingest -> cerebro.extractors",
-    "cerebro.analyzers.synthetic -> lightgbm",
 ]
 
 [[tool.importlinter.contracts]]
