@@ -73,6 +73,7 @@ export interface CorrelationCell { feature_a: string; feature_b: string; pearson
 export interface DataProfileResponse {
   row_count: number; column_count: number;
   columns: ColumnProfile[]; correlations: CorrelationCell[];
+  provenance?: "measured" | "synthetic";
   detail?: string;
 }
 
@@ -114,6 +115,7 @@ export interface ExplanationsResponse {
   shap?: ShapResult | null;
   decision_paths?: DecisionPath[][] | null;
   partial_dependence?: PDPFeature[] | null;
+  provenance?: "measured" | "synthetic";
   detail?: string;
 }
 

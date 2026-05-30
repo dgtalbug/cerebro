@@ -4,6 +4,7 @@ import { BarSparklineChart } from "reaviz";
 import type { ChartShallowDataShape } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
 import { SectionLockedState } from "../components/SectionLockedState";
+import { SyntheticBadge } from "../components/SyntheticBadge";
 import {
   useExplanations,
   type DecisionPath,
@@ -197,7 +198,9 @@ export function Explanations() {
         title="Local"
         titleEmphasis="explanations"
         subtitle="SHAP values computed at extraction time — no live model needed"
-      />
+      >
+        {shap && data.provenance === "synthetic" && <SyntheticBadge />}
+      </ViewHeader>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
         <div className="panel">
