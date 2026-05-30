@@ -81,7 +81,13 @@ def evaluate(
             n_classes = len(np.unique(labels))
         result = _evaluate_multiclass(predictions, labels, n_classes)
     elif objective in (
-        "regression", "multi_output", "quantile", "mape", "huber", "poisson", "tweedie"
+        "regression",
+        "multi_output",
+        "quantile",
+        "mape",
+        "huber",
+        "poisson",
+        "tweedie",
     ):
         result = _evaluate_regression(predictions, labels, objective)
     elif objective == "lambdarank":

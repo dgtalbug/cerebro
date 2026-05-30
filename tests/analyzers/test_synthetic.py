@@ -86,9 +86,7 @@ def test_synthetic_explanations_produced(
     model_with_trees: tuple[object, Any, list[str], dict[str, float]],
 ) -> None:
     booster, trees, feature_names, gain = model_with_trees
-    exp = synthetic_explanations(
-        booster, trees, feature_names, gain, [], n_rows=100
-    )
+    exp = synthetic_explanations(booster, trees, feature_names, gain, [], n_rows=100)
     assert exp is not None
     assert exp.provenance == "synthetic"
     assert exp.shap is not None

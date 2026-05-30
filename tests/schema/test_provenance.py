@@ -19,9 +19,7 @@ def test_explanations_provenance_synthetic_roundtrip() -> None:
 
 
 def test_data_profile_provenance_defaults_measured() -> None:
-    profile = DataProfile(
-        row_count=0, column_count=0, columns=[], correlations=[]
-    )
+    profile = DataProfile(row_count=0, column_count=0, columns=[], correlations=[])
     assert profile.provenance == "measured"
 
 

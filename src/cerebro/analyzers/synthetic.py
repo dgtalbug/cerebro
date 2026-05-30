@@ -143,9 +143,7 @@ def synthetic_explanations(
     if not thresholds.thresholds:
         return None
 
-    matrix, _ = generate_synthetic_matrix(
-        thresholds, len(feature_names), n_rows=n_rows
-    )
+    matrix, _ = generate_synthetic_matrix(thresholds, len(feature_names), n_rows=n_rows)
     explanations = build_explanations(
         booster=booster,
         canonical_trees=trees,
