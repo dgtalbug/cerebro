@@ -45,16 +45,16 @@
 
 ## 6. XGBoost extractor
 
-- [ ] 6.1 Create `src/cerebro/extractors/_xgboost_base.py` with lazy `_require_xgboost()` import (mirrors `_lightgbm_base.py` pattern)
-- [ ] 6.2 Implement `_load_booster(path)` for XGBoost JSON and pickle formats
-- [ ] 6.3 Implement tree topology extraction from XGBoost's `get_dump(dump_format='json')` output
-- [ ] 6.4 Implement importance extraction (`booster.get_score(importance_type='gain')` and `'split'`)
-- [ ] 6.5 Create `src/cerebro/extractors/xgboost.py` extractor for binary, multiclass, and regression objectives
-- [ ] 6.6 Register XGBoost extractor in extractor registry / auto-detection logic
-- [ ] 6.7 Add `xgboost>=2.0` to `[project.optional-dependencies].ml` and to dev dependency group
-- [ ] 6.8 Add import-linter exceptions if needed (mirror LightGBM lazy-import exceptions)
-- [ ] 6.9 Integration tests: train tiny XGBoost models (binary, multiclass, regression) in fixtures; verify canonical artifact round-trip
-- [ ] 6.10 Test that importing `cerebro.extractors.xgboost` succeeds in environments without xgboost installed
+- [x] 6.1 Create `src/cerebro/extractors/_xgboost_base.py` with lazy `_require_xgboost()` import (mirrors `_lightgbm_base.py` pattern)
+- [x] 6.2 Implement `_load_booster(path)` for XGBoost JSON and pickle formats
+- [x] 6.3 Implement tree topology extraction from XGBoost's `get_dump(dump_format='json')` output
+- [x] 6.4 Implement importance extraction (`booster.get_score(importance_type='gain')` and `'split'`)
+- [x] 6.5 Create `src/cerebro/extractors/xgboost.py` extractor for binary, multiclass, and regression objectives
+- [x] 6.6 Register XGBoost extractor in extractor registry / auto-detection logic
+- [x] 6.7 Add `xgboost>=2.0` to `[project.optional-dependencies].ml` and to dev dependency group
+- [x] 6.8 Add import-linter exceptions if needed (mirror LightGBM lazy-import exceptions)
+- [x] 6.9 Integration tests: train tiny XGBoost models (binary, multiclass, regression) in fixtures; verify canonical artifact round-trip
+- [x] 6.10 Test that importing `cerebro.extractors.xgboost` succeeds in environments without xgboost installed
 
 ## 7. Agent extensions
 

@@ -1,8 +1,7 @@
 """Source metadata for a canonical artifact.
 
-Identifies which framework the artifact came from and when extraction ran.
-The framework field is fixed at "lightgbm" for v1.0.0; widening to other
-frameworks is a future schema bump.
+The `framework` literal is widened in v1.1.0 to include XGBoost.
+v1.0.0 artifacts with framework="lightgbm" continue to validate unchanged.
 """
 
 from __future__ import annotations
@@ -17,7 +16,7 @@ class Source(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    framework: Literal["lightgbm"]
+    framework: Literal["lightgbm", "xgboost"]
     framework_version: str
     extracted_at: str
     extractor_version: str

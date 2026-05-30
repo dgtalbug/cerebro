@@ -26,6 +26,7 @@ dependencies = [
 # Extraction stack (LightGBM-aware).
 ml = [
     "lightgbm>=4.6,<5",
+    "xgboost>=2.0,<3",
     "shap>=0.46,<0.48",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
@@ -59,6 +60,7 @@ dev = [
     # Extraction stack — pulled into dev so tests can train tiny boosters.
     # Mirrors the [ml] optional-extra in [project.optional-dependencies].
     "lightgbm>=4.6,<5",
+    "xgboost>=2.0,<3",
     "scikit-learn>=1.8,<2",
     "numpy>=2.4,<3",
     "duckdb>=1.1,<2",
