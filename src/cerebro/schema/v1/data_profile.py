@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict
 
+from cerebro.schema.v1.explanations import Provenance
+
 
 class HistogramBin(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
@@ -62,3 +64,4 @@ class DataProfile(BaseModel):
     column_count: int
     columns: list[ColumnProfile]
     correlations: list[CorrelationCell]
+    provenance: Provenance = "measured"

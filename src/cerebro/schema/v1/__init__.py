@@ -18,6 +18,7 @@ from cerebro.schema.v1.explanations import (
     DecisionStep,
     Explanations,
     PDPFeature,
+    Provenance,
     ShapResult,
 )
 from cerebro.schema.v1.importance import Importance
@@ -40,6 +41,7 @@ __all__ = [
     "Model",
     "MulticlassEval",
     "PDPFeature",
+    "Provenance",
     "RankingEval",
     "RegressionEval",
     "ShapResult",

@@ -505,6 +505,15 @@
             "title": "Correlations",
             "type": "array"
           },
+          "provenance": {
+            "default": "measured",
+            "enum": [
+              "measured",
+              "synthetic"
+            ],
+            "title": "Provenance",
+            "type": "string"
+          },
           "row_count": {
             "title": "Row Count",
             "type": "integer"
@@ -659,6 +668,15 @@
               }
             ],
             "title": "Partial Dependence"
+          },
+          "provenance": {
+            "default": "measured",
+            "enum": [
+              "measured",
+              "synthetic"
+            ],
+            "title": "Provenance",
+            "type": "string"
           },
           "shap": {
             "anyOf": [
@@ -835,6 +853,15 @@
               }
             ],
             "title": "Permutation"
+          },
+          "provenance": {
+            "default": "measured",
+            "enum": [
+              "measured",
+              "synthetic"
+            ],
+            "title": "Provenance",
+            "type": "string"
           },
           "split": {
             "additionalProperties": {

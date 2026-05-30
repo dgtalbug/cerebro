@@ -415,6 +415,12 @@ export interface components {
             columns: components["schemas"]["ColumnProfile"][];
             /** Correlations */
             correlations: components["schemas"]["CorrelationCell"][];
+            /**
+             * Provenance
+             * @default measured
+             * @enum {string}
+             */
+            provenance: "measured" | "synthetic";
             /** Row Count */
             row_count: number;
         };
@@ -468,6 +474,12 @@ export interface components {
             decision_paths?: components["schemas"]["DecisionPath"][][] | null;
             /** Partial Dependence */
             partial_dependence?: components["schemas"]["PDPFeature"][] | null;
+            /**
+             * Provenance
+             * @default measured
+             * @enum {string}
+             */
+            provenance: "measured" | "synthetic";
             shap?: components["schemas"]["ShapResult"] | null;
         };
         /**
@@ -542,6 +554,12 @@ export interface components {
                     [key: string]: number;
                 };
             } | null;
+            /**
+             * Provenance
+             * @default measured
+             * @enum {string}
+             */
+            provenance: "measured" | "synthetic";
             /** Split */
             split: {
                 [key: string]: number;

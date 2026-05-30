@@ -13,9 +13,12 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any, cast
 
-import lightgbm as lgb
+if TYPE_CHECKING:
+    import lightgbm as lgb
+else:
+    lgb = None
 
 from cerebro import __version__ as _CEREBRO_VERSION
 from cerebro.exceptions import CorruptArtifactError, UnsupportedObjectiveError
@@ -32,6 +35,21 @@ _OBJECTIVE_KEYWORDS: frozenset[str] = (
     | _BINARY_OBJECTIVES
     | frozenset({"multiclass", "lambdarank", "multi_output"})
 )
+
+
+def _require_lightgbm() -> Any:
+    """Lazily import LightGBM. Raises if not installed."""
+    global lgb
+    if lgb is None:
+        try:
+            import lightgbm as _lgb
+        except ImportError as original:
+            raise CorruptArtifactError(
+                "LightGBM support requires the optional 'lightgbm' dependency",
+                context={"dependency": "lightgbm"},
+            ) from original
+        lgb = _lgb
+    return lgb
 
 
 def _resolve_objective(dumped: dict[str, Any]) -> str:
@@ -53,11 +71,12 @@ def _resolve_objective(dumped: dict[str, Any]) -> str:
 
 
 def _load_booster(path: Path) -> lgb.Booster:
+    lgb_mod = _require_lightgbm()
     if path.suffix.lower() in {".pkl", ".pickle"}:
         return _load_booster_from_pickle(path)
     try:
-        return lgb.Booster(model_file=str(path))
-    except (lgb.basic.LightGBMError, FileNotFoundError, OSError) as original:
+        return cast(lgb.Booster, lgb_mod.Booster(model_file=str(path)))
+    except (lgb_mod.basic.LightGBMError, FileNotFoundError, OSError) as original:
         raise CorruptArtifactError(
             f"could not load LightGBM booster from {path}",
             context={"model_path": str(path)},
@@ -66,6 +85,8 @@ def _load_booster(path: Path) -> lgb.Booster:
 
 def _load_booster_from_pickle(path: Path) -> lgb.Booster:
     import pickle
+
+    lgb_mod = _require_lightgbm()
 
     try:
         with open(path, "rb") as fh:
@@ -76,11 +97,11 @@ def _load_booster_from_pickle(path: Path) -> lgb.Booster:
             context={"model_path": str(path)},
         ) from original
 
-    if isinstance(obj, lgb.Booster):
-        return obj
+    if isinstance(obj, lgb_mod.Booster):
+        return cast(lgb.Booster, obj)
     booster = getattr(obj, "booster_", None)
-    if isinstance(booster, lgb.Booster):
-        return booster
+    if isinstance(booster, lgb_mod.Booster):
+        return cast(lgb.Booster, booster)
     raise CorruptArtifactError(
         f"pickle at {path} does not contain an lgb.Booster "
         "or fitted LightGBM estimator",
@@ -131,10 +152,11 @@ def _resolve_categorical_indices(
 
 
 def _build_source() -> Source:
+    lgb_mod = _require_lightgbm()
     extracted_at = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     return Source(
         framework="lightgbm",
-        framework_version=lgb.__version__,
+        framework_version=lgb_mod.__version__,
         extracted_at=extracted_at,
         extractor_version=_CEREBRO_VERSION,
     )

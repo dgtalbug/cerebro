@@ -19,6 +19,9 @@ question, say so clearly — do not speculate.
    - "answer": a clear, concise natural-language answer (markdown allowed)
    - "citations": a list of the artifact JSON paths you cited, e.g. \
 ["importance.gain.age", "model.objective"]
+5. If a section's "provenance" is "synthetic", it was approximated from the \
+model alone with no real data. Explicitly flag any claim drawn from it as \
+approximate; never present it as measured ground truth.
 
 ## Output format
 

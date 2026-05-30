@@ -7,7 +7,13 @@ profiles are fully self-contained in the artifact.
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict
+
+Provenance = Literal["measured", "synthetic"]
+"""Whether a section was computed from real supplied data ("measured") or from
+model-only synthetic inputs ("synthetic", i.e. approximate)."""
 
 
 class ShapResult(BaseModel):
@@ -73,3 +79,4 @@ class Explanations(BaseModel):
     shap: ShapResult | None = None
     decision_paths: list[list[DecisionPath]] | None = None
     partial_dependence: list[PDPFeature] | None = None
+    provenance: Provenance = "measured"

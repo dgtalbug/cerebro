@@ -6,11 +6,11 @@ function cssVar(name: string): string {
 }
 
 export function useAccentColor(): string {
-  const theme = useTheme((s) => s.theme);
-  return useMemo(() => cssVar("--accent"), [theme]);
+  useTheme((s) => s.theme);
+  return useMemo(() => cssVar("--accent"), []);
 }
 
 export function useHeatmapColors(): [string, string] {
-  const theme = useTheme((s) => s.theme);
-  return useMemo(() => [cssVar("--bg-elev"), cssVar("--accent")], [theme]);
+  useTheme((s) => s.theme);
+  return useMemo(() => [cssVar("--bg-elev"), cssVar("--accent")], []);
 }

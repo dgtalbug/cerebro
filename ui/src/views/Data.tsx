@@ -4,6 +4,7 @@ import { BarChart, BarSeries, LinearXAxis, LinearYAxis, Heatmap, HeatmapSeries }
 import type { ChartShallowDataShape, ChartNestedDataShape, ChartDataTypes } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
 import { SectionLockedState } from "../components/SectionLockedState";
+import { SyntheticBadge } from "../components/SyntheticBadge";
 import { useDataProfile, type ColumnProfile, type CorrelationCell, type DataProfileResponse } from "../lib/api/queries";
 import { useAccentColor, useHeatmapColors } from "../lib/tokenColors";
 
@@ -140,7 +141,9 @@ export function Data() {
         title="Training"
         titleEmphasis="data"
         subtitle={`${profile.row_count.toLocaleString()} rows · ${profile.column_count} columns`}
-      />
+      >
+        {profile.provenance === "synthetic" && <SyntheticBadge />}
+      </ViewHeader>
 
       <div className="panel" style={{ marginBottom: "24px" }}>
         <div className="panel-header">
