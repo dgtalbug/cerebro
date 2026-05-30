@@ -161,6 +161,12 @@ export function Explanations() {
   const [tab, setTab] = useState<SampleTab>("shap");
   const [sampleIdx, setSampleIdx] = useState(0);
 
+  const pathFeatureNames = useMemo<Set<string>>(() => {
+    const paths = data?.decision_paths?.[sampleIdx];
+    if (!paths?.length) return new Set();
+    return new Set(paths[0]?.steps.map(s => s.feature_name) ?? []);
+  }, [data?.decision_paths, sampleIdx]);
+
   if (isLoading) return <div className="view-loading">Loading explanations…</div>;
   if (isError) return <div className="view-error">Failed to load explanations.</div>;
   if (!data) return null;
@@ -185,12 +191,6 @@ export function Explanations() {
 
   const shap = data.shap;
   const sampleCount = shap.sample_count;
-
-  const pathFeatureNames = useMemo<Set<string>>(() => {
-    const paths = data.decision_paths?.[sampleIdx];
-    if (!paths?.length) return new Set();
-    return new Set(paths[0]?.steps.map(s => s.feature_name) ?? []);
-  }, [data.decision_paths, sampleIdx]);
 
   return (
     <div className="view">

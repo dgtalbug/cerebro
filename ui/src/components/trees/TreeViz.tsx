@@ -133,51 +133,6 @@ function NodeTooltip({ hover }: { hover: HoverState }) {
   );
 }
 
-function makeCustomNode(
-  containerRef: React.RefObject<HTMLDivElement | null>,
-  setHover: React.Dispatch<React.SetStateAction<HoverState | null>>,
-) {
-  return function CustomNode({ nodeDatum }: CustomNodeElementProps) {
-    const isLeaf = nodeDatum.name === "leaf";
-    const isTruncated = nodeDatum.attributes?.truncated === "true";
-
-    const handleMouseEnter = (e: React.MouseEvent<SVGGElement>) => {
-      if (isTruncated || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      setHover({
-        datum: nodeDatum,
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top,
-      });
-    };
-
-    const handleMouseMove = (e: React.MouseEvent<SVGGElement>) => {
-      if (isTruncated || !containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      setHover((prev) =>
-        prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top } : prev,
-      );
-    };
-
-    return (
-      <g
-        style={{ cursor: isTruncated ? "default" : "pointer" }}
-        onMouseEnter={handleMouseEnter}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={() => setHover(null)}
-      >
-        {/* Invisible hit area for easier hover */}
-        <circle r={isTruncated ? 6 : isLeaf ? 14 : 18} fill="transparent" />
-        <circle
-          r={isTruncated ? 4 : isLeaf ? 5 : 9}
-          fill={isTruncated ? "var(--border)" : isLeaf ? "var(--text-dim)" : "var(--accent)"}
-          stroke={isLeaf ? "var(--border)" : "color-mix(in srgb, var(--accent) 50%, transparent)"}
-          strokeWidth={isLeaf ? 1 : 2.5}
-        />
-      </g>
-    );
-  };
-}
 
 export function TreeViz({ tree, featureNames, maxDepth = 99, onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -215,11 +170,48 @@ export function TreeViz({ tree, featureNames, maxDepth = 99, onNodeClick }: Prop
     [dimensions.width],
   );
 
-  // Stable custom node factory — recreated only when containerRef or setHover identity changes
   const CustomNode = useCallback(
-    makeCustomNode(containerRef, setHover),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [],
+    ({ nodeDatum }: CustomNodeElementProps) => {
+      const isLeaf = nodeDatum.name === "leaf";
+      const isTruncated = nodeDatum.attributes?.truncated === "true";
+
+      const handleMouseEnter = (e: React.MouseEvent<SVGGElement>) => {
+        if (isTruncated || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        setHover({
+          datum: nodeDatum,
+          x: e.clientX - rect.left,
+          y: e.clientY - rect.top,
+        });
+      };
+
+      const handleMouseMove = (e: React.MouseEvent<SVGGElement>) => {
+        if (isTruncated || !containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        setHover((prev) =>
+          prev ? { ...prev, x: e.clientX - rect.left, y: e.clientY - rect.top } : prev,
+        );
+      };
+
+      return (
+        <g
+          style={{ cursor: isTruncated ? "default" : "pointer" }}
+          onMouseEnter={handleMouseEnter}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={() => setHover(null)}
+        >
+          {/* Invisible hit area for easier hover */}
+          <circle r={isTruncated ? 6 : isLeaf ? 14 : 18} fill="transparent" />
+          <circle
+            r={isTruncated ? 4 : isLeaf ? 5 : 9}
+            fill={isTruncated ? "var(--border)" : isLeaf ? "var(--text-dim)" : "var(--accent)"}
+            stroke={isLeaf ? "var(--border)" : "color-mix(in srgb, var(--accent) 50%, transparent)"}
+            strokeWidth={isLeaf ? 1 : 2.5}
+          />
+        </g>
+      );
+    },
+    [containerRef, setHover],
   );
 
   return (
