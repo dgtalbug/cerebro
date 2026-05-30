@@ -69,12 +69,10 @@
 - [x] 6.1 Agent context shaper (`src/cerebro/agent/context.py`): disclose
       synthetic provenance so the agent never presents approximate sections as
       ground truth. (Also added a system-prompt rule in `agent/prompts.py`.)
-- [ ] 6.2 Dashboard UI: render an "approximate" badge on sections whose
-      `provenance == "synthetic"`. NOT DONE — real UI lives under
-      `ui/src/views/` (Explanations.tsx, Evaluation.tsx) + a `SectionLockedState`
-      component, not the `components/tabs/*` paths a tooling glitch reported.
-      Needs: a badge component + wiring into the synthetic-aware views, and the
-      TS artifact type extended with `provenance`.
+- [x] 6.2 Dashboard UI: render an "approximate" badge on sections whose
+      `provenance == "synthetic"`. Implemented `SyntheticBadge` component and
+      wired into Explanations.tsx and Data.tsx views. Extended ExplanationsResponse
+      and DataProfileResponse TS types with optional `provenance` field.
 - [x] 6.3 Tests/checks for 6.1 (agent context provenance test added and
       passing). UI smoke check for 6.2 still outstanding (blocked on 6.2).
 
