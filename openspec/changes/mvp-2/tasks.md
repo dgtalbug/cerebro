@@ -58,11 +58,11 @@
 
 ## 7. Agent extensions
 
-- [ ] 7.1 Extend `agent/context.py` to include `feature_diagnostics` summary block (top-3 drops, top-3 engineering, flagged leakage/redundancy) when present
-- [ ] 7.2 Add system-prompt guidance in `agent/prompts.py` for improvement-oriented questions citing `feature_diagnostics.*` paths
-- [ ] 7.3 Update agent-context provenance note to cover XGBoost artifacts (framework-agnostic reasoning over canonical schema)
-- [ ] 7.4 Unit-test that context shaper includes diagnostics block when present and omits it gracefully when absent
-- [ ] 7.5 Unit-test agent improvement answer contains ≥3 recommendations citing `feature_diagnostics.*` paths
+- [x] 7.1 Extend `agent/context.py` to include `feature_diagnostics` summary block (top-3 drops, top-3 engineering, flagged leakage/redundancy) when present
+- [x] 7.2 Add system-prompt guidance in `agent/prompts.py` for improvement-oriented questions citing `feature_diagnostics.*` paths
+- [x] 7.3 Update agent-context provenance note to cover XGBoost artifacts (framework-agnostic reasoning over canonical schema)
+- [x] 7.4 Unit-test that context shaper includes diagnostics block when present and omits it gracefully when absent
+- [x] 7.5 Unit-test agent improvement answer contains ≥3 recommendations citing `feature_diagnostics.*` paths
 
 ## 8. Dashboard — diagnostics and diff UI
 

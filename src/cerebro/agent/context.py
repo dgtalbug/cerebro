@@ -6,7 +6,7 @@ import json
 from typing import Any
 
 from cerebro.exceptions import ContextTooLargeError
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 _DEFAULT_BUDGET = 40_000
 _TOP_SHAP_FEATURES = 10
@@ -120,8 +120,33 @@ def _trees_summary_section(artifact: CerebroArtifact) -> dict[str, Any]:
     }
 
 
+def _diagnostics_section(artifact: CerebroArtifact) -> dict[str, Any] | None:
+    diag = getattr(artifact, "feature_diagnostics", None)
+    if diag is None:
+        return None
+    top_drops = [
+        {"feature": r.feature, "reason": r.reason, "impact": r.impact_estimate}
+        for r in diag.recommendations
+        if r.kind in ("drop", "investigate_leakage")
+    ][:3]
+    top_engineer = [
+        {"feature": r.feature, "reason": r.reason}
+        for r in diag.recommendations
+        if r.kind == "engineer_interaction"
+    ][:3]
+    leakage = [w.feature for w in diag.leakage_warnings]
+    redundant = [w.weak_feature for w in diag.redundancy_warnings]
+    return {
+        "top_drop_recommendations": top_drops,
+        "top_engineering_recommendations": top_engineer,
+        "leakage_candidates": leakage,
+        "redundant_features": redundant,
+        "unused_features": diag.unused_features,
+    }
+
+
 def _tree_depth(node: object, _depth: int = 0) -> int:
-    from cerebro.schema.v1.tree import TreeNode
+    from cerebro.schema.v1_1.tree import TreeNode
 
     if not isinstance(node, TreeNode):
         return _depth
@@ -164,7 +189,9 @@ def shape_context(
         )
 
     context["model"] = model_sec
+    context["framework"] = getattr(artifact.source, "framework", "lightgbm")
     _try_add("importance", _importance_section(artifact))
+    _try_add("feature_diagnostics", _diagnostics_section(artifact))
     _try_add("explanations", _explanations_section(artifact))
     _try_add("evaluation", _evaluation_section(artifact))
     _try_add("data_profile", _data_profile_section(artifact))

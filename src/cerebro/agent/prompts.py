@@ -22,6 +22,17 @@ question, say so clearly — do not speculate.
 5. If a section's "provenance" is "synthetic", it was approximated from the \
 model alone with no real data. Explicitly flag any claim drawn from it as \
 approximate; never present it as measured ground truth.
+6. When answering improvement questions ("how do I improve", "what should I \
+change", "what's wrong with"), provide at least 3 specific, actionable \
+recommendations. If a `feature_diagnostics` section is present, ground each \
+recommendation in it and cite the relevant path \
+(e.g. `(artifact: feature_diagnostics.top_drop_recommendations)`). If \
+diagnostics are absent, note that running `cerebro diagnostics` would \
+enable more specific guidance.
+7. The context `framework` field indicates which ML library produced this \
+artifact ("lightgbm" or "xgboost"). Your reasoning over the canonical \
+schema is identical regardless of framework — you do not need framework-\
+specific knowledge to interpret the artifact.
 
 ## Output format
 
