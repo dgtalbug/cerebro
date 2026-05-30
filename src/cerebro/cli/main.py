@@ -481,7 +481,6 @@ def diff(
     ] = False,
 ) -> None:
     """Compare two canonical artifacts section by section."""
-    import json as _json
 
     from cerebro.analyzers.diff import diff_artifacts
 
@@ -510,7 +509,10 @@ def diff(
     if result.metric_deltas:
         typer.echo("\n  Metrics:")
         for m in result.metric_deltas:
-            typer.echo(f"    {m.metric:<20s}  {m.value_a:.4f} → {m.value_b:.4f}  ({m.delta:+.4f})")
+            typer.echo(
+                f"    {m.metric:<20s}  {m.value_a:.4f}"
+                f" → {m.value_b:.4f}  ({m.delta:+.4f})"
+            )
 
 
 @app.command()
@@ -542,11 +544,17 @@ def diagnostics(
 
     typer.echo(f"\n  Redundancy warnings : {len(diag.redundancy_warnings)}")
     for w in diag.redundancy_warnings:
-        typer.echo(f"    {w.weak_feature} ← dominated by {w.dominant_feature} (corr={w.correlation:.2f})")
+        typer.echo(
+            f"    {w.weak_feature} ← dominated by"
+            f" {w.dominant_feature} (corr={w.correlation:.2f})"
+        )
 
     typer.echo(f"  Leakage warnings    : {len(diag.leakage_warnings)}")
-    for w in diag.leakage_warnings:
-        typer.echo(f"    {w.feature} (gain_rank={w.gain_rank}, perm_rank={w.permutation_rank})")
+    for lw in diag.leakage_warnings:
+        typer.echo(
+            f"    {lw.feature}"
+            f" (gain_rank={lw.gain_rank}, perm_rank={lw.permutation_rank})"
+        )
 
     typer.echo(f"  Unused features     : {len(diag.unused_features)}")
     if diag.unused_features:
@@ -557,7 +565,9 @@ def diagnostics(
         typer.echo(f"    [{r.kind}] {r.feature}: {r.reason}")
 
     if persist:
-        updated = art.model_copy(update={"feature_diagnostics": diag, "schema_version": "1.1.0"})
+        updated = art.model_copy(
+            update={"feature_diagnostics": diag, "schema_version": "1.1.0"}
+        )
         write_artifact(updated, artifact)
         typer.echo(f"\n  Diagnostics persisted to {artifact}")
 

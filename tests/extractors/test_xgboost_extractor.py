@@ -47,8 +47,13 @@ def regression_xgb_file(tmp_path: Path) -> Path:
 @pytest.fixture
 def multiclass_xgb_file(tmp_path: Path) -> Path:
     X, y = make_classification(
-        n_samples=150, n_features=6, n_classes=3, n_informative=3,
-        n_redundant=2, n_repeated=0, random_state=0
+        n_samples=150,
+        n_features=6,
+        n_classes=3,
+        n_informative=3,
+        n_redundant=2,
+        n_repeated=0,
+        random_state=0,
     )
     dtrain = xgb.DMatrix(X, label=y, feature_names=["a", "b", "c", "d", "e", "f"])
     booster = xgb.train(
@@ -108,7 +113,9 @@ class TestXGBRegressionExtractor:
         art = XGBExtractor().extract(regression_xgb_file)
         assert len(art.trees) > 0
 
-    def test_class_index_is_none_for_regression(self, regression_xgb_file: Path) -> None:
+    def test_class_index_is_none_for_regression(
+        self, regression_xgb_file: Path
+    ) -> None:
         art = XGBExtractor().extract(regression_xgb_file)
         assert all(t.class_index is None for t in art.trees)
 

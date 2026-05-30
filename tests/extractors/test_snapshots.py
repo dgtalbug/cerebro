@@ -41,7 +41,7 @@ def test_binary_snapshot(tmp_path: Path) -> None:
     from sklearn.datasets import make_classification
 
     from cerebro.extractors.lightgbm_binary import LGBBinaryExtractor
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     feats, labels = make_classification(
         n_samples=200, n_features=8, n_informative=4, n_redundant=0, random_state=42
@@ -75,7 +75,7 @@ def test_binary_snapshot(tmp_path: Path) -> None:
 
 def test_multiclass_snapshot(multiclass_booster_file: Path) -> None:
     from cerebro.extractors.lightgbm_multiclass import LGBMulticlassExtractor
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     artifact = LGBMulticlassExtractor().extract(multiclass_booster_file)
     CerebroArtifact.model_validate(artifact.model_dump())
@@ -99,7 +99,7 @@ def test_regression_snapshot(tmp_path: Path) -> None:
     from sklearn.datasets import make_regression
 
     from cerebro.extractors.lightgbm_regression import LGBRegressionExtractor
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     feats, target = make_regression(n_samples=300, n_features=4, random_state=42)
     ds = lgb.Dataset(feats, label=target)
@@ -134,7 +134,7 @@ def test_regression_snapshot(tmp_path: Path) -> None:
 
 def test_ranker_snapshot(ranker_booster_file: Path) -> None:
     from cerebro.extractors.lightgbm_ranker import LGBRankerExtractor
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     artifact = LGBRankerExtractor().extract(ranker_booster_file)
     CerebroArtifact.model_validate(artifact.model_dump())
@@ -155,7 +155,7 @@ def test_ranker_snapshot(ranker_booster_file: Path) -> None:
 
 def test_multi_output_snapshot(tmp_path: Path) -> None:
     from cerebro.extractors.lightgbm_multi_output import LGBMultiOutputExtractor
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     booster = MagicMock()
     booster.dump_model.return_value = {

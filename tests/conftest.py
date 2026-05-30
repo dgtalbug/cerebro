@@ -15,7 +15,7 @@ import lightgbm as lgb
 import pytest
 from sklearn.datasets import make_classification, make_regression
 
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 @pytest.fixture

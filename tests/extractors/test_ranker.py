@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cerebro.extractors.lightgbm_ranker import LGBRankerExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def test_ranker_extraction_shape(ranker_booster_file: Path) -> None:

@@ -13,14 +13,14 @@ from typing import Any
 import numpy as np
 import structlog
 
-from cerebro.schema.v1.explanations import (
+from cerebro.schema.v1_1.explanations import (
     DecisionPath,
     DecisionStep,
     Explanations,
     PDPFeature,
     ShapResult,
 )
-from cerebro.schema.v1.tree import Tree
+from cerebro.schema.v1_1.tree import Tree
 
 log = structlog.get_logger()
 

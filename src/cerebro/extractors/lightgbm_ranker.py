@@ -24,7 +24,7 @@ from cerebro.extractors._lightgbm_base import (
     _resolve_objective,
 )
 from cerebro.logging import get_logger
-from cerebro.schema.v1 import CerebroArtifact, Model
+from cerebro.schema.v1_1 import CerebroArtifact, Model
 
 _LOG = get_logger(__name__)
 

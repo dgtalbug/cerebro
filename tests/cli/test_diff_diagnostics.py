@@ -93,13 +93,12 @@ class TestDiagnosticsCommand:
     def test_diagnostics_persist_writes_feature_diagnostics(
         self, artifact_file: Path
     ) -> None:
-        result = _runner.invoke(
-            app, ["diagnostics", str(artifact_file), "--persist"]
-        )
+        result = _runner.invoke(app, ["diagnostics", str(artifact_file), "--persist"])
         assert result.exit_code == 0, result.output
         assert "persisted" in result.output
 
         from cerebro.storage import read_artifact
+
         recovered = read_artifact(artifact_file)
         assert recovered.feature_diagnostics is not None
         assert recovered.schema_version == "1.1.0"

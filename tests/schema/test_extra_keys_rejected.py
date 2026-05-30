@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 from pydantic import ValidationError
 
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def _with_extra_at_root(artifact: dict[str, Any]) -> dict[str, Any]:

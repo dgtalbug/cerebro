@@ -35,12 +35,8 @@ def diff_artifacts(a: CerebroArtifact, b: CerebroArtifact) -> CerebroDiff:
     )
 
 
-def _importance_deltas(
-    a: CerebroArtifact, b: CerebroArtifact
-) -> list[ImportanceDelta]:
-    all_features = sorted(
-        set(a.importance.gain) | set(b.importance.gain)
-    )
+def _importance_deltas(a: CerebroArtifact, b: CerebroArtifact) -> list[ImportanceDelta]:
+    all_features = sorted(set(a.importance.gain) | set(b.importance.gain))
     deltas: list[ImportanceDelta] = []
     for feat in all_features:
         ga = a.importance.gain.get(feat, 0.0)
@@ -61,9 +57,7 @@ def _importance_deltas(
     return sorted(deltas, key=lambda d: abs(d.gain_delta), reverse=True)
 
 
-def _feature_schema_diff(
-    a: CerebroArtifact, b: CerebroArtifact
-) -> FeatureSchemaDiff:
+def _feature_schema_diff(a: CerebroArtifact, b: CerebroArtifact) -> FeatureSchemaDiff:
     set_a = set(a.model.feature_schema.names)
     set_b = set(b.model.feature_schema.names)
     return FeatureSchemaDiff(
@@ -72,9 +66,7 @@ def _feature_schema_diff(
     )
 
 
-def _metric_deltas(
-    a: CerebroArtifact, b: CerebroArtifact
-) -> list[MetricDelta]:
+def _metric_deltas(a: CerebroArtifact, b: CerebroArtifact) -> list[MetricDelta]:
     if a.evaluation is None or b.evaluation is None:
         return []
 
@@ -100,11 +92,19 @@ def _metric_deltas(
     eval_b = b.evaluation
 
     _add("auc", getattr(eval_a, "auc", None), getattr(eval_b, "auc", None))
-    _add("accuracy", getattr(eval_a, "accuracy", None), getattr(eval_b, "accuracy", None))
+    _add(
+        "accuracy",
+        getattr(eval_a, "accuracy", None),
+        getattr(eval_b, "accuracy", None),
+    )
     _add("rmse", getattr(eval_a, "rmse", None), getattr(eval_b, "rmse", None))
     _add("mae", getattr(eval_a, "mae", None), getattr(eval_b, "mae", None))
     _add("r2", getattr(eval_a, "r2", None), getattr(eval_b, "r2", None))
-    _add("precision", getattr(eval_a, "precision", None), getattr(eval_b, "precision", None))
+    _add(
+        "precision",
+        getattr(eval_a, "precision", None),
+        getattr(eval_b, "precision", None),
+    )
     _add("recall", getattr(eval_a, "recall", None), getattr(eval_b, "recall", None))
     _add("f1", getattr(eval_a, "f1", None), getattr(eval_b, "f1", None))
 

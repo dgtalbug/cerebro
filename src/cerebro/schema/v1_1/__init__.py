@@ -6,8 +6,13 @@ under this schema with `feature_diagnostics=None`.
 """
 
 from cerebro.schema.v1_1.artifact import AnyEval, CerebroArtifact
-from cerebro.schema.v1_1.diff import CerebroDiff, FeatureSchemaDiff, ImportanceDelta, MetricDelta
 from cerebro.schema.v1_1.data_profile import ColumnProfile, CorrelationCell, DataProfile
+from cerebro.schema.v1_1.diff import (
+    CerebroDiff,
+    FeatureSchemaDiff,
+    ImportanceDelta,
+    MetricDelta,
+)
 from cerebro.schema.v1_1.evaluation import (
     BinaryEval,
     MulticlassEval,

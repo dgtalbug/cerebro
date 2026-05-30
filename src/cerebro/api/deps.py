@@ -14,7 +14,7 @@ from typing import Annotated
 
 from fastapi import Depends
 
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 from cerebro.storage import read_artifact
 from cerebro.storage.registry import Registry
 

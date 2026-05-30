@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cerebro.extractors.lightgbm import LGBExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def test_binary_extraction_shape(binary_booster_file: Path) -> None:
@@ -53,7 +53,7 @@ def test_artifact_roundtrips_through_schema(binary_booster_file: Path) -> None:
 
 def test_first_tree_has_unique_node_ids(binary_booster_file: Path) -> None:
     """Node ids are unique within a tree (re-numbered, not LGB's indices)."""
-    from cerebro.schema.v1 import TreeNode
+    from cerebro.schema.v1_1 import TreeNode
 
     artifact = LGBExtractor().extract(binary_booster_file)
     first = artifact.trees[0]

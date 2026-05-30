@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 
 from cerebro.extractors.lightgbm_multi_output import LGBMultiOutputExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def _leaf_node(index: int) -> dict[str, Any]:

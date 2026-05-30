@@ -8,7 +8,8 @@ import numpy as np
 import pytest
 
 from cerebro.extractors.lightgbm_binary import LGBBinaryExtractor
-from cerebro.schema.v1 import CerebroArtifact, TreeNode
+from cerebro.schema import CerebroArtifact
+from cerebro.schema.v1_1 import TreeNode
 
 
 def test_binary_extraction_shape(binary_booster_file: Path) -> None:

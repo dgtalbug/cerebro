@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def test_validate_then_dump_roundtrip(binary_artifact_dict: dict[str, Any]) -> None:
@@ -22,9 +22,12 @@ def test_validate_then_dump_roundtrip(binary_artifact_dict: dict[str, Any]) -> N
 
 
 def test_dump_matches_input(binary_artifact_dict: dict[str, Any]) -> None:
-    """model_dump() returns the same dict that went into model_validate()."""
+    """v1.0.0 fields round-trip unchanged; v1.1.0 adds feature_diagnostics=None."""
     artifact = CerebroArtifact.model_validate(binary_artifact_dict)
-    assert artifact.model_dump() == binary_artifact_dict
+    dumped = artifact.model_dump()
+    # v1_1 adds feature_diagnostics; strip it before comparing to the v1 fixture
+    v1_fields = set(binary_artifact_dict.keys())
+    assert {k: v for k, v in dumped.items() if k in v1_fields} == binary_artifact_dict
 
 
 def test_schema_version_locked(binary_artifact_dict: dict[str, Any]) -> None:

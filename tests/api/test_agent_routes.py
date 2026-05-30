@@ -13,7 +13,7 @@ from cerebro.agent.base import AgentResponse
 from cerebro.api import create_app
 from cerebro.api.deps import get_registry
 from cerebro.exceptions import LLMProviderError
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 from cerebro.storage import write_artifact
 from cerebro.storage.registry import Registry
 

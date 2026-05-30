@@ -5,11 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 from cerebro.extractors.lightgbm_regression import LGBRegressionExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def _collect_leaves(node: object) -> list[float]:
-    from cerebro.schema.v1 import TreeNode
+    from cerebro.schema.v1_1 import TreeNode
 
     assert isinstance(node, TreeNode)
     if node.leaf_value is not None and node.left is None:

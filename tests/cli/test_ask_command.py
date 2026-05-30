@@ -10,7 +10,7 @@ from typer.testing import CliRunner
 
 from cerebro.agent.base import AgentResponse
 from cerebro.cli.main import app
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 from cerebro.storage import write_artifact
 
 runner = CliRunner()

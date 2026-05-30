@@ -25,7 +25,9 @@ async def add_tag(
 ) -> dict[str, str]:
     """Add a tag to an artifact (idempotent)."""
     if registry.get_artifact_row(artifact_id) is None:
-        raise HTTPException(status_code=404, detail=f"Artifact {artifact_id!r} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Artifact {artifact_id!r} not found"
+        )
     registry.add_tag(artifact_id, body.tag)
     return {"artifact_id": artifact_id, "tag": body.tag}
 
@@ -38,10 +40,14 @@ async def remove_tag(
 ) -> None:
     """Remove a tag from an artifact."""
     if registry.get_artifact_row(artifact_id) is None:
-        raise HTTPException(status_code=404, detail=f"Artifact {artifact_id!r} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Artifact {artifact_id!r} not found"
+        )
     removed = registry.remove_tag(artifact_id, tag)
     if not removed:
-        raise HTTPException(status_code=404, detail=f"Tag {tag!r} not found on artifact")
+        raise HTTPException(
+            status_code=404, detail=f"Tag {tag!r} not found on artifact"
+        )
 
 
 @router.get("/artifacts/{artifact_id}/tags")
@@ -51,5 +57,7 @@ async def list_tags(
 ) -> dict[str, list[str]]:
     """List all tags on an artifact."""
     if registry.get_artifact_row(artifact_id) is None:
-        raise HTTPException(status_code=404, detail=f"Artifact {artifact_id!r} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Artifact {artifact_id!r} not found"
+        )
     return {"tags": registry.list_tags(artifact_id)}

@@ -20,10 +20,10 @@ import numpy as np
 import structlog
 
 from cerebro.analyzers.thresholds import FeatureThresholds, collect_thresholds
-from cerebro.schema.v1 import CerebroArtifact
-from cerebro.schema.v1.data_profile import ColumnProfile, DataProfile, HistogramBin
-from cerebro.schema.v1.explanations import Explanations
-from cerebro.schema.v1.tree import Tree
+from cerebro.schema import CerebroArtifact
+from cerebro.schema.v1_1.data_profile import ColumnProfile, DataProfile, HistogramBin
+from cerebro.schema.v1_1.explanations import Explanations
+from cerebro.schema.v1_1.tree import Tree
 
 log = structlog.get_logger()
 

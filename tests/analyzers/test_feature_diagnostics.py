@@ -10,9 +10,21 @@ from cerebro.analyzers.feature_diagnostics import compute_diagnostics
 from cerebro.schema.v1_1 import CerebroArtifact, FeatureDiagnostics
 
 
+def _leaf(node_id: int, value: float) -> dict[str, Any]:
+    return {
+        "id": node_id,
+        "split_feature": None,
+        "threshold": None,
+        "decision_type": None,
+        "left": None,
+        "right": None,
+        "leaf_value": value,
+    }
+
+
 @pytest.fixture
 def rich_artifact_dict(binary_artifact_dict: dict[str, Any]) -> dict[str, Any]:
-    """Binary artifact with data_profile, permutation importance, and a redundant pair."""
+    """Binary artifact with data_profile, permutation importance, redundant pair."""
     d = dict(binary_artifact_dict)
     d["importance"] = {
         "gain": {"credit_score": 10.0, "annual_income": 0.5},
@@ -126,10 +138,10 @@ def test_unused_features_empty_when_all_features_split(
                     "threshold": 50000.0,
                     "decision_type": "<=",
                     "leaf_value": None,
-                    "left": {"id": 2, "split_feature": None, "threshold": None, "decision_type": None, "left": None, "right": None, "leaf_value": -0.1},
-                    "right": {"id": 3, "split_feature": None, "threshold": None, "decision_type": None, "left": None, "right": None, "leaf_value": 0.1},
+                    "left": _leaf(2, -0.1),
+                    "right": _leaf(3, 0.1),
                 },
-                "right": {"id": 4, "split_feature": None, "threshold": None, "decision_type": None, "left": None, "right": None, "leaf_value": 0.2},
+                "right": _leaf(4, 0.2),
             },
         }
     ]
@@ -172,13 +184,15 @@ def test_unused_drop_recommendation_has_zero_impact(
     art = CerebroArtifact.model_validate(d)
     diag = compute_diagnostics(art)
     ghost_drop = next(
-        (r for r in diag.recommendations if r.kind == "drop" and r.feature == "ghost"), None
+        (r for r in diag.recommendations if r.kind == "drop" and r.feature == "ghost"),
+        None,
     )
     assert ghost_drop is not None
     assert ghost_drop.impact_estimate == "zero"
 
 
 # --- graceful skip tests ---
+
 
 def test_redundancy_skipped_when_no_data_profile(
     binary_artifact_dict: dict[str, Any],

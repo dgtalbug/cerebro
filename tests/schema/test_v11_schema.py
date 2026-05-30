@@ -64,7 +64,9 @@ def test_redundancy_warning_validates() -> None:
 
 
 def test_leakage_warning_validates() -> None:
-    w = LeakageWarning(feature="target_encoded", gain_rank=1, permutation_rank=18, delta=17)
+    w = LeakageWarning(
+        feature="target_encoded", gain_rank=1, permutation_rank=18, delta=17
+    )
     assert w.delta == 17
 
 
@@ -86,5 +88,5 @@ def test_recommendation_validates() -> None:
 def test_invalid_schema_version_rejected(binary_artifact_dict: dict[str, Any]) -> None:
     d = dict(binary_artifact_dict)
     d["schema_version"] = "2.0.0"
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         CerebroArtifact.model_validate(d)

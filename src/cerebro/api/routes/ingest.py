@@ -249,7 +249,7 @@ async def enrich(
         finally:
             tmp_table_path.unlink(missing_ok=True)
 
-    from cerebro.schema.v1 import CerebroArtifact
+    from cerebro.schema import CerebroArtifact
 
     enriched = CerebroArtifact.model_validate(updated_data)
     write_artifact(enriched, artifact_path)

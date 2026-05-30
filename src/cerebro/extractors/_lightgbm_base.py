@@ -22,7 +22,7 @@ else:
 
 from cerebro import __version__ as _CEREBRO_VERSION
 from cerebro.exceptions import CorruptArtifactError, UnsupportedObjectiveError
-from cerebro.schema.v1 import FeatureSchema, Importance, Source, Tree, TreeNode
+from cerebro.schema.v1_1 import FeatureSchema, Importance, Source, Tree, TreeNode
 
 _REGRESSION_OBJECTIVES: frozenset[str] = frozenset(
     {"regression", "quantile", "mape", "huber", "poisson", "tweedie"}

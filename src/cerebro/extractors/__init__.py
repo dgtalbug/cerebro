@@ -48,6 +48,7 @@ def get_extractor(model_path: str | Path) -> Any:
         return XGBExtractor()
 
     from cerebro.extractors._lightgbm_base import _load_booster, _resolve_objective
+
     booster = _load_booster(path)
     dumped: dict[str, Any] = booster.dump_model()
     objective = _resolve_objective(dumped)

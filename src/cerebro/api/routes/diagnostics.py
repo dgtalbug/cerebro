@@ -7,8 +7,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
-from cerebro.api.deps import get_artifact_dir, get_artifact_loader
 from cerebro.analyzers.feature_diagnostics import compute_diagnostics
+from cerebro.api.deps import get_artifact_dir, get_artifact_loader
 from cerebro.schema import CerebroArtifact
 from cerebro.schema.v1_1.feature_diagnostics import FeatureDiagnostics
 from cerebro.storage import write_artifact
@@ -21,7 +21,9 @@ async def get_diagnostics(
     artifact_id: str,
     loader: Annotated[Callable[[str], CerebroArtifact], Depends(get_artifact_loader)],
     artifact_dir: Annotated[object, Depends(get_artifact_dir)],
-    persist: Annotated[bool, Query(description="Write diagnostics back to the artifact file.")] = False,
+    persist: Annotated[
+        bool, Query(description="Write diagnostics back to the artifact file.")
+    ] = False,
 ) -> FeatureDiagnostics:
     """Compute or retrieve feature diagnostics for an artifact."""
     from pathlib import Path

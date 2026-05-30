@@ -12,7 +12,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from cerebro.schema.v1.tree import Tree, TreeNode
+from cerebro.schema.v1_1.tree import Tree, TreeNode
 
 
 @dataclass(frozen=True)

@@ -10,7 +10,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cerebro.extractors.lightgbm import LGBExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def test_m1_extractor_still_importable() -> None:

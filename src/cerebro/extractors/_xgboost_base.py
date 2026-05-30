@@ -23,16 +23,22 @@ else:
     xgb = None
 
 _REGRESSION_OBJECTIVES: frozenset[str] = frozenset(
-    {"reg:squarederror", "reg:squaredlogerror", "reg:logistic",
-     "reg:pseudohubererror", "reg:absoluteerror", "reg:tweedie",
-     "count:poisson", "survival:cox", "survival:aft"}
+    {
+        "reg:squarederror",
+        "reg:squaredlogerror",
+        "reg:logistic",
+        "reg:pseudohubererror",
+        "reg:absoluteerror",
+        "reg:tweedie",
+        "count:poisson",
+        "survival:cox",
+        "survival:aft",
+    }
 )
 _BINARY_OBJECTIVES: frozenset[str] = frozenset(
     {"binary:logistic", "binary:logitraw", "binary:hinge"}
 )
-_MULTICLASS_OBJECTIVES: frozenset[str] = frozenset(
-    {"multi:softmax", "multi:softprob"}
-)
+_MULTICLASS_OBJECTIVES: frozenset[str] = frozenset({"multi:softmax", "multi:softprob"})
 _ALL_OBJECTIVES: frozenset[str] = (
     _REGRESSION_OBJECTIVES | _BINARY_OBJECTIVES | _MULTICLASS_OBJECTIVES
 )
@@ -70,6 +76,7 @@ def _load_booster(path: Path) -> xgb.Booster:
 
 def _load_booster_from_pickle(path: Path) -> xgb.Booster:
     import pickle
+
     xgb_mod = _require_xgboost()
     try:
         with open(path, "rb") as fh:
@@ -85,7 +92,8 @@ def _load_booster_from_pickle(path: Path) -> xgb.Booster:
     if booster is not None and isinstance(booster, xgb_mod.Booster):
         return cast(xgb.Booster, booster)
     raise CorruptArtifactError(
-        f"pickle at {path} does not contain an xgb.Booster or sklearn XGBoost estimator",
+        f"pickle at {path} does not contain an xgb.Booster"
+        " or sklearn XGBoost estimator",
         context={"model_path": str(path), "pickled_type": type(obj).__name__},
     )
 
@@ -111,7 +119,7 @@ def _detect_objective(booster: xgb.Booster) -> str:
             f"unsupported XGBoost objective {name!r}",
             context={"objective": name},
         )
-    return name
+    return str(name)
 
 
 def _get_feature_names(booster: xgb.Booster) -> list[str]:
@@ -210,15 +218,33 @@ def _parse_node(
     left_raw = children.get(yes_id) if yes_id is not None else None
     right_raw = children.get(no_id) if no_id is not None else None
 
-    left = _parse_node(left_raw, feature_names, counter) if left_raw else TreeNode(
-        id=counter[0], split_feature=None, threshold=None, decision_type=None,
-        left=None, right=None, leaf_value=0.0,
+    left = (
+        _parse_node(left_raw, feature_names, counter)
+        if left_raw
+        else TreeNode(
+            id=counter[0],
+            split_feature=None,
+            threshold=None,
+            decision_type=None,
+            left=None,
+            right=None,
+            leaf_value=0.0,
+        )
     )
     if left_raw is None:
         counter[0] += 1
-    right = _parse_node(right_raw, feature_names, counter) if right_raw else TreeNode(
-        id=counter[0], split_feature=None, threshold=None, decision_type=None,
-        left=None, right=None, leaf_value=0.0,
+    right = (
+        _parse_node(right_raw, feature_names, counter)
+        if right_raw
+        else TreeNode(
+            id=counter[0],
+            split_feature=None,
+            threshold=None,
+            decision_type=None,
+            left=None,
+            right=None,
+            leaf_value=0.0,
+        )
     )
     if right_raw is None:
         counter[0] += 1

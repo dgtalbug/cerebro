@@ -9,7 +9,7 @@ import pytest
 
 from cerebro.agent.context import _estimate_tokens, shape_context
 from cerebro.exceptions import ContextTooLargeError
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 @pytest.fixture

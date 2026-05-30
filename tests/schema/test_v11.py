@@ -6,10 +6,10 @@ from typing import Any
 
 import pytest
 
-from cerebro.schema.v1 import CerebroArtifact
-from cerebro.schema.v1.data_profile import DataProfile
-from cerebro.schema.v1.evaluation import BinaryEval
-from cerebro.schema.v1.explanations import Explanations
+from cerebro.schema import CerebroArtifact
+from cerebro.schema.v1_1.data_profile import DataProfile
+from cerebro.schema.v1_1.evaluation import BinaryEval
+from cerebro.schema.v1_1.explanations import Explanations
 
 
 def test_v100_artifact_validates_without_new_fields(

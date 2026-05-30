@@ -77,8 +77,8 @@
 
 ## 9. Docs and spec sync
 
-- [ ] 9.1 Update `docs/cerebro-open-spec.md` Part VI §2 Current Status to reflect MVP 2 shipped
-- [ ] 9.2 Document XGBoost extractor usage in BACKEND.md adapter pattern section
-- [ ] 9.3 Run `ruff check`, `mypy --strict`, `pytest`; ensure green
-- [ ] 9.4 Run `npx gitnexus analyze` to refresh the knowledge graph
-- [ ] 9.5 One Conventional Commit per task group (no AI attribution)
+- [x] 9.1 Update `docs/cerebro-open-spec.md` Part VI §2 Current Status to reflect MVP 2 shipped
+- [x] 9.2 Document XGBoost extractor usage in BACKEND.md adapter pattern section
+- [x] 9.3 Run `ruff check`, `mypy --strict`, `pytest`; ensure green
+- [x] 9.4 Run `npx gitnexus analyze` to refresh the knowledge graph
+- [x] 9.5 One Conventional Commit per task group (no AI attribution)

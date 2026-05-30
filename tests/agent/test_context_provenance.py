@@ -7,7 +7,7 @@ import json
 from typing import Any
 
 from cerebro.agent.context import shape_context
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def _with_sections(base: dict[str, Any], provenance: str) -> CerebroArtifact:

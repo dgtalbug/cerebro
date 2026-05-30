@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -36,8 +37,12 @@ def client(artifact_dir: Path, registry: Registry) -> TestClient:
 
 
 @pytest.fixture
-def artifact_id(artifact_dir: Path, binary_artifact: CerebroArtifact, registry: Registry) -> str:
-    import gzip, hashlib
+def artifact_id(
+    artifact_dir: Path, binary_artifact: CerebroArtifact, registry: Registry
+) -> str:
+    import gzip
+    import hashlib
+
     # Write the artifact to a known path so the registry points to a real file
     path = artifact_dir / "fixture_artifact.cerebro.json"
     write_artifact(binary_artifact, path)
@@ -65,6 +70,7 @@ def artifact_id(artifact_dir: Path, binary_artifact: CerebroArtifact, registry: 
 
 # ── diagnostics ──────────────────────────────────────────────────────────────
 
+
 class TestDiagnosticsEndpoint:
     def test_get_diagnostics_returns_200(
         self, client: TestClient, artifact_id: str
@@ -86,6 +92,7 @@ class TestDiagnosticsEndpoint:
 
 # ── diff ─────────────────────────────────────────────────────────────────────
 
+
 class TestDiffEndpoint:
     def test_diff_same_artifact_zero_delta(
         self, client: TestClient, artifact_id: str
@@ -106,10 +113,9 @@ class TestDiffEndpoint:
 
 # ── tags ─────────────────────────────────────────────────────────────────────
 
+
 class TestTagsEndpoints:
-    def test_add_tag_returns_201(
-        self, client: TestClient, artifact_id: str
-    ) -> None:
+    def test_add_tag_returns_201(self, client: TestClient, artifact_id: str) -> None:
         response = client.post(
             f"/artifacts/{artifact_id}/tags", json={"tag": "production"}
         )
@@ -117,9 +123,7 @@ class TestTagsEndpoints:
         body = response.json()
         assert body["tag"] == "production"
 
-    def test_add_tag_idempotent(
-        self, client: TestClient, artifact_id: str
-    ) -> None:
+    def test_add_tag_idempotent(self, client: TestClient, artifact_id: str) -> None:
         client.post(f"/artifacts/{artifact_id}/tags", json={"tag": "production"})
         response = client.post(
             f"/artifacts/{artifact_id}/tags", json={"tag": "production"}
@@ -133,9 +137,7 @@ class TestTagsEndpoints:
         assert response.status_code == 200
         assert set(response.json()["tags"]) == {"v1", "prod"}
 
-    def test_remove_tag_returns_204(
-        self, client: TestClient, artifact_id: str
-    ) -> None:
+    def test_remove_tag_returns_204(self, client: TestClient, artifact_id: str) -> None:
         client.post(f"/artifacts/{artifact_id}/tags", json={"tag": "temp"})
         response = client.delete(f"/artifacts/{artifact_id}/tags/temp")
         assert response.status_code == 204
@@ -146,18 +148,14 @@ class TestTagsEndpoints:
         response = client.delete(f"/artifacts/{artifact_id}/tags/nonexistent")
         assert response.status_code == 404
 
-    def test_list_artifacts_by_tag(
-        self, client: TestClient, artifact_id: str
-    ) -> None:
+    def test_list_artifacts_by_tag(self, client: TestClient, artifact_id: str) -> None:
         client.post(f"/artifacts/{artifact_id}/tags", json={"tag": "smoke"})
         response = client.get("/artifacts?tag=smoke")
         assert response.status_code == 200
         items = response.json()["items"]
         assert any(row["id"] == artifact_id for row in items)
 
-    def test_list_artifacts_unknown_tag_returns_empty(
-        self, client: TestClient
-    ) -> None:
+    def test_list_artifacts_unknown_tag_returns_empty(self, client: TestClient) -> None:
         response = client.get("/artifacts?tag=nonexistent")
         assert response.status_code == 200
         assert response.json()["items"] == []

@@ -9,11 +9,6 @@ import pytest
 
 from cerebro.agent.context import shape_context
 from cerebro.schema import CerebroArtifact
-from cerebro.schema.v1_1.feature_diagnostics import (
-    FeatureDiagnostics,
-    Recommendation,
-    RedundancyWarning,
-)
 
 
 @pytest.fixture

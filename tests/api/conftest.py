@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 
 from cerebro.api import create_app
 from cerebro.api.deps import get_artifact_dir
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 from cerebro.storage import write_artifact
 
 

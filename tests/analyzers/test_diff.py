@@ -35,8 +35,16 @@ def test_diff_detects_added_feature(binary_artifact_dict: dict[str, Any]) -> Non
         "monotone_constraints": [0, 0, 0],
     }
     d["importance"] = dict(d["importance"])
-    d["importance"]["gain"] = {"credit_score": 1.5, "annual_income": 0.8, "new_feat": 0.3}
-    d["importance"]["split"] = {"credit_score": 5.0, "annual_income": 3.0, "new_feat": 1.0}
+    d["importance"]["gain"] = {
+        "credit_score": 1.5,
+        "annual_income": 0.8,
+        "new_feat": 0.3,
+    }
+    d["importance"]["split"] = {
+        "credit_score": 5.0,
+        "annual_income": 3.0,
+        "new_feat": 1.0,
+    }
     b = _make_artifact(d)
     result = diff_artifacts(a, b)
     assert "new_feat" in result.feature_schema_diff.added

@@ -7,6 +7,10 @@ XGBoost is imported lazily via `_require_xgboost()`.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import xgboost as xgb
 
 from cerebro.extractors._xgboost_base import (
     _BINARY_OBJECTIVES,
@@ -81,10 +85,11 @@ class XGBExtractor:
         )
 
 
-def _get_num_class(booster: object) -> int:
+def _get_num_class(booster: xgb.Booster) -> int:
     """Extract num_class from booster config for multiclass objectives."""
     import json
-    cfg = json.loads(booster.save_config())  # type: ignore[union-attr]
+
+    cfg = json.loads(booster.save_config())
     try:
         return int(cfg["learner"]["learner_model_param"]["num_class"])
     except (KeyError, TypeError, ValueError):

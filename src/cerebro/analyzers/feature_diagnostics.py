@@ -118,12 +118,14 @@ def _detect_leakage(
 
     # rank by gain descending
     gain_ranked = [
-        f for f, _ in sorted(gain.items(), key=lambda x: x[1], reverse=True)
+        f
+        for f, _ in sorted(gain.items(), key=lambda x: x[1], reverse=True)
         if f in perm
     ]
     # rank by permutation mean descending
     perm_ranked = [
-        f for f, _ in sorted(
+        f
+        for f, _ in sorted(
             ((f, v.get("mean", 0.0)) for f, v in perm.items() if f in gain),
             key=lambda x: x[1],
             reverse=True,
@@ -206,17 +208,11 @@ def _walk_paths_for_cooccurrence(
         _walk_paths_for_cooccurrence(node.right, new_path, co, splits)
 
 
-def _detect_unused(
-    artifact: CerebroArtifact, feature_names: list[str]
-) -> list[str]:
+def _detect_unused(artifact: CerebroArtifact, feature_names: list[str]) -> list[str]:
     used: set[int] = set()
     for tree in artifact.trees:
         _collect_used_features(tree.root, used)
-    return [
-        feature_names[i]
-        for i in range(len(feature_names))
-        if i not in used
-    ]
+    return [feature_names[i] for i in range(len(feature_names)) if i not in used]
 
 
 def _collect_used_features(node: TreeNode, used: set[int]) -> None:
@@ -256,17 +252,20 @@ def _build_recommendations(
             )
         )
 
-    for w in leakage:
+    for lw in leakage:
         recs.append(
             Recommendation(
                 kind="investigate_leakage",
-                feature=w.feature,
+                feature=lw.feature,
                 reason=(
-                    f"Gain rank={w.gain_rank} but permutation rank={w.permutation_rank} "
-                    f"(delta={w.delta}); potential data leakage"
+                    f"Gain rank={lw.gain_rank} but permutation rank="
+                    f"{lw.permutation_rank} (delta={lw.delta}); potential leakage"
                 ),
                 impact_estimate="high",
-                details={"gain_rank": w.gain_rank, "permutation_rank": w.permutation_rank},
+                details={
+                    "gain_rank": lw.gain_rank,
+                    "permutation_rank": lw.permutation_rank,
+                },
             )
         )
 

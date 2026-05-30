@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cerebro.extractors.lightgbm_multiclass import LGBMulticlassExtractor
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 
 def test_multiclass_extraction_shape(multiclass_booster_file: Path) -> None:

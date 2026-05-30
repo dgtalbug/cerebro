@@ -15,7 +15,7 @@ from typing import Annotated, Any
 from fastapi import APIRouter, Depends
 
 from cerebro.api.deps import get_artifact_loader
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.schema import CerebroArtifact
 
 router = APIRouter(tags=["artifacts"])
 
