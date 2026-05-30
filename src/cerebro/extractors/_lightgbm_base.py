@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 if TYPE_CHECKING:
     import lightgbm as lgb
@@ -37,7 +37,7 @@ _OBJECTIVE_KEYWORDS: frozenset[str] = (
 )
 
 
-def _require_lightgbm():
+def _require_lightgbm() -> Any:
     """Lazily import LightGBM. Raises if not installed."""
     global lgb
     if lgb is None:
@@ -70,12 +70,12 @@ def _resolve_objective(dumped: dict[str, Any]) -> str:
     return keyword
 
 
-def _load_booster(path: Path) -> "lgb.Booster":
+def _load_booster(path: Path) -> lgb.Booster:
     lgb_mod = _require_lightgbm()
     if path.suffix.lower() in {".pkl", ".pickle"}:
         return _load_booster_from_pickle(path)
     try:
-        return lgb_mod.Booster(model_file=str(path))
+        return cast(lgb.Booster, lgb_mod.Booster(model_file=str(path)))
     except (lgb_mod.basic.LightGBMError, FileNotFoundError, OSError) as original:
         raise CorruptArtifactError(
             f"could not load LightGBM booster from {path}",
@@ -83,7 +83,7 @@ def _load_booster(path: Path) -> "lgb.Booster":
         ) from original
 
 
-def _load_booster_from_pickle(path: Path) -> "lgb.Booster":
+def _load_booster_from_pickle(path: Path) -> lgb.Booster:
     import pickle
 
     lgb_mod = _require_lightgbm()
@@ -98,10 +98,10 @@ def _load_booster_from_pickle(path: Path) -> "lgb.Booster":
         ) from original
 
     if isinstance(obj, lgb_mod.Booster):
-        return obj
+        return cast(lgb.Booster, obj)
     booster = getattr(obj, "booster_", None)
     if isinstance(booster, lgb_mod.Booster):
-        return booster
+        return cast(lgb.Booster, booster)
     raise CorruptArtifactError(
         f"pickle at {path} does not contain an lgb.Booster "
         "or fitted LightGBM estimator",
@@ -110,7 +110,7 @@ def _load_booster_from_pickle(path: Path) -> "lgb.Booster":
 
 
 def _resolve_categorical_indices(
-    booster: "lgb.Booster", feature_names: list[str]
+    booster: lgb.Booster, feature_names: list[str]
 ) -> list[int]:
     """Resolve categorical feature indices from Booster.params.
 
@@ -163,7 +163,7 @@ def _build_source() -> Source:
 
 
 def _build_feature_schema(
-    dumped: dict[str, Any], booster: "lgb.Booster"
+    dumped: dict[str, Any], booster: lgb.Booster
 ) -> FeatureSchema:
     names: list[str] = list(dumped.get("feature_names", []))
     categorical_indices = _resolve_categorical_indices(booster, names)
@@ -180,7 +180,7 @@ def _build_feature_schema(
     )
 
 
-def _extract_params(booster: "lgb.Booster") -> dict[str, Any]:
+def _extract_params(booster: lgb.Booster) -> dict[str, Any]:
     params = booster.params or {}
     return {key: value for key, value in params.items() if not callable(value)}
 
@@ -234,7 +234,7 @@ def _build_tree(info: dict[str, Any], class_index: int | None = None) -> Tree:
     )
 
 
-def _build_importance(booster: "lgb.Booster", feature_names: list[str]) -> Importance:
+def _build_importance(booster: lgb.Booster, feature_names: list[str]) -> Importance:
     gain_array = booster.feature_importance(importance_type="gain")
     split_array = booster.feature_importance(importance_type="split")
     gain = {
@@ -249,7 +249,7 @@ def _build_importance(booster: "lgb.Booster", feature_names: list[str]) -> Impor
 
 
 def _build_m3_sections(
-    booster: "lgb.Booster",
+    booster: lgb.Booster,
     trees: list[Tree],
     importance: Importance,
     feature_schema: FeatureSchema,
