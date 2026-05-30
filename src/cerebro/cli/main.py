@@ -168,13 +168,26 @@ def extract(
             readable=True,
         ),
     ] = None,
+    synthetic: Annotated[
+        bool,
+        typer.Option(
+            "--synthetic",
+            help=(
+                "Fill empty explanation/profile sections from model-only "
+                "synthetic inputs (approximate). Real supplied data takes "
+                "precedence; labels are never synthesized."
+            ),
+        ),
+    ] = False,
 ) -> None:
     """Extract a canonical artifact from a trained model.
 
     When --samples and --labels are provided, also computes SHAP explanations
     and permutation importance. When --eval-samples and --eval-labels are
     provided, computes objective-aware evaluation metrics. When --training-table
-    is provided, computes a data profile of the training distribution.
+    is provided, computes a data profile of the training distribution. When
+    --synthetic is set, sections still empty are filled with approximate,
+    model-only synthetic results marked with synthetic provenance.
     """
     import numpy as np
 
@@ -218,6 +231,15 @@ def extract(
         eval_labels=np_eval_labels,
         training_table_path=training_table,
     )
+    if synthetic:
+        from cerebro.analyzers.synthetic import fill_synthetic_sections
+
+        artifact = fill_synthetic_sections(
+            artifact,
+            model,
+            real_samples=np_samples is not None,
+            real_profile=training_table is not None,
+        )
     write_artifact(artifact, output)
     typer.echo(f"extracted: {_format_summary(artifact)} -> {output}")
 
@@ -321,6 +343,71 @@ def index(
             )
             count += 1
         typer.echo(f"index: updated last_seen_at for {count} artifact(s)")
+
+
+@app.command()
+@_handle_cerebro_errors
+def doctor(
+    model: Annotated[
+        Path,
+        typer.Argument(
+            help="Path to the framework-native model file (.txt, .lgb, or .pkl).",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ],
+    artifact: Annotated[
+        Path | None,
+        typer.Option(
+            "--artifact",
+            help="An already-extracted .cerebro.json to credit already-filled tabs.",
+            exists=True,
+            dir_okay=False,
+            readable=True,
+        ),
+    ] = None,
+    json_output: Annotated[
+        bool,
+        typer.Option("--json", help="Emit machine-readable readiness to stdout."),
+    ] = False,
+) -> None:
+    """Report which dashboard tabs are satisfiable and what inputs are missing.
+
+    Read-only: inspects the model (and optional artifact) and prints, per tab,
+    whether it is satisfiable, the input still required, and the exact ordered
+    feature contract the model expects. Exits non-zero when any data-dependent
+    tab is unmet, so it can gate CI.
+    """
+    import json
+
+    import lightgbm as lgb
+
+    from cerebro.analyzers.readiness import assess_readiness
+
+    feature_names = lgb.Booster(model_file=str(model)).feature_name()
+    loaded = read_artifact(artifact) if artifact is not None else None
+    report = assess_readiness(feature_names, loaded)
+
+    if json_output:
+        typer.echo(json.dumps(report.to_dict()))
+    else:
+        typer.echo(f"Dashboard readiness for {model.name}\n")
+        for tab in report.tabs:
+            mark = "✓" if tab.satisfiable else "✗"
+            line = f"  [{mark}] {tab.name}"
+            if not tab.satisfiable:
+                line += f"  — needs: {', '.join(tab.missing_inputs)}"
+            if tab.requires_labels:
+                line += "  (requires labels)"
+            typer.echo(line)
+        typer.echo(
+            f"\nFeature contract ({report.feature_count} features, in model order):"
+        )
+        typer.echo("  " + ", ".join(report.feature_names))
+
+    if not report.is_ready():
+        raise typer.Exit(code=1)
 
 
 @app.command()

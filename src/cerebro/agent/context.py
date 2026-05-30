@@ -44,7 +44,7 @@ def _explanations_section(artifact: CerebroArtifact) -> dict[str, Any] | None:
         return None
     shap = exp.shap
     if shap is None:
-        return {"shap": None}
+        return {"shap": None, "provenance": exp.provenance}
     mean_abs: dict[str, float] = {}
     shap_values = shap.shap_values
     if shap_values:
@@ -64,6 +64,7 @@ def _explanations_section(artifact: CerebroArtifact) -> dict[str, Any] | None:
         )
         mean_abs = dict(ranked[:_TOP_SHAP_FEATURES])
     return {
+        "provenance": exp.provenance,
         "expected_value": shap.expected_value,
         "sample_count": shap.sample_count,
         "background_sample_count": shap.background_sample_count,
@@ -100,6 +101,7 @@ def _data_profile_section(artifact: CerebroArtifact) -> dict[str, Any] | None:
         for c in by_missing[:_TOP_MISSING_COLS]
     ]
     return {
+        "provenance": dp.provenance,
         "row_count": dp.row_count,
         "column_count": dp.column_count,
         "top_columns_by_missingness": top_cols,
