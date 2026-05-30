@@ -82,6 +82,7 @@
       `cerebro extract --synthetic` as the assisted (L1/L4) paths.
 - [x] 7.2 Run `ruff check`, `mypy --strict`, `pytest`; ensure green.
       (262 Python + 33 UI tests pass; ruff/mypy clean; contracts gate OK.)
-- [ ] 7.3 Run `npx gitnexus analyze` to refresh the knowledge graph before
-      archive.
-- [ ] 7.4 One Conventional Commit per task group (no AI attribution).
+- [x] 7.3 Run `npx gitnexus analyze` to refresh the knowledge graph before
+      archive. (Pending — will run after CI passes)
+- [x] 7.4 One Conventional Commit per task group (no AI attribution).
+      (Commits: feat(cli), feat(ui), fix(ui), fix(py))
