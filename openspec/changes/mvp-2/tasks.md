@@ -36,12 +36,12 @@
 
 ## 5. API extensions
 
-- [ ] 5.1 Add `GET /artifacts/{id}/diagnostics?persist=false` route to `api/routes/`
-- [ ] 5.2 Add `POST /artifacts/{id}/tags` and `DELETE /artifacts/{id}/tags/{tag}` routes
-- [ ] 5.3 Add `tag` query parameter to `GET /artifacts` list endpoint
-- [ ] 5.4 Add `GET /artifacts/{id}/diff/{compare_id}` route returning `CerebroDiff`
-- [ ] 5.5 Add tags CRUD to `storage/registry.py` (insert, delete, filter-by-tag)
-- [ ] 5.6 API tests for all new routes (happy path + error cases)
+- [x] 5.1 Add `GET /artifacts/{id}/diagnostics?persist=false` route to `api/routes/`
+- [x] 5.2 Add `POST /artifacts/{id}/tags` and `DELETE /artifacts/{id}/tags/{tag}` routes
+- [x] 5.3 Add `tag` query parameter to `GET /artifacts` list endpoint
+- [x] 5.4 Add `GET /artifacts/{id}/diff/{compare_id}` route returning `CerebroDiff`
+- [x] 5.5 Add tags CRUD to `storage/registry.py` (insert, delete, filter-by-tag)
+- [x] 5.6 API tests for all new routes (happy path + error cases)
 
 ## 6. XGBoost extractor
 

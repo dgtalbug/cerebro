@@ -16,12 +16,15 @@ from cerebro.api.routes import (
     agent_router,
     artifacts_router,
     data_profile_router,
+    diagnostics_router,
+    diff_router,
     evaluation_router,
     explanations_router,
     health_router,
     importance_router,
     ingest_router,
     models_router,
+    tags_router,
 )
 from cerebro.exceptions import CerebroError
 from cerebro.logging import CorrelationIdMiddleware
@@ -58,6 +61,9 @@ def create_app() -> FastAPI:
     app.include_router(ingest_router)
     app.include_router(models_router)
     app.include_router(agent_router)
+    app.include_router(diagnostics_router)
+    app.include_router(diff_router)
+    app.include_router(tags_router)
 
     return app
 

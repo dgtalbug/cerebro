@@ -534,6 +534,83 @@ class Registry:
         finally:
             conn.close()
 
+    # ------------------------------------------------------------------
+    # Tags
+    # ------------------------------------------------------------------
+
+    def add_tag(self, artifact_id: str, tag: str) -> None:
+        """Add a tag to an artifact (idempotent)."""
+        conn = self._conn()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            conn.execute(
+                "INSERT OR IGNORE INTO tags (artifact_id, tag) VALUES (?, ?)",
+                (artifact_id, tag),
+            )
+            conn.commit()
+        except sqlite3.Error:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def remove_tag(self, artifact_id: str, tag: str) -> bool:
+        """Remove a tag from an artifact. Returns True if it existed."""
+        conn = self._conn()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            cursor = conn.execute(
+                "DELETE FROM tags WHERE artifact_id = ? AND tag = ?",
+                (artifact_id, tag),
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+        except sqlite3.Error:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+    def list_tags(self, artifact_id: str) -> list[str]:
+        """Return all tags for an artifact."""
+        conn = self._conn()
+        try:
+            rows = conn.execute(
+                "SELECT tag FROM tags WHERE artifact_id = ? ORDER BY tag",
+                (artifact_id,),
+            ).fetchall()
+            return [row["tag"] for row in rows]
+        finally:
+            conn.close()
+
+    def list_all_artifacts(self) -> list[dict[str, Any]]:
+        """Return all artifact rows, newest first."""
+        conn = self._conn()
+        try:
+            rows = conn.execute(
+                "SELECT * FROM artifacts ORDER BY extracted_at DESC"
+            ).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            conn.close()
+
+    def list_artifacts_by_tag(self, tag: str) -> list[dict[str, Any]]:
+        """Return artifact rows that have the given tag."""
+        conn = self._conn()
+        try:
+            rows = conn.execute(
+                """
+                SELECT a.* FROM artifacts a
+                JOIN tags t ON t.artifact_id = a.id
+                WHERE t.tag = ?
+                ORDER BY a.extracted_at DESC
+                """,
+                (tag,),
+            ).fetchall()
+            return [dict(row) for row in rows]
+        finally:
+            conn.close()
+
     def get_model_detail(self, model_id: str) -> ModelDetail:
         model = self.get_model(model_id)
         if model is None:

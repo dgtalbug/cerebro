@@ -1,22 +1,30 @@
-"""Canonical artifact endpoint.
-
-`GET /artifacts/{id}` returns the full canonical artifact. Sub-resource
-endpoints (`/model`, `/trees`, `/importance`, ...) are a later change —
-for the walking skeleton the full payload covers every Overview view
-tile from a single fetch.
-"""
+"""Canonical artifact endpoints."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
-from cerebro.api.deps import get_artifact_loader
-from cerebro.schema.v1 import CerebroArtifact
+from cerebro.api.deps import get_artifact_loader, get_registry
+from cerebro.schema import CerebroArtifact
+from cerebro.storage.registry import Registry
 
 router = APIRouter(tags=["artifacts"])
+
+
+@router.get("/artifacts")
+async def list_artifacts(
+    registry: Annotated[Registry, Depends(get_registry)],
+    tag: Annotated[str | None, Query(description="Filter by tag")] = None,
+) -> dict[str, list[dict[str, object]]]:
+    """List registered artifacts, optionally filtered by tag."""
+    if tag is not None:
+        rows = registry.list_artifacts_by_tag(tag)
+    else:
+        rows = registry.list_all_artifacts()
+    return {"items": rows}
 
 
 @router.get("/artifacts/{artifact_id}", response_model=CerebroArtifact)
