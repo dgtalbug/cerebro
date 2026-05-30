@@ -133,8 +133,10 @@ source_modules = [
 ]
 forbidden_modules = ["lightgbm"]
 # ingest is a write/extraction endpoint, not a consumption route.
+# _lightgbm_base imports lightgbm lazily inside _require_lightgbm() only when needed.
 ignore_imports = [
     "cerebro.api.routes.ingest -> cerebro.extractors",
+    "cerebro.extractors._lightgbm_base -> lightgbm",
 ]
 
 [[tool.importlinter.contracts]]
