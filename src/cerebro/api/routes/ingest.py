@@ -216,12 +216,17 @@ async def ingest(
 async def enrich(
     artifact_id: str,
     training_table: Annotated[UploadFile | None, File()] = None,
+    samples: Annotated[UploadFile | None, File()] = None,
+    labels: Annotated[UploadFile | None, File()] = None,
+    eval_samples: Annotated[UploadFile | None, File()] = None,
+    eval_labels: Annotated[UploadFile | None, File()] = None,
     registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
 ) -> EnrichResponse:
-    """Add a data profile section to an existing artifact.
+    """Add missing sections to an existing artifact without re-uploading the model.
 
-    SHAP and evaluation enrichment require re-ingesting the model file via
-    POST /artifacts/ingest — the API layer cannot import LightGBM (invariant #2).
+    Accepts any combination of: training_table (data_profile), samples+labels
+    (SHAP + permutation importance), eval_samples+eval_labels (evaluation).
+    Only computes sections that are currently absent.
     """
     row = registry.get_artifact_row(artifact_id)
     if row is None:
@@ -233,21 +238,35 @@ async def enrich(
     artifact_path = Path(row["path"])
     existing = read_artifact(artifact_path)
 
-    needs_profile = training_table is not None and existing.data_profile is None
+    wants_profile = training_table is not None
+    wants_shap = samples is not None and labels is not None
+    wants_eval = eval_samples is not None and eval_labels is not None
 
-    if not needs_profile:
+    if not any([wants_profile, wants_shap, wants_eval]):
         raise EnrichmentError(
-            "artifact already has a data profile or no training table was provided",
+            (
+            "no files provided; supply training_table,"
+            " samples+labels, or eval_samples+eval_labels"
+        ),
             context={"artifact_id": artifact_id},
         )
 
+    def _fname(upload: UploadFile | None, default: str) -> str:
+        return (upload.filename or default) if upload else default
+
     training_table_bytes = await _read(training_table)
+    samples_bytes = await _read(samples)
+    labels_bytes = await _read(labels)
+    eval_samples_bytes = await _read(eval_samples)
+    eval_labels_bytes = await _read(eval_labels)
 
     sections_added: list[str] = []
     updated_data = existing.model_dump()
 
-    if needs_profile and training_table_bytes is not None:
-        with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
+    # ── data profile ──────────────────────────────────────────────────────────
+    if wants_profile and training_table_bytes is not None:
+        suffix = Path(_fname(training_table, "training.csv")).suffix.lower() or ".csv"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tf:
             tf.write(training_table_bytes)
             tmp_table_path = Path(tf.name)
         try:
@@ -265,6 +284,60 @@ async def enrich(
             ) from exc
         finally:
             tmp_table_path.unlink(missing_ok=True)
+
+    # ── SHAP + permutation importance ─────────────────────────────────────────
+    if wants_shap and samples_bytes is not None and labels_bytes is not None:
+        np_samples = _to_ndarray(
+            samples_bytes, "samples", _fname(samples, "samples.csv")
+        )
+        np_labels = _to_ndarray(labels_bytes, "labels", _fname(labels, "labels.csv"))
+        model_path = Path(row["path"])
+        try:
+            from cerebro.extractors import get_extractor
+
+            extractor = get_extractor(model_path)
+            tmp_artifact = extractor.extract(
+                model_path,
+                samples=np_samples,
+                labels=np_labels,
+            )
+            if tmp_artifact.explanations is not None:
+                updated_data["explanations"] = tmp_artifact.explanations.model_dump()
+                sections_added.append("shap")
+            if tmp_artifact.importance.permutation is not None:
+                updated_data["importance"] = tmp_artifact.importance.model_dump()
+        except Exception as exc:
+            raise EnrichmentError(
+                "SHAP computation failed",
+                context={"artifact_id": artifact_id},
+            ) from exc
+
+    # ── evaluation ────────────────────────────────────────────────────────────
+    if wants_eval and eval_samples_bytes is not None and eval_labels_bytes is not None:
+        np_eval_samples = _to_ndarray(
+            eval_samples_bytes, "eval_samples", _fname(eval_samples, "eval_samples.csv")
+        )
+        np_eval_labels = _to_ndarray(
+            eval_labels_bytes, "eval_labels", _fname(eval_labels, "eval_labels.csv")
+        )
+        model_path = Path(row["path"])
+        try:
+            from cerebro.extractors import get_extractor
+
+            extractor = get_extractor(model_path)
+            tmp_artifact = extractor.extract(
+                model_path,
+                eval_samples=np_eval_samples,
+                eval_labels=np_eval_labels,
+            )
+            if tmp_artifact.evaluation is not None:
+                updated_data["evaluation"] = tmp_artifact.evaluation.model_dump()
+                sections_added.append("evaluation")
+        except Exception as exc:
+            raise EnrichmentError(
+                "evaluation computation failed",
+                context={"artifact_id": artifact_id},
+            ) from exc
 
     from cerebro.schema import CerebroArtifact
 
@@ -288,6 +361,105 @@ async def enrich(
     )
 
     _LOG.info("enrich.complete", artifact_id=artifact_id, sections_added=sections_added)
+
+    return EnrichResponse(
+        artifact_id=artifact_id,
+        sections_added=sections_added,
+        enriched_at=enriched_at,
+    )
+
+
+@router.post("/artifacts/{artifact_id}/synthetic", response_model=EnrichResponse)
+async def generate_synthetic(
+    artifact_id: str,
+    model_file: Annotated[UploadFile | None, File()] = None,
+    registry: Annotated[Registry, Depends(get_registry)] = ...,  # type: ignore[assignment]
+) -> EnrichResponse:
+    """Generate approximate sections from model structure.
+
+    - Data profile (feature ranges from split thresholds) — no model file needed.
+    - SHAP explanations (TreeSHAP on synthetic rows) — requires model_file upload.
+
+    Results are tagged provenance='synthetic'.
+    """
+    row = registry.get_artifact_row(artifact_id)
+    if row is None:
+        raise ArtifactNotFoundError(
+            f"no artifact with id {artifact_id!r}",
+            context={"artifact_id": artifact_id},
+        )
+
+    artifact_path = Path(row["path"])
+    existing = read_artifact(artifact_path)
+    feature_names = existing.model.feature_schema.names
+
+    sections_added: list[str] = []
+    updated_data = existing.model_dump()
+
+    # ── data profile from tree thresholds (no model file needed) ─────────────
+    try:
+        from cerebro.analyzers.synthetic import build_feature_range_profile
+        from cerebro.analyzers.thresholds import collect_thresholds
+
+        thresholds = collect_thresholds(existing.trees)
+        profile = build_feature_range_profile(thresholds, feature_names)
+        updated_data["data_profile"] = profile.model_dump()
+        sections_added.append("data_profile")
+    except Exception as exc:
+        raise EnrichmentError(
+            "synthetic data profile generation failed",
+            context={"artifact_id": artifact_id},
+        ) from exc
+
+    # ── SHAP from synthetic rows (requires model file) ────────────────────────
+    if model_file is not None:
+        model_bytes = await model_file.read()
+        suffix = Path(model_file.filename or "model.txt").suffix.lower() or ".txt"
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tf:
+            tf.write(model_bytes)
+            tmp_model_path = Path(tf.name)
+        try:
+            from cerebro.analyzers.synthetic import fill_synthetic_sections
+            from cerebro.schema import CerebroArtifact
+
+            partial = CerebroArtifact.model_validate(updated_data)
+            filled = fill_synthetic_sections(
+                partial, tmp_model_path, real_samples=False, real_profile=False
+            )
+            if filled.explanations is not None:
+                updated_data["explanations"] = filled.explanations.model_dump()
+                sections_added.append("shap")
+        except Exception as exc:
+            raise EnrichmentError(
+                "synthetic SHAP generation failed",
+                context={"artifact_id": artifact_id},
+            ) from exc
+        finally:
+            tmp_model_path.unlink(missing_ok=True)
+
+    from cerebro.schema import CerebroArtifact
+
+    final = CerebroArtifact.model_validate(updated_data)
+    write_artifact(final, artifact_path)
+    raw_on_disk = artifact_path.read_bytes()
+    new_sha256 = _sha256(gzip.decompress(raw_on_disk))
+    enriched_at = _now()
+
+    registry.update_artifact_sections(
+        artifact_id,
+        has_shap="shap" in sections_added or bool(row["has_shap"]),
+        has_evaluation=bool(row["has_evaluation"]),
+        has_data_profile=(
+            "data_profile" in sections_added or bool(row["has_data_profile"])
+        ),
+        content_sha256=new_sha256,
+        size_bytes=len(raw_on_disk),
+        enriched_at=enriched_at,
+    )
+
+    _LOG.info(
+        "synthetic.complete", artifact_id=artifact_id, sections_added=sections_added
+    )
 
     return EnrichResponse(
         artifact_id=artifact_id,

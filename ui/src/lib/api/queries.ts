@@ -584,3 +584,66 @@ export function useArtifactList(tag?: string) {
     retry: false,
   });
 }
+
+// ── enrichment mutations (used by Readiness page) --------------------------
+
+export function useEnrichSections(artifactId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (form: FormData) => {
+      const resp = await fetch(`${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/enrich`, {
+        method: "PATCH",
+        body: form,
+      });
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({})) as { detail?: string };
+        throw new Error(body.detail ?? `Failed (${resp.status})`);
+      }
+      return resp.json() as Promise<{ sections_added: string[] }>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["artifact", artifactId] });
+      queryClient.invalidateQueries({ queryKey: ["explanations", artifactId] });
+      queryClient.invalidateQueries({ queryKey: ["evaluation", artifactId] });
+      queryClient.invalidateQueries({ queryKey: ["data-profile", artifactId] });
+    },
+  });
+}
+
+export function useGenerateSynthetic(artifactId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (modelFile?: File) => {
+      const form = new FormData();
+      if (modelFile) form.append("model_file", modelFile);
+      const resp = await fetch(
+        `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/synthetic`,
+        { method: "POST", body: form }
+      );
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({})) as { detail?: string };
+        throw new Error(body.detail ?? `Failed (${resp.status})`);
+      }
+      return resp.json() as Promise<{ sections_added: string[] }>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["artifact", artifactId] });
+      queryClient.invalidateQueries({ queryKey: ["data-profile", artifactId] });
+      queryClient.invalidateQueries({ queryKey: ["explanations", artifactId] });
+    },
+  });
+}
+
+export function useRefreshDiagnostics(artifactId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const resp = await fetch(
+        `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/diagnostics?persist=true`
+      );
+      if (!resp.ok) throw new Error(`Failed (${resp.status})`);
+      return resp.json();
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["diagnostics", artifactId] }),
+  });
+}
