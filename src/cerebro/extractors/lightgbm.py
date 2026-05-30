@@ -29,7 +29,7 @@ _LOG = get_logger(__name__)
 class LGBExtractor:
     """Extract a binary LightGBM booster into the canonical schema."""
 
-    def extract(self, model_path: str | Path) -> CerebroArtifact:
+    def extract(self, model_path: str | Path, **_kwargs: Any) -> CerebroArtifact:
         path = Path(model_path)
         booster = _load_booster(path)
         dumped: dict[str, Any] = booster.dump_model()

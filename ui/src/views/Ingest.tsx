@@ -244,6 +244,7 @@ export function Ingest() {
   const [showShap, setShowShap] = useState(false);
   const [showEval, setShowEval] = useState(false);
   const [showData, setShowData] = useState(false);
+  const [evalUseSameFiles, setEvalUseSameFiles] = useState(false);
 
   const handleModelChange = (f: File | null) => {
     setModelFile(f);
@@ -256,14 +257,16 @@ export function Ingest() {
 
   const handleSubmit = () => {
     if (!modelFile || !modelName.trim()) return;
+    const resolvedEvalSamples = evalUseSameFiles ? samplesFile : evalSamplesFile;
+    const resolvedEvalLabels  = evalUseSameFiles ? labelsFile  : evalLabelsFile;
     const params: IngestParams = {
       model: modelFile,
       modelName: modelName.trim(),
       notes: notes.trim() || undefined,
       samples: samplesFile ?? undefined,
       labels: labelsFile ?? undefined,
-      evalSamples: evalSamplesFile ?? undefined,
-      evalLabels: evalLabelsFile ?? undefined,
+      evalSamples: resolvedEvalSamples ?? undefined,
+      evalLabels:  resolvedEvalLabels  ?? undefined,
       trainingTable: trainingTableFile ?? undefined,
     };
     mutate(params, {
@@ -278,7 +281,7 @@ export function Ingest() {
       <div className="view-header">
         <div>
           <h1 className="view-title">Load <em>model</em></h1>
-          <p className="view-subtitle">Upload a LightGBM model file (.txt, .lgb, or .pkl) to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view.</p>
+          <p className="view-subtitle">Upload a LightGBM or XGBoost model to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view. Not sure what to provide? See the <a href="#" style={{ color: "var(--accent)" }}>Readiness guide</a> for this artifact.</p>
         </div>
       </div>
 
@@ -289,9 +292,9 @@ export function Ingest() {
             Model file <span style={{ color: "var(--accent)" }}>required</span>
           </div>
           <FileZone
-            label="Drop your LightGBM model file here, or click to browse"
-            hint=".txt / .lgb (text format) or .pkl (pickled Booster or sklearn wrapper)"
-            accept=".txt,.lgb,.pkl,.pickle"
+            label="Drop your model file here, or click to browse"
+            hint="LightGBM: .txt / .lgb / .pkl  ·  XGBoost: .ubj / .json / .pkl"
+            accept=".txt,.lgb,.pkl,.pickle,.ubj,.json"
             file={modelFile}
             required
             onChange={handleModelChange}
@@ -362,9 +365,44 @@ export function Ingest() {
           ]}
         />
         {showEval && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "4px" }}>
-            <FileZone label="Eval features" hint="CSV/Parquet/JSON — held-out samples" accept=".csv,.parquet,.json" file={evalSamplesFile} onChange={setEvalSamplesFile} />
-            <FileZone label="Eval labels" hint="Ground-truth labels aligned to eval features" accept=".csv" file={evalLabelsFile} onChange={setEvalLabelsFile} />
+          <div style={{ marginBottom: "4px" }}>
+            {/* "use same files" toggle — only visible when SHAP section has files */}
+            {(samplesFile || labelsFile) && (
+              <label style={{
+                display: "flex", alignItems: "center", gap: "8px", cursor: "pointer",
+                fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)",
+                padding: "8px 0 10px",
+              }}>
+                <input
+                  type="checkbox"
+                  checked={evalUseSameFiles}
+                  onChange={(e) => setEvalUseSameFiles(e.target.checked)}
+                  style={{ accentColor: "var(--accent)", width: "14px", height: "14px" }}
+                />
+                Use the same files as SHAP section
+                <span style={{ color: "var(--text-dim)", fontSize: "10px" }}>
+                  ({samplesFile?.name ?? "no samples"} / {labelsFile?.name ?? "no labels"})
+                </span>
+              </label>
+            )}
+            {!evalUseSameFiles && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                <FileZone
+                  label="Eval features"
+                  hint="CSV/Parquet/JSON — held-out samples the model has never seen"
+                  accept=".csv,.parquet,.json"
+                  file={evalSamplesFile}
+                  onChange={setEvalSamplesFile}
+                />
+                <FileZone
+                  label="Eval labels"
+                  hint="Ground-truth labels aligned to eval features"
+                  accept=".csv"
+                  file={evalLabelsFile}
+                  onChange={setEvalLabelsFile}
+                />
+              </div>
+            )}
           </div>
         )}
 

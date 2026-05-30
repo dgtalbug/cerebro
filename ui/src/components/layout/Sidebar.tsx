@@ -75,6 +75,7 @@ const introspectionItems: NavItemDef[] = [
   },
 ];
 
+
 const reasoningItems: NavItemDef[] = [
   {
     label: "Agent",
@@ -89,6 +90,16 @@ const reasoningItems: NavItemDef[] = [
 ];
 
 const artifactItems: NavItemDef[] = [
+  {
+    label: "Readiness",
+    view: "readiness",
+    disabled: false,
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+      </svg>
+    ),
+  },
   {
     label: "Schema / JSON",
     view: "schema",
@@ -155,6 +166,15 @@ function RegistrySidebarNav() {
           <path d="M8 21h8M12 17v4" />
         </svg>
         <span>Registry</span>
+      </NavLink>
+      <NavLink
+        to="/artifacts"
+        className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path d="M3 6h18M3 12h18M3 18h18" />
+        </svg>
+        <span>Artifacts</span>
       </NavLink>
       <button
         className="btn primary"

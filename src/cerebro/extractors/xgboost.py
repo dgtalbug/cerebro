@@ -7,7 +7,7 @@ XGBoost is imported lazily via `_require_xgboost()`.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     import xgboost as xgb
@@ -36,8 +36,22 @@ class XGBExtractor:
     Covers binary classification, multiclass classification, and regression.
     """
 
-    def extract(self, model_path: str | Path) -> CerebroArtifact:
+    def extract(
+        self,
+        model_path: str | Path,
+        samples: Any = None,
+        labels: Any = None,
+        eval_samples: Any = None,
+        eval_labels: Any = None,
+        training_table_path: Path | None = None,
+    ) -> CerebroArtifact:
         path = Path(model_path)
+        if any(x is not None for x in (samples, labels, eval_samples, eval_labels)):
+            _LOG.warning(
+                "xgb.samples_ignored",
+                reason="SHAP and evaluation are not yet supported for XGBoost; "
+                "trees and importance will still be extracted",
+            )
         booster = _load_booster(path)
         objective = _detect_objective(booster)
 

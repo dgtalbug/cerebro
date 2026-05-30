@@ -49,26 +49,34 @@ async def _read(upload: UploadFile | None) -> bytes | None:
     return await upload.read()
 
 
-def _to_ndarray(raw: bytes | None, label: str) -> np.ndarray | None:
+def _to_ndarray(
+    raw: bytes | None, label: str, filename: str = "data.csv"
+) -> np.ndarray | None:
     if raw is None:
         return None
     import os
 
     import duckdb
 
-    with tempfile.NamedTemporaryFile(suffix=".csv", delete=False) as tf:
+    suffix = Path(filename).suffix.lower() or ".csv"
+    with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tf:
         tf.write(raw)
         tmp_path = tf.name
     try:
         conn = duckdb.connect()
-        rel = conn.read_csv(tmp_path)
+        if suffix in {".parquet", ".pq"}:
+            rel = conn.read_parquet(tmp_path)
+        elif suffix in {".json", ".ndjson", ".jsonl"}:
+            rel = conn.read_json(tmp_path)
+        else:
+            rel = conn.read_csv(tmp_path)
         cols = rel.fetchnumpy()
         if label == "labels":
             return np.asarray(next(iter(cols.values())))
         return np.column_stack([np.asarray(v) for v in cols.values()])
     except Exception as exc:
         raise HTTPException(
-            status_code=422, detail=f"Could not parse {label}: {exc}"
+            status_code=422, detail=f"Could not parse {label} ({filename}): {exc}"
         ) from exc
     finally:
         os.unlink(tmp_path)
@@ -116,10 +124,19 @@ async def ingest(
         model_path = tmp_path / (model.filename or "model.txt")
         model_path.write_bytes(model_bytes)
 
-        np_samples = _to_ndarray(samples_bytes, "samples")
-        np_labels = _to_ndarray(labels_bytes, "labels")
-        np_eval_samples = _to_ndarray(eval_samples_bytes, "eval_samples")
-        np_eval_labels = _to_ndarray(eval_labels_bytes, "eval_labels")
+        def _fname(upload: UploadFile | None, default: str) -> str:
+            return (upload.filename or default) if upload else default
+
+        np_samples = _to_ndarray(
+            samples_bytes, "samples", _fname(samples, "samples.csv")
+        )
+        np_labels = _to_ndarray(labels_bytes, "labels", _fname(labels, "labels.csv"))
+        np_eval_samples = _to_ndarray(
+            eval_samples_bytes, "eval_samples", _fname(eval_samples, "eval_samples.csv")
+        )
+        np_eval_labels = _to_ndarray(
+            eval_labels_bytes, "eval_labels", _fname(eval_labels, "eval_labels.csv")
+        )
 
         training_table_path: Path | None = None
         if training_table_bytes is not None:
