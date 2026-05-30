@@ -11,7 +11,8 @@ import type { ImportanceResponse } from "../lib/api/queries";
 
 vi.mock("../lib/api/queries", () => {
   const mockUseImportance = vi.fn();
-  return { useImportance: mockUseImportance };
+  const mockUseDiagnostics = vi.fn().mockReturnValue({ data: null, isLoading: false });
+  return { useImportance: mockUseImportance, useDiagnostics: mockUseDiagnostics };
 });
 
 function Wrapper({ children }: { children: ReactNode }) {

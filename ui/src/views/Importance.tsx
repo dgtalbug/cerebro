@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { ViewHeader } from "../components/layout/ViewHeader";
 import { DivergenceCallout } from "../components/importance/DivergenceCallout";
-import { useImportance, type ImportanceType } from "../lib/api/queries";
+import { useImportance, useDiagnostics, type ImportanceType } from "../lib/api/queries";
 
 const TABS: { key: ImportanceType; label: string }[] = [
   { key: "gain", label: "gain" },
@@ -249,6 +249,182 @@ export function Importance() {
           <GainVsPermPanel id={artifactId} />
         </div>
       </div>
+
+      {/* Interaction heatmap */}
+      <InteractionHeatmap id={artifactId} />
+
+      {/* Recommendations panel */}
+      <RecommendationsPanel id={artifactId} />
     </section>
+  );
+}
+
+function RecommendationsPanel({ id }: { id: string }) {
+  const { data, isLoading } = useDiagnostics(id);
+
+  if (isLoading) return null;
+
+  if (!data) {
+    return (
+      <div className="panel" style={{ marginTop: "16px" }}>
+        <div className="panel-header">
+          <h3 className="panel-title">Recommendations</h3>
+        </div>
+        <p style={{ fontSize: "13px", color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>
+          No diagnostics available. Run{" "}
+          <code style={{ color: "var(--accent)" }}>cerebro diagnostics --persist</code>{" "}
+          to compute feature recommendations.
+        </p>
+      </div>
+    );
+  }
+
+  const { recommendations, notes } = data;
+
+  return (
+    <div className="panel" style={{ marginTop: "16px" }}>
+      <div className="panel-header">
+        <h3 className="panel-title">Recommendations</h3>
+        <span className="panel-subtitle">{recommendations.length} suggestions</span>
+      </div>
+      {notes.length > 0 && (
+        <div style={{ marginBottom: "12px" }}>
+          {notes.map((n, i) => (
+            <p key={i} style={{ fontSize: "11px", color: "var(--text-dim)", fontFamily: "var(--font-mono)" }}>
+              note: {n}
+            </p>
+          ))}
+        </div>
+      )}
+      {recommendations.length === 0 ? (
+        <p style={{ fontSize: "13px", color: "var(--text-dim)" }}>No recommendations.</p>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {recommendations.map((r, i) => (
+            <div
+              key={i}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "80px 160px 1fr 80px",
+                gap: "12px",
+                alignItems: "start",
+                padding: "8px 0",
+                borderBottom: "1px solid var(--border)",
+                fontSize: "12px",
+                fontFamily: "var(--font-mono)",
+              }}
+            >
+              <span
+                style={{
+                  color: r.impact_estimate === "high" ? "var(--red)"
+                    : r.impact_estimate === "medium" ? "var(--amber)"
+                    : "var(--text-dim)",
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  fontSize: "10px",
+                  letterSpacing: "0.08em",
+                }}
+              >
+                {r.kind.replace(/_/g, " ")}
+              </span>
+              <span style={{ color: "var(--accent)" }}>{r.feature}</span>
+              <span style={{ color: "var(--text-muted)", fontFamily: "var(--font-body)" }}>{r.reason}</span>
+              <span style={{ color: "var(--text-dim)", fontSize: "10px" }}>{r.impact_estimate}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InteractionHeatmap({ id }: { id: string }) {
+  const { data } = useDiagnostics(id);
+  if (!data || data.interactions.length === 0) return null;
+
+  const TOP = 12;
+  const top = data.interactions.slice(0, TOP);
+  const features = Array.from(
+    new Set(top.flatMap((s) => [s.feature_a, s.feature_b]))
+  ).slice(0, TOP);
+  const n = features.length;
+
+  const scoreMap = new Map<string, number>();
+  for (const s of top) {
+    scoreMap.set(`${s.feature_a}:${s.feature_b}`, s.score);
+    scoreMap.set(`${s.feature_b}:${s.feature_a}`, s.score);
+  }
+
+  return (
+    <div className="panel" style={{ marginTop: "16px" }}>
+      <div className="panel-header">
+        <h3 className="panel-title">Interaction strength</h3>
+        <span className="panel-subtitle">co-occurrence in tree paths</span>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: `80px repeat(${n}, 28px)`,
+            gap: "2px",
+            fontSize: "10px",
+            fontFamily: "var(--font-mono)",
+          }}
+        >
+          <div />
+          {features.map((f) => (
+            <div
+              key={f}
+              title={f}
+              style={{
+                writingMode: "vertical-rl",
+                transform: "rotate(180deg)",
+                color: "var(--text-dim)",
+                fontSize: "9px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                maxHeight: "64px",
+              }}
+            >
+              {f}
+            </div>
+          ))}
+          {features.map((fa) => (
+            <>
+              <div
+                key={`row-${fa}`}
+                style={{
+                  color: "var(--text-dim)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  alignSelf: "center",
+                }}
+                title={fa}
+              >
+                {fa}
+              </div>
+              {features.map((fb) => {
+                const score = fa === fb ? 1 : (scoreMap.get(`${fa}:${fb}`) ?? 0);
+                const alpha = fa === fb ? 0.15 : score * 0.8;
+                return (
+                  <div
+                    key={`${fa}:${fb}`}
+                    title={`${fa} × ${fb}: ${score.toFixed(3)}`}
+                    style={{
+                      width: "28px",
+                      height: "28px",
+                      background: `rgba(212, 165, 116, ${alpha})`,
+                      borderRadius: "2px",
+                      border: "1px solid var(--border)",
+                    }}
+                  />
+                );
+              })}
+            </>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

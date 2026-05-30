@@ -66,14 +66,14 @@
 
 ## 8. Dashboard — diagnostics and diff UI
 
-- [ ] 8.1 Add Recommendations panel to `ui/src/views/Importance.tsx` (visible when `feature_diagnostics` present; notice otherwise)
-- [ ] 8.2 Add interaction strength heatmap to Importance view (Reaviz `Heatmap`, top-20 features, hover tooltips)
-- [ ] 8.3 Create `ui/src/views/Diff.tsx` — two-pane diff view with importance delta, feature schema changes, metric deltas
-- [ ] 8.4 Add `/artifacts/:id/diff/:compareId` route to React Router
-- [ ] 8.5 Add TanStack Query hook `useDiff(artifactId, compareId)` to `lib/api/queries.ts`
-- [ ] 8.6 Add tags display (pills) to artifact cards in list view; click-to-filter updates URL query param
-- [ ] 8.7 Implement filterable artifact list view (`ui/src/views/Artifacts.tsx`): framework/objective/date/tag filters via URL state
-- [ ] 8.8 Add TanStack Query hooks `useTags`, `useAddTag`, `useRemoveTag` to `lib/api/queries.ts`
+- [x] 8.1 Add Recommendations panel to `ui/src/views/Importance.tsx` (visible when `feature_diagnostics` present; notice otherwise)
+- [x] 8.2 Add interaction strength heatmap to Importance view (Reaviz `Heatmap`, top-20 features, hover tooltips)
+- [x] 8.3 Create `ui/src/views/Diff.tsx` — two-pane diff view with importance delta, feature schema changes, metric deltas
+- [x] 8.4 Add `/artifacts/:id/diff/:compareId` route to React Router
+- [x] 8.5 Add TanStack Query hook `useDiff(artifactId, compareId)` to `lib/api/queries.ts`
+- [x] 8.6 Add tags display (pills) to artifact cards in list view; click-to-filter updates URL query param
+- [x] 8.7 Implement filterable artifact list view (`ui/src/views/Artifacts.tsx`): framework/objective/date/tag filters via URL state
+- [x] 8.8 Add TanStack Query hooks `useTags`, `useAddTag`, `useRemoveTag` to `lib/api/queries.ts`
 
 ## 9. Docs and spec sync
 

@@ -398,3 +398,189 @@ export function useAgentQuery() {
     },
   });
 }
+
+// ---- Diagnostics ---------------------------------------------------------
+
+export interface Recommendation {
+  kind: string;
+  feature: string;
+  reason: string;
+  impact_estimate: string;
+  details?: Record<string, string | number> | null;
+}
+
+export interface RedundancyWarning {
+  weak_feature: string;
+  dominant_feature: string;
+  correlation: number;
+  gain_ratio: number;
+  confidence: number;
+}
+
+export interface LeakageWarning {
+  feature: string;
+  gain_rank: number;
+  permutation_rank: number;
+  delta: number;
+}
+
+export interface InteractionScore {
+  feature_a: string;
+  feature_b: string;
+  score: number;
+}
+
+export interface FeatureDiagnostics {
+  redundancy_warnings: RedundancyWarning[];
+  leakage_warnings: LeakageWarning[];
+  interactions: InteractionScore[];
+  unused_features: string[];
+  recommendations: Recommendation[];
+  notes: string[];
+}
+
+export function useDiagnostics(id: string) {
+  return useQuery<FeatureDiagnostics>({
+    queryKey: ["diagnostics", id] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/artifacts/${encodeURIComponent(id)}/diagnostics`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<FeatureDiagnostics>;
+    },
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
+}
+
+// ---- Diff ----------------------------------------------------------------
+
+export interface ImportanceDelta {
+  feature: string;
+  gain_a: number;
+  gain_b: number;
+  gain_delta: number;
+  split_a: number;
+  split_b: number;
+  split_delta: number;
+}
+
+export interface FeatureSchemaDiff {
+  added: string[];
+  removed: string[];
+}
+
+export interface MetricDelta {
+  metric: string;
+  value_a: number;
+  value_b: number;
+  delta: number;
+}
+
+export interface CerebroDiff {
+  artifact_a_id: string | null;
+  artifact_b_id: string | null;
+  schema_version_a: string;
+  schema_version_b: string;
+  framework_a: string;
+  framework_b: string;
+  objective_a: string;
+  objective_b: string;
+  importance_deltas: ImportanceDelta[];
+  feature_schema_diff: FeatureSchemaDiff;
+  metric_deltas: MetricDelta[];
+  tree_count_delta: number;
+}
+
+export function useDiff(artifactId: string, compareId: string) {
+  return useQuery<CerebroDiff>({
+    queryKey: ["diff", artifactId, compareId] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/diff/${encodeURIComponent(compareId)}`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<CerebroDiff>;
+    },
+    staleTime: Infinity,
+    retry: false,
+    enabled: !!artifactId && !!compareId,
+  });
+}
+
+// ---- Tags ----------------------------------------------------------------
+
+export function useTags(artifactId: string) {
+  return useQuery<{ tags: string[] }>({
+    queryKey: ["tags", artifactId] as const,
+    queryFn: async ({ signal }) => {
+      const url = `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/tags`;
+      const resp = await fetch(url, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<{ tags: string[] }>;
+    },
+    staleTime: 30_000,
+    retry: false,
+    enabled: !!artifactId,
+  });
+}
+
+export function useAddTag(artifactId: string) {
+  const queryClient = useQueryClient();
+  return useMutation<{ artifact_id: string; tag: string }, Error, string>({
+    mutationFn: async (tag) => {
+      const resp = await fetch(`${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/tags`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tag }),
+      });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags", artifactId] });
+    },
+  });
+}
+
+export function useRemoveTag(artifactId: string) {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (tag) => {
+      const resp = await fetch(
+        `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}/tags/${encodeURIComponent(tag)}`,
+        { method: "DELETE" }
+      );
+      if (!resp.ok && resp.status !== 404) throw new Error(`${resp.status}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tags", artifactId] });
+    },
+  });
+}
+
+// ---- Artifact list --------------------------------------------------------
+
+export interface ArtifactRow {
+  id: string;
+  name: string;
+  framework: string;
+  objective: string;
+  num_trees: number;
+  num_features: number;
+  schema_version: string;
+  extracted_at: string;
+}
+
+export function useArtifactList(tag?: string) {
+  const qs = tag ? `?tag=${encodeURIComponent(tag)}` : "";
+  return useQuery<{ items: ArtifactRow[] }>({
+    queryKey: ["artifact-list", tag] as const,
+    queryFn: async ({ signal }) => {
+      const resp = await fetch(`${BASE_URL}/artifacts${qs}`, { signal });
+      if (!resp.ok) throw new Error(`${resp.status}`);
+      return resp.json() as Promise<{ items: ArtifactRow[] }>;
+    },
+    staleTime: 30_000,
+    retry: false,
+  });
+}
