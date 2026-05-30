@@ -6,7 +6,7 @@ from cerebro.analyzers.thresholds import (
     collect_thresholds,
     feature_name,
 )
-from cerebro.schema.v1.tree import Tree, TreeNode
+from cerebro.schema.v1_1.tree import Tree, TreeNode
 
 
 def _leaf(node_id: int, value: float) -> TreeNode:

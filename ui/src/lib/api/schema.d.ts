@@ -21,6 +21,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Artifacts
+         * @description List registered artifacts, optionally filtered by tag.
+         */
+        get: operations["list_artifacts_artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/artifacts/ingest": {
         parameters: {
             query?: never;
@@ -74,6 +94,48 @@ export interface paths {
          *     at extraction time, returns HTTP 200 with a detail message.
          */
         get: operations["get_data_profile_artifacts__artifact_id__data_profile_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/diagnostics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Diagnostics
+         * @description Compute or retrieve feature diagnostics for an artifact.
+         */
+        get: operations["get_diagnostics_artifacts__artifact_id__diagnostics_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/diff/{compare_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Diff
+         * @description Return a structured diff between two artifacts.
+         *
+         *     artifact_id is the base; compare_id is the target.
+         */
+        get: operations["get_diff_artifacts__artifact_id__diff__compare_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -174,6 +236,50 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Tags
+         * @description List all tags on an artifact.
+         */
+        get: operations["list_tags_artifacts__artifact_id__tags_get"];
+        put?: never;
+        /**
+         * Add Tag
+         * @description Add a tag to an artifact (idempotent).
+         */
+        post: operations["add_tag_artifacts__artifact_id__tags_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/artifacts/{artifact_id}/tags/{tag}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove Tag
+         * @description Remove a tag from an artifact.
+         */
+        delete: operations["remove_tag_artifacts__artifact_id__tags__tag__delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -339,6 +445,7 @@ export interface components {
             /** Evaluation */
             evaluation?: components["schemas"]["BinaryEval"] | components["schemas"]["MulticlassEval"] | components["schemas"]["RegressionEval"] | components["schemas"]["RankingEval"] | null;
             explanations?: components["schemas"]["Explanations"] | null;
+            feature_diagnostics?: components["schemas"]["FeatureDiagnostics"] | null;
             importance: components["schemas"]["Importance"];
             model: components["schemas"]["Model"];
             /** Rank Metadata */
@@ -347,12 +454,41 @@ export interface components {
             } | null;
             /**
              * Schema Version
-             * @constant
+             * @enum {string}
              */
-            schema_version: "1.0.0";
+            schema_version: "1.0.0" | "1.1.0";
             source: components["schemas"]["Source"];
             /** Trees */
             trees: components["schemas"]["Tree"][];
+        };
+        /**
+         * CerebroDiff
+         * @description Per-section structural diff between two canonical artifacts.
+         */
+        CerebroDiff: {
+            /** Artifact A Id */
+            artifact_a_id?: string | null;
+            /** Artifact B Id */
+            artifact_b_id?: string | null;
+            feature_schema_diff: components["schemas"]["FeatureSchemaDiff"];
+            /** Framework A */
+            framework_a: string;
+            /** Framework B */
+            framework_b: string;
+            /** Importance Deltas */
+            importance_deltas: components["schemas"]["ImportanceDelta"][];
+            /** Metric Deltas */
+            metric_deltas: components["schemas"]["MetricDelta"][];
+            /** Objective A */
+            objective_a: string;
+            /** Objective B */
+            objective_b: string;
+            /** Schema Version A */
+            schema_version_a: string;
+            /** Schema Version B */
+            schema_version_b: string;
+            /** Tree Count Delta */
+            tree_count_delta: number;
         };
         /**
          * ColumnProfile
@@ -483,6 +619,42 @@ export interface components {
             shap?: components["schemas"]["ShapResult"] | null;
         };
         /**
+         * FeatureDiagnostics
+         * @description Diagnostics derived entirely from the canonical artifact.
+         */
+        FeatureDiagnostics: {
+            /**
+             * Interactions
+             * @default []
+             */
+            interactions: components["schemas"]["InteractionScore"][];
+            /**
+             * Leakage Warnings
+             * @default []
+             */
+            leakage_warnings: components["schemas"]["LeakageWarning"][];
+            /**
+             * Notes
+             * @default []
+             */
+            notes: string[];
+            /**
+             * Recommendations
+             * @default []
+             */
+            recommendations: components["schemas"]["Recommendation"][];
+            /**
+             * Redundancy Warnings
+             * @default []
+             */
+            redundancy_warnings: components["schemas"]["RedundancyWarning"][];
+            /**
+             * Unused Features
+             * @default []
+             */
+            unused_features: string[];
+        };
+        /**
          * FeatureSchema
          * @description The features the model sees, in input order.
          *
@@ -497,6 +669,13 @@ export interface components {
             monotone_constraints: number[];
             /** Names */
             names: string[];
+        };
+        /** FeatureSchemaDiff */
+        FeatureSchemaDiff: {
+            /** Added */
+            added: string[];
+            /** Removed */
+            removed: string[];
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -565,6 +744,23 @@ export interface components {
                 [key: string]: number;
             };
         };
+        /** ImportanceDelta */
+        ImportanceDelta: {
+            /** Feature */
+            feature: string;
+            /** Gain A */
+            gain_a: number;
+            /** Gain B */
+            gain_b: number;
+            /** Gain Delta */
+            gain_delta: number;
+            /** Split A */
+            split_a: number;
+            /** Split B */
+            split_b: number;
+            /** Split Delta */
+            split_delta: number;
+        };
         /** IngestResponse */
         IngestResponse: {
             /** Artifact Id */
@@ -577,6 +773,15 @@ export interface components {
             /** Version */
             version: number;
         };
+        /** InteractionScore */
+        InteractionScore: {
+            /** Feature A */
+            feature_a: string;
+            /** Feature B */
+            feature_b: string;
+            /** Score */
+            score: number;
+        };
         /** IntervalPoint */
         IntervalPoint: {
             /** Lower */
@@ -585,6 +790,28 @@ export interface components {
             predicted: number;
             /** Upper */
             upper: number;
+        };
+        /** LeakageWarning */
+        LeakageWarning: {
+            /** Delta */
+            delta: number;
+            /** Feature */
+            feature: string;
+            /** Gain Rank */
+            gain_rank: number;
+            /** Permutation Rank */
+            permutation_rank: number;
+        };
+        /** MetricDelta */
+        MetricDelta: {
+            /** Delta */
+            delta: number;
+            /** Metric */
+            metric: string;
+            /** Value A */
+            value_a: number;
+            /** Value B */
+            value_b: number;
         };
         /**
          * Model
@@ -732,6 +959,34 @@ export interface components {
             /** Per Query Ndcg */
             per_query_ndcg: number[];
         };
+        /** Recommendation */
+        Recommendation: {
+            /** Details */
+            details?: {
+                [key: string]: string | number;
+            } | null;
+            /** Feature */
+            feature: string;
+            /** Impact Estimate */
+            impact_estimate: string;
+            /** Kind */
+            kind: string;
+            /** Reason */
+            reason: string;
+        };
+        /** RedundancyWarning */
+        RedundancyWarning: {
+            /** Confidence */
+            confidence: number;
+            /** Correlation */
+            correlation: number;
+            /** Dominant Feature */
+            dominant_feature: string;
+            /** Gain Ratio */
+            gain_ratio: number;
+            /** Weak Feature */
+            weak_feature: string;
+        };
         /**
          * RegressionEval
          * @description Regression evaluation metrics.
@@ -808,11 +1063,16 @@ export interface components {
             extractor_version: string;
             /**
              * Framework
-             * @constant
+             * @enum {string}
              */
-            framework: "lightgbm";
+            framework: "lightgbm" | "xgboost";
             /** Framework Version */
             framework_version: string;
+        };
+        /** TagBody */
+        TagBody: {
+            /** Tag */
+            tag: string;
         };
         /**
          * Tree
@@ -915,6 +1175,42 @@ export interface operations {
             };
         };
     };
+    list_artifacts_artifacts_get: {
+        parameters: {
+            query?: {
+                /** @description Filter by tag */
+                tag?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: {
+                            [key: string]: unknown;
+                        }[];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     ingest_artifacts_ingest_post: {
         parameters: {
             query?: never;
@@ -999,6 +1295,72 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_diagnostics_artifacts__artifact_id__diagnostics_get: {
+        parameters: {
+            query?: {
+                /** @description Write diagnostics back to the artifact file. */
+                persist?: boolean;
+            };
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeatureDiagnostics"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_diff_artifacts__artifact_id__diff__compare_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+                compare_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CerebroDiff"];
                 };
             };
             /** @description Validation Error */
@@ -1137,6 +1499,106 @@ export interface operations {
                         [key: string]: unknown;
                     };
                 };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_tags_artifacts__artifact_id__tags_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string[];
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    add_tag_artifacts__artifact_id__tags_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TagBody"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: string;
+                    };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_tag_artifacts__artifact_id__tags__tag__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                artifact_id: string;
+                tag: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Validation Error */
             422: {

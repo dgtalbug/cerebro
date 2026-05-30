@@ -5,14 +5,14 @@ from __future__ import annotations
 from typing import Any
 
 from cerebro.analyzers.readiness import ReadinessReport, TabReadiness, assess_readiness
-from cerebro.schema.v1 import (
-    CerebroArtifact,
+from cerebro.schema import CerebroArtifact
+from cerebro.schema.v1_1 import (
     Explanations,
     Importance,
     Model,
     Source,
 )
-from cerebro.schema.v1.model import FeatureSchema
+from cerebro.schema.v1_1.model import FeatureSchema
 
 
 def _tab(report: ReadinessReport, name: str) -> TabReadiness:

@@ -274,6 +274,16 @@
               }
             ]
           },
+          "feature_diagnostics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FeatureDiagnostics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "importance": {
             "$ref": "#/components/schemas/Importance"
           },
@@ -293,7 +303,10 @@
             "title": "Rank Metadata"
           },
           "schema_version": {
-            "const": "1.0.0",
+            "enum": [
+              "1.0.0",
+              "1.1.0"
+            ],
             "title": "Schema Version",
             "type": "string"
           },
@@ -316,6 +329,93 @@
           "importance"
         ],
         "title": "CerebroArtifact",
+        "type": "object"
+      },
+      "CerebroDiff": {
+        "additionalProperties": false,
+        "description": "Per-section structural diff between two canonical artifacts.",
+        "properties": {
+          "artifact_a_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact A Id"
+          },
+          "artifact_b_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Artifact B Id"
+          },
+          "feature_schema_diff": {
+            "$ref": "#/components/schemas/FeatureSchemaDiff"
+          },
+          "framework_a": {
+            "title": "Framework A",
+            "type": "string"
+          },
+          "framework_b": {
+            "title": "Framework B",
+            "type": "string"
+          },
+          "importance_deltas": {
+            "items": {
+              "$ref": "#/components/schemas/ImportanceDelta"
+            },
+            "title": "Importance Deltas",
+            "type": "array"
+          },
+          "metric_deltas": {
+            "items": {
+              "$ref": "#/components/schemas/MetricDelta"
+            },
+            "title": "Metric Deltas",
+            "type": "array"
+          },
+          "objective_a": {
+            "title": "Objective A",
+            "type": "string"
+          },
+          "objective_b": {
+            "title": "Objective B",
+            "type": "string"
+          },
+          "schema_version_a": {
+            "title": "Schema Version A",
+            "type": "string"
+          },
+          "schema_version_b": {
+            "title": "Schema Version B",
+            "type": "string"
+          },
+          "tree_count_delta": {
+            "title": "Tree Count Delta",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schema_version_a",
+          "schema_version_b",
+          "framework_a",
+          "framework_b",
+          "objective_a",
+          "objective_b",
+          "importance_deltas",
+          "feature_schema_diff",
+          "metric_deltas",
+          "tree_count_delta"
+        ],
+        "title": "CerebroDiff",
         "type": "object"
       },
       "ColumnProfile": {
@@ -692,6 +792,62 @@
         "title": "Explanations",
         "type": "object"
       },
+      "FeatureDiagnostics": {
+        "additionalProperties": false,
+        "description": "Diagnostics derived entirely from the canonical artifact.",
+        "properties": {
+          "interactions": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/InteractionScore"
+            },
+            "title": "Interactions",
+            "type": "array"
+          },
+          "leakage_warnings": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/LeakageWarning"
+            },
+            "title": "Leakage Warnings",
+            "type": "array"
+          },
+          "notes": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Notes",
+            "type": "array"
+          },
+          "recommendations": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/Recommendation"
+            },
+            "title": "Recommendations",
+            "type": "array"
+          },
+          "redundancy_warnings": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RedundancyWarning"
+            },
+            "title": "Redundancy Warnings",
+            "type": "array"
+          },
+          "unused_features": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Unused Features",
+            "type": "array"
+          }
+        },
+        "title": "FeatureDiagnostics",
+        "type": "object"
+      },
       "FeatureSchema": {
         "additionalProperties": false,
         "description": "The features the model sees, in input order.\n\n`monotone_constraints` has the same length as `names`. A value of 0 means\nno monotonicity is enforced; +1 / -1 enforce increasing / decreasing\nrelationships between the feature and the prediction.",
@@ -724,6 +880,31 @@
           "monotone_constraints"
         ],
         "title": "FeatureSchema",
+        "type": "object"
+      },
+      "FeatureSchemaDiff": {
+        "additionalProperties": false,
+        "properties": {
+          "added": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Added",
+            "type": "array"
+          },
+          "removed": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Removed",
+            "type": "array"
+          }
+        },
+        "required": [
+          "added",
+          "removed"
+        ],
+        "title": "FeatureSchemaDiff",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -878,6 +1059,50 @@
         "title": "Importance",
         "type": "object"
       },
+      "ImportanceDelta": {
+        "additionalProperties": false,
+        "properties": {
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "gain_a": {
+            "title": "Gain A",
+            "type": "number"
+          },
+          "gain_b": {
+            "title": "Gain B",
+            "type": "number"
+          },
+          "gain_delta": {
+            "title": "Gain Delta",
+            "type": "number"
+          },
+          "split_a": {
+            "title": "Split A",
+            "type": "number"
+          },
+          "split_b": {
+            "title": "Split B",
+            "type": "number"
+          },
+          "split_delta": {
+            "title": "Split Delta",
+            "type": "number"
+          }
+        },
+        "required": [
+          "feature",
+          "gain_a",
+          "gain_b",
+          "gain_delta",
+          "split_a",
+          "split_b",
+          "split_delta"
+        ],
+        "title": "ImportanceDelta",
+        "type": "object"
+      },
       "IngestResponse": {
         "properties": {
           "artifact_id": {
@@ -910,6 +1135,30 @@
         "title": "IngestResponse",
         "type": "object"
       },
+      "InteractionScore": {
+        "additionalProperties": false,
+        "properties": {
+          "feature_a": {
+            "title": "Feature A",
+            "type": "string"
+          },
+          "feature_b": {
+            "title": "Feature B",
+            "type": "string"
+          },
+          "score": {
+            "title": "Score",
+            "type": "number"
+          }
+        },
+        "required": [
+          "feature_a",
+          "feature_b",
+          "score"
+        ],
+        "title": "InteractionScore",
+        "type": "object"
+      },
       "IntervalPoint": {
         "additionalProperties": false,
         "properties": {
@@ -932,6 +1181,64 @@
           "upper"
         ],
         "title": "IntervalPoint",
+        "type": "object"
+      },
+      "LeakageWarning": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "integer"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "gain_rank": {
+            "title": "Gain Rank",
+            "type": "integer"
+          },
+          "permutation_rank": {
+            "title": "Permutation Rank",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "feature",
+          "gain_rank",
+          "permutation_rank",
+          "delta"
+        ],
+        "title": "LeakageWarning",
+        "type": "object"
+      },
+      "MetricDelta": {
+        "additionalProperties": false,
+        "properties": {
+          "delta": {
+            "title": "Delta",
+            "type": "number"
+          },
+          "metric": {
+            "title": "Metric",
+            "type": "string"
+          },
+          "value_a": {
+            "title": "Value A",
+            "type": "number"
+          },
+          "value_b": {
+            "title": "Value B",
+            "type": "number"
+          }
+        },
+        "required": [
+          "metric",
+          "value_a",
+          "value_b",
+          "delta"
+        ],
+        "title": "MetricDelta",
         "type": "object"
       },
       "Model": {
@@ -1284,6 +1591,93 @@
         "title": "RankingEval",
         "type": "object"
       },
+      "Recommendation": {
+        "additionalProperties": false,
+        "properties": {
+          "details": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "impact_estimate": {
+            "title": "Impact Estimate",
+            "type": "string"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "feature",
+          "reason",
+          "impact_estimate"
+        ],
+        "title": "Recommendation",
+        "type": "object"
+      },
+      "RedundancyWarning": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "title": "Confidence",
+            "type": "number"
+          },
+          "correlation": {
+            "title": "Correlation",
+            "type": "number"
+          },
+          "dominant_feature": {
+            "title": "Dominant Feature",
+            "type": "string"
+          },
+          "gain_ratio": {
+            "title": "Gain Ratio",
+            "type": "number"
+          },
+          "weak_feature": {
+            "title": "Weak Feature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "weak_feature",
+          "dominant_feature",
+          "correlation",
+          "gain_ratio",
+          "confidence"
+        ],
+        "title": "RedundancyWarning",
+        "type": "object"
+      },
       "RegressionEval": {
         "additionalProperties": false,
         "description": "Regression evaluation metrics.",
@@ -1481,7 +1875,10 @@
             "type": "string"
           },
           "framework": {
-            "const": "lightgbm",
+            "enum": [
+              "lightgbm",
+              "xgboost"
+            ],
             "title": "Framework",
             "type": "string"
           },
@@ -1497,6 +1894,19 @@
           "extractor_version"
         ],
         "title": "Source",
+        "type": "object"
+      },
+      "TagBody": {
+        "properties": {
+          "tag": {
+            "title": "Tag",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tag"
+        ],
+        "title": "TagBody",
         "type": "object"
       },
       "Tree": {
@@ -1746,6 +2156,66 @@
         ]
       }
     },
+    "/artifacts": {
+      "get": {
+        "description": "List registered artifacts, optionally filtered by tag.",
+        "operationId": "list_artifacts_artifacts_get",
+        "parameters": [
+          {
+            "description": "Filter by tag",
+            "in": "query",
+            "name": "tag",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by tag",
+              "title": "Tag"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "additionalProperties": true,
+                      "type": "object"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Artifacts Artifacts Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Artifacts",
+        "tags": [
+          "artifacts"
+        ]
+      }
+    },
     "/artifacts/ingest": {
       "post": {
         "operationId": "ingest_artifacts_ingest_post",
@@ -1869,6 +2339,113 @@
         "summary": "Get Data Profile",
         "tags": [
           "artifacts"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/diagnostics": {
+      "get": {
+        "description": "Compute or retrieve feature diagnostics for an artifact.",
+        "operationId": "get_diagnostics_artifacts__artifact_id__diagnostics_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Write diagnostics back to the artifact file.",
+            "in": "query",
+            "name": "persist",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Write diagnostics back to the artifact file.",
+              "title": "Persist",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeatureDiagnostics"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Diagnostics",
+        "tags": [
+          "diagnostics"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/diff/{compare_id}": {
+      "get": {
+        "description": "Return a structured diff between two artifacts.\n\nartifact_id is the base; compare_id is the target.",
+        "operationId": "get_diff_artifacts__artifact_id__diff__compare_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "compare_id",
+            "required": true,
+            "schema": {
+              "title": "Compare Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CerebroDiff"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Diff",
+        "tags": [
+          "diff"
         ]
       }
     },
@@ -2064,6 +2641,156 @@
         "summary": "Get Importance",
         "tags": [
           "artifacts"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/tags": {
+      "get": {
+        "description": "List all tags on an artifact.",
+        "operationId": "list_tags_artifacts__artifact_id__tags_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "items": {
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "title": "Response List Tags Artifacts  Artifact Id  Tags Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Tags",
+        "tags": [
+          "tags"
+        ]
+      },
+      "post": {
+        "description": "Add a tag to an artifact (idempotent).",
+        "operationId": "add_tag_artifacts__artifact_id__tags_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Add Tag Artifacts  Artifact Id  Tags Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Add Tag",
+        "tags": [
+          "tags"
+        ]
+      }
+    },
+    "/artifacts/{artifact_id}/tags/{tag}": {
+      "delete": {
+        "description": "Remove a tag from an artifact.",
+        "operationId": "remove_tag_artifacts__artifact_id__tags__tag__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "artifact_id",
+            "required": true,
+            "schema": {
+              "title": "Artifact Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "tag",
+            "required": true,
+            "schema": {
+              "title": "Tag",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Remove Tag",
+        "tags": [
+          "tags"
         ]
       }
     },

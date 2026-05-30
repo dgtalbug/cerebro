@@ -15,7 +15,7 @@ from cerebro.analyzers.explanations import (
     compute_shap,
     trace_path,
 )
-from cerebro.schema.v1.tree import Tree, TreeNode
+from cerebro.schema.v1_1.tree import Tree, TreeNode
 
 _BoosterAndData = tuple[Any, np.ndarray, np.ndarray]
 
