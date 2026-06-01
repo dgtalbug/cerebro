@@ -54,7 +54,7 @@ function FileZone({
           if (f) accept_file(f);
         }}
         style={{
-          border: `1px solid ${sizeError ? "var(--red)" : dragging ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
+          border: `1px solid ${sizeError ? "var(--blue)" : dragging ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
           borderRadius: "var(--radius)",
           padding: "16px 20px",
           cursor: "pointer",
@@ -74,8 +74,8 @@ function FileZone({
           onChange={(e) => { const f = e.target.files?.[0]; if (f) accept_file(f); }}
         />
         {file
-          ? <Check size={16} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--accent)"} />
-          : <Upload size={16} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--text-dim)"} />
+          ? <Check size={16} strokeWidth={1.5} color={sizeError ? "var(--blue)" : "var(--accent)"} />
+          : <Upload size={16} strokeWidth={1.5} color={sizeError ? "var(--blue)" : "var(--text-dim)"} />
         }
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400 }}>
@@ -109,7 +109,7 @@ function FileZone({
         )}
       </label>
       {sizeError && (
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--red)", marginTop: "4px" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--blue)", marginTop: "4px" }}>
           {sizeError}
         </div>
       )}
@@ -464,7 +464,7 @@ export function Ingest() {
 
         {/* Error */}
         {isError && (
-          <div style={{ marginTop: "16px", padding: "10px 14px", background: "rgba(201,90,90,0.08)", border: "1px solid var(--red)", borderRadius: "var(--radius)", fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--red)" }}>
+          <div style={{ marginTop: "16px", padding: "10px 14px", background: "rgba(96,165,250,0.08)", border: "1px solid var(--blue)", borderRadius: "var(--radius)", fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--blue)" }}>
             {error?.message ?? "Extraction failed."}
           </div>
         )}

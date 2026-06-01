@@ -177,7 +177,7 @@ export function Registry() {
       </div>
 
       {isError && (
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--red)", padding: "16px 0" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--blue)", padding: "16px 0" }}>
           Failed to load models.
         </div>
       )}

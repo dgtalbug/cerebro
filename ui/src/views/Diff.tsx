@@ -21,7 +21,7 @@ export function Diff() {
         </p>
       )}
       {isError && (
-        <p style={{ color: "var(--red)", fontSize: "12px" }}>Failed to load diff.</p>
+        <p style={{ color: "var(--blue)", fontSize: "12px" }}>Failed to load diff.</p>
       )}
       {data && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -48,7 +48,7 @@ export function Diff() {
               )}
               {data.feature_schema_diff.removed.length > 0 && (
                 <div>
-                  <span style={{ color: "var(--red)", fontSize: "11px", fontFamily: "var(--font-mono)" }}>
+                  <span style={{ color: "var(--blue)", fontSize: "11px", fontFamily: "var(--font-mono)" }}>
                     − Removed: {data.feature_schema_diff.removed.join(", ")}
                   </span>
                 </div>
@@ -103,9 +103,9 @@ function ImportanceDeltaTable({ deltas }: { deltas: import("../lib/api/queries")
           <div key={d.feature} style={{ display: "grid", gridTemplateColumns: "1fr 100px 80px", gap: "8px", alignItems: "center", padding: "5px 0", borderBottom: "1px solid var(--border)", fontSize: "12px", fontFamily: "var(--font-mono)" }}>
             <span style={{ color: "var(--text)" }}>{d.feature}</span>
             <div style={{ height: "6px", background: "var(--bg)", borderRadius: "2px", overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: isPos ? "var(--green)" : "var(--red)", borderRadius: "2px" }} />
+              <div style={{ height: "100%", width: `${pct}%`, background: isPos ? "var(--green)" : "var(--blue)", borderRadius: "2px" }} />
             </div>
-            <span style={{ color: isPos ? "var(--green)" : "var(--red)", textAlign: "right" }}>
+            <span style={{ color: isPos ? "var(--green)" : "var(--blue)", textAlign: "right" }}>
               {isPos ? "+" : ""}{d.gain_delta.toFixed(4)}
             </span>
           </div>
@@ -125,7 +125,7 @@ function MetricDeltaTable({ deltas }: { deltas: import("../lib/api/queries").Met
             <span style={{ color: "var(--text-dim)", textTransform: "uppercase", fontSize: "10px", letterSpacing: "0.08em" }}>{m.metric}</span>
             <span style={{ color: "var(--text-muted)" }}>{m.value_a.toFixed(4)}</span>
             <span style={{ color: "var(--text)" }}>{m.value_b.toFixed(4)}</span>
-            <span style={{ color: isPos ? "var(--green)" : "var(--red)", fontWeight: 600 }}>
+            <span style={{ color: isPos ? "var(--green)" : "var(--blue)", fontWeight: 600 }}>
               {isPos ? "+" : ""}{m.delta.toFixed(4)}
             </span>
           </div>

@@ -57,7 +57,7 @@ function FileZone({
         onDragLeave={() => setDrag(false)}
         onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) accept_file(f); }}
         style={{
-          border: `1px solid ${sizeError ? "var(--red)" : drag ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
+          border: `1px solid ${sizeError ? "var(--blue)" : drag ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
           borderRadius: "var(--radius)", padding: "10px 14px", cursor: "pointer",
           background: drag ? "var(--accent-glow)" : file ? "var(--bg-elev-2)" : "var(--bg)",
           display: "flex", alignItems: "center", gap: "10px", transition: "all 0.15s",
@@ -66,8 +66,8 @@ function FileZone({
         <input key={key} id={id} type="file" accept={accept} style={{ display: "none" }}
           onChange={(e) => { const f = e.target.files?.[0]; if (f) accept_file(f); }} />
         {file
-          ? <Check size={13} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--accent)"} />
-          : <Upload size={13} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--text-dim)"} />
+          ? <Check size={13} strokeWidth={1.5} color={sizeError ? "var(--blue)" : "var(--accent)"} />
+          : <Upload size={13} strokeWidth={1.5} color={sizeError ? "var(--blue)" : "var(--text-dim)"} />
         }
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -90,7 +90,7 @@ function FileZone({
         )}
       </label>
       {sizeError && (
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--red)", marginTop: "3px" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--blue)", marginTop: "3px" }}>
           {sizeError}
         </div>
       )}
@@ -186,10 +186,10 @@ function StatusMsg({ result }: { result: { ok: boolean; message: string } | null
   return (
     <div style={{
       padding: "8px 12px", borderRadius: "var(--radius)",
-      background: result.ok ? "rgba(127,176,105,0.08)" : "rgba(201,90,90,0.08)",
-      border: `1px solid ${result.ok ? "rgba(127,176,105,0.4)" : "var(--red)"}`,
+      background: result.ok ? "rgba(127,176,105,0.08)" : "rgba(96,165,250,0.08)",
+      border: `1px solid ${result.ok ? "rgba(127,176,105,0.4)" : "var(--blue)"}`,
       fontFamily: "var(--font-mono)", fontSize: "11px",
-      color: result.ok ? "var(--green)" : "var(--red)",
+      color: result.ok ? "var(--green)" : "var(--blue)",
     }}>
       {result.message}
     </div>

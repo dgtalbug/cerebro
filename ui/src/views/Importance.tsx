@@ -59,7 +59,7 @@ function DivergenceBar({
       <span style={{ color: "var(--text-muted)" }}>#{permRank}</span>
       <span
         style={{
-          color: isDivergent ? "var(--red)" : "var(--green)",
+          color: isDivergent ? "var(--blue)" : "var(--green)",
           fontWeight: isDivergent ? 600 : 400,
         }}
       >
@@ -106,7 +106,7 @@ function ImportancePanel({ id, type }: { id: string; type: ImportanceType }) {
   }
   if (isError || !data) {
     return (
-      <div style={{ color: "var(--red)", fontSize: "12px" }}>
+      <div style={{ color: "var(--blue)", fontSize: "12px" }}>
         Failed to load importance data.
       </div>
     );
@@ -343,7 +343,7 @@ function RecommendationsPanel({ id }: { id: string }) {
             >
               <span
                 style={{
-                  color: r.impact_estimate === "high" ? "var(--red)"
+                  color: r.impact_estimate === "high" ? "var(--blue)"
                     : r.impact_estimate === "medium" ? "var(--amber)"
                     : "var(--text-dim)",
                   fontWeight: 600,

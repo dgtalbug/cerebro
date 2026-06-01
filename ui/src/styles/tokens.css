@@ -37,10 +37,9 @@
   --accent-dim: #a07038;
   --accent-glow: rgba(232, 168, 72, 0.18);
 
-  /* Semantic / chart palette — slightly more vivid */
+  /* Semantic / chart palette — blue is the "negative" pole */
   --blue: #60a5fa;
   --green: #4ade80;
-  --red: #f87171;
   --amber: #e8a848;
   --purple: #a78bfa;
 
@@ -78,7 +77,7 @@
   --muted: var(--bg-elev);
   --muted-foreground: var(--text-muted);
   --accent-foreground: var(--bg);
-  --destructive: var(--red);
+  --destructive: var(--blue);
   --destructive-foreground: var(--text);
   --input: var(--border);
   --ring: var(--accent);
@@ -104,7 +103,6 @@
 
   --blue: #3a5ca0;
   --green: #2a7a38;
-  --red: #b03030;
   --amber: #b07830;
   --purple: #6a52a0;
 

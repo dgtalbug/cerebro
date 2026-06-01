@@ -95,7 +95,7 @@ function EnrichDialog({
           </div>
         )}
         {isError && (
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--red)" }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--blue)" }}>
             {error?.message ?? "Enrichment failed."}
           </div>
         )}
@@ -232,7 +232,7 @@ export function ModelDetail() {
   if (!model) {
     return (
       <section className="view">
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--red)", padding: "32px 0" }}>
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: "var(--blue)", padding: "32px 0" }}>
           Model not found.
         </div>
       </section>

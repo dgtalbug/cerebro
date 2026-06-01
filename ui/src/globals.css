@@ -489,7 +489,7 @@ body::after {
 }
 
 .stat-meta .up { color: var(--green); }
-.stat-meta .down { color: var(--red); }
+.stat-meta .down { color: var(--blue); }
 
 /* ===== KEY-VALUE LISTS ===== */
 
@@ -678,8 +678,8 @@ body::after {
 
 .cm-cell.tp { background: rgba(127, 176, 105, 0.22); border-color: rgba(127, 176, 105, 0.4); }
 .cm-cell.tn { background: rgba(127, 176, 105, 0.12); border-color: rgba(127, 176, 105, 0.3); }
-.cm-cell.fp { background: rgba(201, 90, 90, 0.10);   border-color: rgba(201, 90, 90, 0.25); }
-.cm-cell.fn { background: rgba(201, 90, 90, 0.15);   border-color: rgba(201, 90, 90, 0.3); }
+.cm-cell.fp { background: rgba(96, 165, 250, 0.10);  border-color: rgba(96, 165, 250, 0.28); }
+.cm-cell.fn { background: rgba(96, 165, 250, 0.15);  border-color: rgba(96, 165, 250, 0.35); }
 
 /* ===== PARTIAL DEPENDENCE GRID ===== */
 
@@ -789,7 +789,7 @@ body::after {
   color: var(--text-muted);
 }
 
-.view-error { color: var(--red); }
+.view-error { color: var(--blue); }
 
 /* ===== ANIMATIONS ===== */
 

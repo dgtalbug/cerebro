@@ -109,7 +109,7 @@ function ArtifactCard({
                 color: "var(--text-dim)", cursor: "pointer", padding: "4px",
                 display: "flex", alignItems: "center", lineHeight: 1,
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--red)"; }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--blue)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "var(--text-dim)"; }}
             >
               <Trash2 size={14} strokeWidth={1.5} />
@@ -125,7 +125,7 @@ function ArtifactCard({
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={(open) => { if (!isPending) { setDialogOpen(open); if (!open) setDeleteError(null); } }}>
-        <DialogContent style={{ background: "var(--bg-elev-2)", border: "1px solid var(--red)", borderRadius: "var(--radius-lg)", maxWidth: "420px" }}>
+        <DialogContent style={{ background: "var(--bg-elev-2)", border: "1px solid var(--blue)", borderRadius: "var(--radius-lg)", maxWidth: "420px" }}>
           <DialogHeader>
             <DialogTitle style={{ fontFamily: "var(--font-mono)", fontSize: "13px", color: "var(--text)", fontWeight: 600 }}>
               Delete artifact
@@ -136,7 +136,7 @@ function ArtifactCard({
             </DialogDescription>
           </DialogHeader>
           {deleteError && (
-            <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--red)", margin: 0 }}>
+            <p style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--blue)", margin: 0 }}>
               {deleteError}
             </p>
           )}
@@ -156,7 +156,7 @@ function ArtifactCard({
               onClick={handleConfirm}
               disabled={isPending}
               style={{
-                background: "var(--red)", border: "none", borderRadius: "var(--radius)",
+                background: "var(--interactive)", border: "none", borderRadius: "var(--radius)",
                 color: "#fff", cursor: isPending ? "not-allowed" : "pointer",
                 fontFamily: "var(--font-mono)", fontSize: "11px", padding: "4px 12px",
               }}
@@ -222,7 +222,7 @@ export function Artifacts() {
         <p style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: "12px" }}>Loading…</p>
       )}
       {isError && (
-        <p style={{ color: "var(--red)", fontSize: "12px" }}>Failed to load artifacts.</p>
+        <p style={{ color: "var(--blue)", fontSize: "12px" }}>Failed to load artifacts.</p>
       )}
       {data && data.items.length === 0 && (
         <p style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: "12px" }}>
