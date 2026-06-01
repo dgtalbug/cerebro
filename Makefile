@@ -101,6 +101,23 @@ contracts: ## Check OpenAPI / schema / registry-DDL drift
 	uv run python scripts/check_contracts.py
 
 # ----------------------------------------------------------------------------
+# Production single-image
+# ----------------------------------------------------------------------------
+
+IMAGE ?= ghcr.io/dgtalbug/cerebro
+
+docker-build: ## Build the production single image locally
+	docker build -f docker/Dockerfile -t $(IMAGE):local .
+
+docker-run: ## Run the locally built single image (port 8080 → 80)
+	docker run --rm -p 8080:80 -v "$(PWD)/data:/data" $(IMAGE):local
+
+release: ## Tag HEAD and push — triggers the GHCR release workflow
+	@test -n "$(VERSION)" || (echo "Usage: make release VERSION=v1.0.0" && exit 1)
+	git tag $(VERSION)
+	git push origin $(VERSION)
+
+# ----------------------------------------------------------------------------
 # Help
 # ----------------------------------------------------------------------------
 
