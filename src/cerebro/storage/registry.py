@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from cerebro.exceptions import (
+    ArtifactNotFoundError,
     ModelNotFoundError,
     RegistryError,
     VersionConflictError,
@@ -533,6 +534,65 @@ class Registry:
             return dict(row) if row else None
         finally:
             conn.close()
+
+    def delete_artifact(self, artifact_id: str) -> dict[str, Any]:
+        """Remove an artifact from the registry.
+
+        Deletes tags, model_version, and artifact rows in a single transaction.
+        If the model has no remaining versions after deletion, the model row is
+        also removed. Raises ArtifactNotFoundError when the ID is unknown.
+
+        Returns a dict with model_id, artifact_path, freed_bytes so the caller
+        can delete the physical file and emit a structured log entry.
+        """
+        conn = self._conn()
+        try:
+            artifact_row = conn.execute(
+                "SELECT a.id, a.path, a.size_bytes, mv.model_id"
+                " FROM artifacts a"
+                " JOIN model_versions mv ON mv.artifact_id = a.id"
+                " WHERE a.id = ?",
+                (artifact_id,),
+            ).fetchone()
+        finally:
+            conn.close()
+
+        if artifact_row is None:
+            raise ArtifactNotFoundError(
+                f"no artifact with id {artifact_id!r}",
+                context={"artifact_id": artifact_id},
+            )
+
+        model_id: str = artifact_row["model_id"]
+        artifact_path: str = artifact_row["path"]
+        freed_bytes: int = artifact_row["size_bytes"] or 0
+
+        conn = self._conn()
+        try:
+            conn.execute("BEGIN IMMEDIATE")
+            conn.execute("DELETE FROM tags WHERE artifact_id = ?", (artifact_id,))
+            conn.execute(
+                "DELETE FROM model_versions WHERE artifact_id = ?", (artifact_id,)
+            )
+            conn.execute("DELETE FROM artifacts WHERE id = ?", (artifact_id,))
+            remaining = conn.execute(
+                "SELECT COUNT(*) AS cnt FROM model_versions WHERE model_id = ?",
+                (model_id,),
+            ).fetchone()["cnt"]
+            if remaining == 0:
+                conn.execute("DELETE FROM models WHERE id = ?", (model_id,))
+            conn.commit()
+        except sqlite3.Error:
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+
+        return {
+            "model_id": model_id,
+            "artifact_path": artifact_path,
+            "freed_bytes": freed_bytes,
+        }
 
     # ------------------------------------------------------------------
     # Tags

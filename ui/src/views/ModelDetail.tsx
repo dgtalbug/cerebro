@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ChevronLeft } from "lucide-react";
 import { SectionChips } from "../components/data/SectionChips";
 import {
   useEnrichArtifact,
@@ -247,9 +248,7 @@ export function ModelDetail() {
             onClick={() => navigate("/")}
             style={{ background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-dim)", padding: "0 0 8px 0", display: "flex", alignItems: "center", gap: "6px" }}
           >
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15 18 9 12 15 6" />
-            </svg>
+            <ChevronLeft size={10} strokeWidth={2} />
             Registry
           </button>
           <h1 className="view-title"><em>{model.name}</em></h1>

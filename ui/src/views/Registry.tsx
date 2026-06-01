@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Monitor, Plus } from "lucide-react";
 import { SectionChips } from "../components/data/SectionChips";
 import { useModels, type ModelSummary } from "../lib/api/queries";
 
@@ -135,10 +136,7 @@ function EmptyState() {
         color: "var(--text-muted)",
       }}
     >
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" opacity={0.4}>
-        <rect x="2" y="3" width="20" height="14" rx="2" />
-        <path d="M8 21h8M12 17v4" />
-      </svg>
+      <Monitor size={40} strokeWidth={1} opacity={0.4} />
       <div style={{ fontFamily: "var(--font-mono)", fontSize: "13px", textAlign: "center" }}>
         No models yet
       </div>
@@ -150,9 +148,7 @@ function EmptyState() {
         onClick={() => navigate("/ingest")}
         style={{ gap: "8px" }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
+        <Plus size={12} strokeWidth={2.5} />
         Load first model
       </button>
     </div>
@@ -175,9 +171,7 @@ export function Registry() {
           onClick={() => navigate("/ingest")}
           style={{ gap: "8px", flexShrink: 0 }}
         >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
+          <Plus size={12} strokeWidth={2.5} />
           Load model
         </button>
       </div>

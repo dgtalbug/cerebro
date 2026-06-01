@@ -1,6 +1,14 @@
 import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Loader2, Upload, Check } from "lucide-react";
+import { toast } from "sonner";
 import { useIngest, useModels, useModelVersions, type IngestParams } from "../lib/api/queries";
+
+function _fmtBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 ** 3)).toFixed(0)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 ** 2)).toFixed(0)} MB`;
+  return `${(bytes / 1024).toFixed(0)} KB`;
+}
 
 function FileZone({
   label,
@@ -8,6 +16,7 @@ function FileZone({
   file,
   accept,
   required,
+  maxBytes,
   onChange,
 }: {
   label: string;
@@ -15,75 +24,96 @@ function FileZone({
   file: File | null;
   accept?: string;
   required?: boolean;
+  maxBytes?: number;
   onChange: (f: File | null) => void;
 }) {
   const inputId = useId();
   const [dragging, setDragging] = useState(false);
   const [inputKey, setInputKey] = useState(0);
+  const [sizeError, setSizeError] = useState<string | null>(null);
+
+  function accept_file(f: File) {
+    if (maxBytes !== undefined && f.size > maxBytes) {
+      setSizeError(`${f.name} is ${_fmtBytes(f.size)} — max allowed is ${_fmtBytes(maxBytes)}`);
+      return;
+    }
+    setSizeError(null);
+    onChange(f);
+  }
 
   return (
-    <label
-      htmlFor={inputId}
-      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={(e) => {
-        e.preventDefault();
-        setDragging(false);
-        const f = e.dataTransfer.files[0];
-        if (f) onChange(f);
-      }}
-      style={{
-        border: `1px solid ${dragging ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
-        borderRadius: "var(--radius)",
-        padding: "16px 20px",
-        cursor: "pointer",
-        background: dragging ? "var(--accent-glow)" : file ? "var(--bg-elev-2)" : "var(--bg)",
-        transition: "all 0.15s",
-        display: "flex",
-        alignItems: "center",
-        gap: "14px",
-      }}
-    >
-      <input
-        key={inputKey}
-        id={inputId}
-        type="file"
-        accept={accept}
-        style={{ display: "none" }}
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)}
-      />
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={file ? "var(--accent)" : "var(--text-dim)"} strokeWidth="1.5">
+    <div>
+      <label
+        htmlFor={inputId}
+        onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          const f = e.dataTransfer.files[0];
+          if (f) accept_file(f);
+        }}
+        style={{
+          border: `1px solid ${sizeError ? "var(--red)" : dragging ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
+          borderRadius: "var(--radius)",
+          padding: "16px 20px",
+          cursor: "pointer",
+          background: dragging ? "var(--accent-glow)" : file ? "var(--bg-elev-2)" : "var(--bg)",
+          transition: "all 0.15s",
+          display: "flex",
+          alignItems: "center",
+          gap: "14px",
+        }}
+      >
+        <input
+          key={inputKey}
+          id={inputId}
+          type="file"
+          accept={accept}
+          style={{ display: "none" }}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) accept_file(f); }}
+        />
         {file
-          ? <><polyline points="20 6 9 17 4 12"/></>
-          : <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></>
+          ? <Check size={16} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--accent)"} />
+          : <Upload size={16} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--text-dim)"} />
         }
-      </svg>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400 }}>
-          {file ? file.name : label}
-          {required && !file && <span style={{ color: "var(--accent)", marginLeft: "4px" }}>*</span>}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "12px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400 }}>
+            {file ? file.name : label}
+            {required && !file && <span style={{ color: "var(--accent)", marginLeft: "4px" }}>*</span>}
+          </div>
+          {!file && (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px", display: "flex", alignItems: "center", gap: "8px" }}>
+              {hint}
+              {maxBytes !== undefined && (
+                <span style={{ background: "var(--bg-elev-2)", border: "1px solid var(--border)", borderRadius: "4px", padding: "0px 5px", fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>
+                  max {_fmtBytes(maxBytes)}
+                </span>
+              )}
+            </div>
+          )}
+          {file && (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px" }}>
+              {(file.size / 1024).toFixed(1)} KB
+            </div>
+          )}
         </div>
-        {!file && (
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px" }}>
-            {hint}
-          </div>
-        )}
         {file && (
-          <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "2px" }}>
-            {(file.size / 1024).toFixed(1)} KB
-          </div>
+          <button
+            onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(null); setSizeError(null); setInputKey((k) => k + 1); }}
+            style={{ background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer", padding: "4px", lineHeight: 1 }}
+            title="Clear"
+          >
+            ✕
+          </button>
         )}
-      </div>
-      {file && (
-        <button
-          onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(null); setInputKey((k) => k + 1); }}
-          style={{ background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer", padding: "4px", lineHeight: 1 }}
-          title="Clear"
-        >
-          ✕
-        </button>
+      </label>
+      {sizeError && (
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--red)", marginTop: "4px" }}>
+          {sizeError}
+        </div>
       )}
-    </label>
+    </div>
   );
 }
 
@@ -228,6 +258,8 @@ function VersionLabel({ modelName }: { modelName: string }) {
   );
 }
 
+const MAX_DATA_BYTES = 500 * 1024 * 1024;
+
 export function Ingest() {
   const navigate = useNavigate();
   const { mutate, isPending, isError, error } = useIngest();
@@ -271,7 +303,11 @@ export function Ingest() {
     };
     mutate(params, {
       onSuccess: (data) => {
+        toast.success("Model extracted successfully");
         navigate(`/artifacts/${data.artifact_id}/overview`);
+      },
+      onError: (err) => {
+        toast.error("Extraction failed", { description: err.message });
       },
     });
   };
@@ -346,8 +382,8 @@ export function Ingest() {
         />
         {showShap && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "4px" }}>
-            <FileZone label="Features (samples)" hint="CSV/Parquet/JSON — one row per sample" accept=".csv,.parquet,.json" file={samplesFile} onChange={setSamplesFile} />
-            <FileZone label="Labels" hint="Single-column CSV aligned to samples" accept=".csv" file={labelsFile} onChange={setLabelsFile} />
+            <FileZone label="Features (samples)" hint="CSV / Parquet / JSON — one row per sample" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={samplesFile} onChange={setSamplesFile} />
+            <FileZone label="Labels" hint="CSV / Parquet / JSON — single-column, aligned to samples" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={labelsFile} onChange={setLabelsFile} />
           </div>
         )}
 
@@ -389,15 +425,17 @@ export function Ingest() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
                 <FileZone
                   label="Eval features"
-                  hint="CSV/Parquet/JSON — held-out samples the model has never seen"
+                  hint="CSV / Parquet / JSON — held-out samples the model has never seen"
                   accept=".csv,.parquet,.json"
+                  maxBytes={MAX_DATA_BYTES}
                   file={evalSamplesFile}
                   onChange={setEvalSamplesFile}
                 />
                 <FileZone
                   label="Eval labels"
-                  hint="Ground-truth labels aligned to eval features"
-                  accept=".csv"
+                  hint="CSV / Parquet / JSON — ground-truth labels aligned to eval features"
+                  accept=".csv,.parquet,.json"
+                  maxBytes={MAX_DATA_BYTES}
                   file={evalLabelsFile}
                   onChange={setEvalLabelsFile}
                 />
@@ -420,7 +458,7 @@ export function Ingest() {
         />
         {showData && (
           <div style={{ marginBottom: "4px" }}>
-            <FileZone label="Training table" hint="Full training CSV/Parquet/JSON — used for data profiling only" accept=".csv,.parquet,.json" file={trainingTableFile} onChange={setTrainingTableFile} />
+            <FileZone label="Training table" hint="CSV / Parquet / JSON — used for data profiling only" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={trainingTableFile} onChange={setTrainingTableFile} />
           </div>
         )}
 
@@ -441,9 +479,7 @@ export function Ingest() {
           >
             {isPending ? (
               <>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ animation: "spin 1s linear infinite" }}>
-                  <path d="M21 12a9 9 0 11-6.219-8.56"/>
-                </svg>
+                <Loader2 size={12} strokeWidth={2} style={{ animation: "spin 1s linear infinite" }} />
                 Extracting…
               </>
             ) : "Extract model →"}

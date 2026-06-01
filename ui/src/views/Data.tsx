@@ -3,6 +3,8 @@ import { useMemo } from "react";
 import { BarChart, BarSeries, LinearXAxis, LinearYAxis, Heatmap, HeatmapSeries } from "reaviz";
 import type { ChartShallowDataShape, ChartNestedDataShape, ChartDataTypes } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { ExportMenu } from "../components/ui/ExportMenu";
+import { exportCsv } from "../lib/export/csv";
 import { SectionLockedState } from "../components/SectionLockedState";
 import { SyntheticBadge } from "../components/SyntheticBadge";
 import { useDataProfile, type ColumnProfile, type CorrelationCell, type DataProfileResponse } from "../lib/api/queries";
@@ -137,13 +139,21 @@ export function Data() {
 
   return (
     <div className="view">
-      <ViewHeader
-        title="Training"
-        titleEmphasis="data"
-        subtitle={`${profile.row_count.toLocaleString()} rows · ${profile.column_count} columns`}
-      >
-        {profile.provenance === "synthetic" && <SyntheticBadge />}
-      </ViewHeader>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "24px" }}>
+        <ViewHeader
+          title="Training"
+          titleEmphasis="data"
+          subtitle={`${profile.row_count.toLocaleString()} rows · ${profile.column_count} columns`}
+        >
+          {profile.provenance === "synthetic" && <SyntheticBadge />}
+        </ViewHeader>
+        <ExportMenu
+          onCsv={() => exportCsv(
+            profile.columns.map((c) => ({ column: c.name, type: c.is_numeric ? "numeric" : "categorical", missingness: c.missingness, total_rows: c.total_rows })),
+            `data-profile-${id ?? "artifact"}`
+          )}
+        />
+      </div>
 
       <div className="panel" style={{ marginBottom: "24px" }}>
         <div className="panel-header">

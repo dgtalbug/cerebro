@@ -7,7 +7,7 @@ import pytest
 
 from cerebro.analyzers.evaluation import evaluate
 from cerebro.exceptions import UnsupportedObjectiveError
-from cerebro.schema.v1.evaluation import (
+from cerebro.schema.v1_1.evaluation import (
     BinaryEval,
     MulticlassEval,
     RankingEval,

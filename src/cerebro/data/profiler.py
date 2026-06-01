@@ -12,7 +12,7 @@ from typing import Any
 import structlog
 
 from cerebro.data.loader import TableHandle
-from cerebro.schema.v1.data_profile import (
+from cerebro.schema.v1_1.data_profile import (
     CategoryCount,
     ColumnProfile,
     CorrelationCell,

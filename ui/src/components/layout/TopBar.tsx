@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { Search } from "lucide-react";
 import { BrandMark } from "../brand/BrandMark";
 import { ThemeToggle } from "../ui/ThemeToggle";
 import { useArtifact } from "../../lib/api/queries";
@@ -50,10 +51,7 @@ export function TopBar() {
 
       <div className="topbar-actions">
         <button className="icon-btn" title="Search" aria-label="Search">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="11" cy="11" r="7" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+          <Search size={14} strokeWidth={2} />
         </button>
         <ThemeToggle />
         <button className="btn" disabled>Export</button>

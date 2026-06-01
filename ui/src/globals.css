@@ -57,6 +57,12 @@ body::after {
   mix-blend-mode: var(--grain-blend);
 }
 
+/* Focus rings — use interactive token for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--interactive);
+  outline-offset: 2px;
+}
+
 /* Tabular numerals everywhere data is shown — keeps columns aligned. */
 .tnum {
   font-variant-numeric: tabular-nums;
@@ -223,9 +229,9 @@ body::after {
 }
 
 .btn.primary {
-  background: var(--accent);
+  background: var(--interactive);
   color: var(--bg);
-  border-color: var(--accent);
+  border-color: var(--interactive);
   font-weight: 600;
 }
 

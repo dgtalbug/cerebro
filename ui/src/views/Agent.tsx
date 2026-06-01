@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { MessageSquare } from "lucide-react";
 import { ViewHeader } from "../components/layout/ViewHeader";
 import { useAgentQuery } from "../lib/api/queries";
 
@@ -180,9 +181,7 @@ export function Agent() {
               textAlign: "center",
             }}
           >
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.3">
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-            </svg>
+            <MessageSquare size={32} strokeWidth={1.2} opacity={0.3} />
             Ask a question about this artifact.
             <span style={{ opacity: 0.6 }}>History is session-only.</span>
           </div>

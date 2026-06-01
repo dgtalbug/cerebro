@@ -1,4 +1,20 @@
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  LayoutGrid,
+  GitBranch,
+  BarChart2,
+  Database,
+  HelpCircle,
+  ClipboardCheck,
+  MessageSquare,
+  BadgeCheck,
+  FileCode,
+  Monitor,
+  AlignJustify,
+  Plus,
+  ChevronLeft,
+  Code,
+} from "lucide-react";
 import { useArtifact } from "../../lib/api/queries";
 
 interface NavItemDef {
@@ -14,64 +30,37 @@ const introspectionItems: NavItemDef[] = [
     label: "Overview",
     view: "overview",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-        <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
-      </svg>
-    ),
+    icon: <LayoutGrid size={14} strokeWidth={1.5} />,
   },
   {
     label: "Trees",
     view: "trees",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M12 3v18M5 8l7-5 7 5M5 16l7-5 7 5" />
-      </svg>
-    ),
+    icon: <GitBranch size={14} strokeWidth={1.5} />,
   },
   {
     label: "Importance",
     view: "importance",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M3 21v-4M9 21v-9M15 21v-14M21 21v-6" />
-      </svg>
-    ),
+    icon: <BarChart2 size={14} strokeWidth={1.5} />,
   },
   {
     label: "Data",
     view: "data",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <ellipse cx="12" cy="5" rx="9" ry="3" />
-        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-      </svg>
-    ),
+    icon: <Database size={14} strokeWidth={1.5} />,
   },
   {
     label: "Explanations",
     view: "explanations",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <circle cx="12" cy="12" r="9" /><path d="M9 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17v.01" />
-      </svg>
-    ),
+    icon: <HelpCircle size={14} strokeWidth={1.5} />,
   },
   {
     label: "Evaluation",
     view: "evaluation",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M3 12l5 5L21 4" />
-      </svg>
-    ),
+    icon: <ClipboardCheck size={14} strokeWidth={1.5} />,
   },
 ];
 
@@ -81,11 +70,7 @@ const reasoningItems: NavItemDef[] = [
     label: "Agent",
     view: "agent",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-      </svg>
-    ),
+    icon: <MessageSquare size={14} strokeWidth={1.5} />,
   },
 ];
 
@@ -94,22 +79,19 @@ const artifactItems: NavItemDef[] = [
     label: "Readiness",
     view: "readiness",
     disabled: false,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-      </svg>
-    ),
+    icon: <BadgeCheck size={14} strokeWidth={1.5} />,
   },
   {
     label: "Schema / JSON",
     view: "schema",
     disabled: true,
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-      </svg>
-    ),
+    icon: <FileCode size={14} strokeWidth={1.5} />,
+  },
+  {
+    label: "Code Guide",
+    view: "code-guide",
+    disabled: false,
+    icon: <Code size={14} strokeWidth={1.5} />,
   },
 ];
 
@@ -161,19 +143,14 @@ function RegistrySidebarNav() {
         end
         className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <rect x="2" y="3" width="20" height="14" rx="2" />
-          <path d="M8 21h8M12 17v4" />
-        </svg>
+        <Monitor size={14} strokeWidth={1.5} />
         <span>Registry</span>
       </NavLink>
       <NavLink
         to="/artifacts"
         className={({ isActive }) => `nav-item ${isActive ? "active" : ""}`}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <path d="M3 6h18M3 12h18M3 18h18" />
-        </svg>
+        <AlignJustify size={14} strokeWidth={1.5} />
         <span>Artifacts</span>
       </NavLink>
       <button
@@ -181,9 +158,7 @@ function RegistrySidebarNav() {
         onClick={() => navigate("/ingest")}
         style={{ width: "100%", justifyContent: "center", marginTop: "16px", gap: "8px" }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <Plus size={12} strokeWidth={2.5} />
         Load model
       </button>
     </>
@@ -219,9 +194,7 @@ export function Sidebar() {
         className="nav-item"
         style={{ marginBottom: "8px", fontSize: "11px", color: "var(--text-dim)" }}
       >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <polyline points="15 18 9 12 15 6" />
-        </svg>
+        <ChevronLeft size={14} strokeWidth={1.5} />
         <span>Registry</span>
       </NavLink>
       <button
@@ -229,9 +202,7 @@ export function Sidebar() {
         onClick={() => navigate("/ingest")}
         style={{ width: "100%", justifyContent: "center", marginBottom: "20px", gap: "8px" }}
       >
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        <Plus size={12} strokeWidth={2.5} />
         Load model
       </button>
       <NavSection label="Introspection" items={introspectionItems} />

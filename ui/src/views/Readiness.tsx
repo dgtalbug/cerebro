@@ -1,5 +1,6 @@
 import { useId, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Check, Upload, Loader2, GitBranch, HelpCircle, Database, CheckCircle } from "lucide-react";
 import {
   useArtifact,
   useDiagnostics,
@@ -11,54 +12,89 @@ import { ViewHeader } from "../components/layout/ViewHeader";
 
 // ── tiny file drop zone ───────────────────────────────────────────────────────
 
+const MAX_DATA_BYTES = 500 * 1024 * 1024;
+
+function _fmtBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024 * 1024) return `${(bytes / (1024 ** 3)).toFixed(0)} GB`;
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 ** 2)).toFixed(0)} MB`;
+  return `${(bytes / 1024).toFixed(0)} KB`;
+}
+
 function FileZone({
   label,
   hint,
   file,
   accept,
+  maxBytes,
   onChange,
 }: {
   label: string;
   hint: string;
   file: File | null;
   accept?: string;
+  maxBytes?: number;
   onChange: (f: File | null) => void;
 }) {
   const id = useId();
   const [drag, setDrag] = useState(false);
   const [key, setKey] = useState(0);
+  const [sizeError, setSizeError] = useState<string | null>(null);
+
+  function accept_file(f: File) {
+    if (maxBytes !== undefined && f.size > maxBytes) {
+      setSizeError(`${f.name} is ${_fmtBytes(f.size)} — max allowed is ${_fmtBytes(maxBytes)}`);
+      return;
+    }
+    setSizeError(null);
+    onChange(f);
+  }
+
   return (
-    <label
-      htmlFor={id}
-      onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-      onDragLeave={() => setDrag(false)}
-      onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) onChange(f); }}
-      style={{
-        border: `1px solid ${drag ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
-        borderRadius: "var(--radius)", padding: "10px 14px", cursor: "pointer",
-        background: drag ? "var(--accent-glow)" : file ? "var(--bg-elev-2)" : "var(--bg)",
-        display: "flex", alignItems: "center", gap: "10px", transition: "all 0.15s",
-      }}
-    >
-      <input key={key} id={id} type="file" accept={accept} style={{ display: "none" }}
-        onChange={(e) => onChange(e.target.files?.[0] ?? null)} />
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-        stroke={file ? "var(--accent)" : "var(--text-dim)"} strokeWidth="1.5">
+    <div>
+      <label
+        htmlFor={id}
+        onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+        onDragLeave={() => setDrag(false)}
+        onDrop={(e) => { e.preventDefault(); setDrag(false); const f = e.dataTransfer.files[0]; if (f) accept_file(f); }}
+        style={{
+          border: `1px solid ${sizeError ? "var(--red)" : drag ? "var(--accent)" : file ? "var(--accent-dim)" : "var(--border-strong)"}`,
+          borderRadius: "var(--radius)", padding: "10px 14px", cursor: "pointer",
+          background: drag ? "var(--accent-glow)" : file ? "var(--bg-elev-2)" : "var(--bg)",
+          display: "flex", alignItems: "center", gap: "10px", transition: "all 0.15s",
+        }}
+      >
+        <input key={key} id={id} type="file" accept={accept} style={{ display: "none" }}
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) accept_file(f); }} />
         {file
-          ? <polyline points="20 6 9 17 4 12" />
-          : <><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></>}
-      </svg>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {file ? file.name : label}
+          ? <Check size={13} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--accent)"} />
+          : <Upload size={13} strokeWidth={1.5} color={sizeError ? "var(--red)" : "var(--text-dim)"} />
+        }
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: "var(--font-mono)", fontSize: "11px", color: file ? "var(--text)" : "var(--text-muted)", fontWeight: file ? 500 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {file ? file.name : label}
+          </div>
+          {!file && (
+            <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "1px", display: "flex", alignItems: "center", gap: "6px" }}>
+              {hint}
+              {maxBytes !== undefined && (
+                <span style={{ background: "var(--bg-elev-2)", border: "1px solid var(--border)", borderRadius: "4px", padding: "0px 4px", fontSize: "9px", color: "var(--text-dim)", flexShrink: 0 }}>
+                  max {_fmtBytes(maxBytes)}
+                </span>
+              )}
+            </div>
+          )}
         </div>
-        {!file && <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)", marginTop: "1px" }}>{hint}</div>}
-      </div>
-      {file && (
-        <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(null); setKey(k => k + 1); }}
-          style={{ background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer", lineHeight: 1, fontSize: "12px" }}>✕</button>
+        {file && (
+          <button onClick={(e) => { e.stopPropagation(); e.preventDefault(); onChange(null); setSizeError(null); setKey(k => k + 1); }}
+            style={{ background: "none", border: "none", color: "var(--text-dim)", cursor: "pointer", lineHeight: 1, fontSize: "12px" }}>✕</button>
+        )}
+      </label>
+      {sizeError && (
+        <div style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--red)", marginTop: "3px" }}>
+          {sizeError}
+        </div>
       )}
-    </label>
+    </div>
   );
 }
 
@@ -139,12 +175,7 @@ function ActionButton({ label, loading, disabled, onClick }: {
   return (
     <button className="btn primary" disabled={disabled || loading} onClick={onClick}
       style={{ alignSelf: "flex-start", gap: "6px" }}>
-      {loading && (
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          style={{ animation: "spin 1s linear infinite" }}>
-          <path d="M21 12a9 9 0 11-6.219-8.56" />
-        </svg>
-      )}
+      {loading && <Loader2 size={11} strokeWidth={2} style={{ animation: "spin 1s linear infinite" }} />}
       {loading ? "Processing…" : label}
     </button>
   );
@@ -191,8 +222,8 @@ function ShapPanel({ artifactId }: { artifactId: string }) {
         Upload a sample of your feature matrix and matching labels. Column order must match the model's expected features.
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-        <FileZone label="Feature matrix" hint="CSV / Parquet / JSON — one row per sample" accept=".csv,.parquet,.json" file={samples} onChange={setSamples} />
-        <FileZone label="Labels" hint="Single-column CSV — ground truth aligned to features" accept=".csv" file={labels} onChange={setLabels} />
+        <FileZone label="Feature matrix" hint="CSV / Parquet / JSON — one row per sample" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={samples} onChange={setSamples} />
+        <FileZone label="Labels" hint="CSV / Parquet / JSON — single-column, ground truth aligned to features" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={labels} onChange={setLabels} />
       </div>
       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <ActionButton label="Upload + compute SHAP" loading={isPending} disabled={!canSubmit} onClick={handleSubmit} />
@@ -227,8 +258,8 @@ function EvalPanel({ artifactId }: { artifactId: string }) {
         Upload a held-out evaluation set the model has never seen. Labels cannot be auto-generated — real ground truth is required.
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-        <FileZone label="Eval features" hint="CSV / Parquet / JSON — held-out samples" accept=".csv,.parquet,.json" file={evalSamples} onChange={setEvalSamples} />
-        <FileZone label="Eval labels" hint="Ground-truth labels aligned to eval features" accept=".csv" file={evalLabels} onChange={setEvalLabels} />
+        <FileZone label="Eval features" hint="CSV / Parquet / JSON — held-out samples" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={evalSamples} onChange={setEvalSamples} />
+        <FileZone label="Eval labels" hint="CSV / Parquet / JSON — ground-truth labels aligned to eval features" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={evalLabels} onChange={setEvalLabels} />
       </div>
       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
         <ActionButton label="Upload + compute metrics" loading={isPending} disabled={!canSubmit} onClick={handleSubmit} />
@@ -268,7 +299,7 @@ function DataProfilePanel({ artifactId }: { artifactId: string }) {
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        <FileZone label="Training table" hint="CSV / Parquet / JSON — full training distribution" accept=".csv,.parquet,.json" file={table} onChange={setTable} />
+        <FileZone label="Training table" hint="CSV / Parquet / JSON — full training distribution" accept=".csv,.parquet,.json" maxBytes={MAX_DATA_BYTES} file={table} onChange={setTable} />
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           <ActionButton label="Upload + profile" loading={isPending} disabled={!table} onClick={handleUpload} />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: "10px", color: "var(--text-dim)" }}>or</span>
@@ -391,14 +422,14 @@ export function Readiness() {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
         {/* Trees always populated */}
-        <SectionCard title="Trees + Feature Importance" populated icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 3v18M5 8l7-5 7 5" /></svg>} unlocksView="Trees · Importance" description="Extracted from the model file — always present." />
+        <SectionCard title="Trees + Feature Importance" populated icon={<GitBranch size={14} strokeWidth={1.5} />} unlocksView="Trees · Importance" description="Extracted from the model file — always present." />
 
         {/* SHAP */}
         <SectionCard
           title="SHAP Explanations"
           populated={hasShap}
           synthetic={shapSynthetic}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="9" /><path d="M9 9a3 3 0 015.83 1c0 2-3 3-3 3M12 17v.01" /></svg>}
+          icon={<HelpCircle size={14} strokeWidth={1.5} />}
           unlocksView="Explanations"
           description={hasShap ? (shapSynthetic ? "Approximate values from synthetic samples." : "Real SHAP values computed from your samples.") : "Upload feature samples + labels, or generate approximate SHAP from the model structure."}
         >
@@ -417,7 +448,7 @@ export function Readiness() {
         <SectionCard
           title="Evaluation Metrics"
           populated={hasEval}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 12l5 5L21 4" /></svg>}
+          icon={<Check size={14} strokeWidth={1.5} />}
           unlocksView="Evaluation"
           description={hasEval ? "Metrics computed from your held-out eval set." : "Requires a held-out eval set with ground-truth labels. Cannot be auto-generated."}
         >
@@ -429,7 +460,7 @@ export function Readiness() {
           title="Data Profile"
           populated={hasProfile}
           synthetic={profSynthetic}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>}
+          icon={<Database size={14} strokeWidth={1.5} />}
           unlocksView="Data"
           description={hasProfile ? (profSynthetic ? "Range-based profile from split thresholds — no real histograms." : "Full statistical profile of your training distribution.") : "Upload training table for full histograms + correlations, or generate a range-based profile from model structure."}
         >
@@ -440,7 +471,7 @@ export function Readiness() {
         <SectionCard
           title="Feature Diagnostics"
           populated={hasDiagnostics}
-          icon={<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M9 12l2 2 4-4" /><circle cx="12" cy="12" r="9" /></svg>}
+          icon={<CheckCircle size={14} strokeWidth={1.5} />}
           unlocksView="Importance → Recommendations"
           description={hasDiagnostics
             ? `${(diagnostics as { recommendations?: unknown[] })?.recommendations?.length ?? 0} recommendations. Interaction heatmap ready.`

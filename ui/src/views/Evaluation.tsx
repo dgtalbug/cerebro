@@ -1,6 +1,10 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { ExportMenu } from "../components/ui/ExportMenu";
+import { exportCsv } from "../lib/export/csv";
+import { exportPanelPdf } from "../lib/export/pdf";
 import { SectionLockedState } from "../components/SectionLockedState";
 import {
   useEvaluation,
@@ -99,6 +103,7 @@ function EvalPanel({ data }: { data: AnyEval }) {
 export function Evaluation() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const panelRef = useRef<HTMLDivElement>(null);
   const { data, isLoading, isError } = useEvaluation(id ?? "");
 
   if (isLoading) return <div className="view-loading">Loading evaluation…</div>;
@@ -126,15 +131,36 @@ export function Evaluation() {
 
   const evalData = data as AnyEval;
 
+  function getExportRows(e: AnyEval): Record<string, unknown>[] {
+    if (e.objective === "binary") return [{ metric: "auc", value: e.auc }, { metric: "precision", value: e.precision }, { metric: "recall", value: e.recall }, { metric: "f1", value: e.f1 }];
+    if (e.objective === "multiclass") return [{ metric: "macro_f1", value: e.macro_f1 }, { metric: "accuracy", value: e.accuracy }];
+    if (e.objective === "regression") return [{ metric: "rmse", value: e.rmse }, { metric: "mae", value: e.mae }, { metric: "r2", value: e.r2 }];
+    return (e as RankingEval).ndcg_at_k.map(n => ({ metric: `ndcg@${n.k}`, value: n.value }));
+  }
+
   return (
     <div className="view">
-      <ViewHeader
-        title="Model"
-        titleEmphasis="evaluation"
-        subtitle={`${OBJECTIVE_FULL[evalData.objective] ?? evalData.objective} · frozen at extraction time`}
-      />
-      <ObjectiveBar objective={evalData.objective} />
-      <EvalPanel data={evalData} />
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "24px" }}>
+        <ViewHeader
+          title="Model"
+          titleEmphasis="evaluation"
+          subtitle={`${OBJECTIVE_FULL[evalData.objective] ?? evalData.objective} · frozen at extraction time`}
+        />
+        <ExportMenu
+          onCsv={() => exportCsv(getExportRows(evalData), `evaluation-${id ?? "artifact"}`)}
+          onPdf={async () => {
+            try {
+              await exportPanelPdf(panelRef, `evaluation-${id ?? "artifact"}`);
+            } catch (e) {
+              toast.error("PDF export failed", { description: e instanceof Error ? e.message : String(e) });
+            }
+          }}
+        />
+      </div>
+      <div ref={panelRef}>
+        <ObjectiveBar objective={evalData.objective} />
+        <EvalPanel data={evalData} />
+      </div>
     </div>
   );
 }

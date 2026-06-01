@@ -585,6 +585,26 @@ export function useArtifactList(tag?: string) {
   });
 }
 
+export function useDeleteArtifact() {
+  const queryClient = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: async (artifactId) => {
+      const resp = await fetch(
+        `${BASE_URL}/artifacts/${encodeURIComponent(artifactId)}`,
+        { method: "DELETE" }
+      );
+      if (!resp.ok) {
+        const body = await resp.json().catch(() => ({})) as { detail?: string };
+        throw new Error(body.detail ?? `Delete failed (${resp.status})`);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["artifact-list"] });
+      queryClient.invalidateQueries({ queryKey: ["models"] });
+    },
+  });
+}
+
 // ── enrichment mutations (used by Readiness page) --------------------------
 
 export function useEnrichSections(artifactId: string) {

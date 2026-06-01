@@ -1,6 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { ExportMenu } from "../components/ui/ExportMenu";
+import { exportCsv } from "../lib/export/csv";
+import { exportPanelPdf } from "../lib/export/pdf";
+import { Skeleton } from "../components/ui/skeleton";
 import { DivergenceCallout } from "../components/importance/DivergenceCallout";
 import { useImportance, useDiagnostics, type ImportanceType } from "../lib/api/queries";
 
@@ -89,10 +94,13 @@ function ImportancePanel({ id, type }: { id: string; type: ImportanceType }) {
 
   if (isLoading) {
     return (
-      <div
-        style={{ color: "var(--text-dim)", fontFamily: "var(--font-mono)", fontSize: "12px" }}
-      >
-        Loading…
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "8px 0" }}>
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+            <Skeleton style={{ height: "12px", width: `${50 + Math.sin(i) * 30 + 60}px`, borderRadius: "3px" }} />
+            <Skeleton style={{ height: "12px", flex: 1, borderRadius: "3px" }} />
+          </div>
+        ))}
       </div>
     );
   }
@@ -208,16 +216,35 @@ export function Importance() {
   const { id } = useParams<{ id: string }>();
   const [activeTab, setActiveTab] = useState<ImportanceType>("gain");
   const artifactId = id ?? "placeholder";
+  const panelRef = useRef<HTMLDivElement>(null);
+  const { data: importanceData } = useImportance(artifactId, activeTab);
 
   return (
     <section className="view">
-      <ViewHeader
-        title="Feature"
-        titleEmphasis="importance"
-        subtitle="Built-in LightGBM importance plus permutation importance computed on the held-out evaluation set."
-      />
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "24px" }}>
+        <ViewHeader
+          title="Feature"
+          titleEmphasis="importance"
+          subtitle="Built-in LightGBM importance plus permutation importance computed on the held-out evaluation set."
+        />
+        {importanceData?.features && importanceData.features.length > 0 && (
+          <ExportMenu
+            onCsv={() => exportCsv(
+              importanceData.features.map((f) => ({ feature: f.name, value: f.value, type: activeTab })),
+              `importance-${artifactId}-${activeTab}`
+            )}
+            onPdf={async () => {
+              try {
+                await exportPanelPdf(panelRef, `importance-${artifactId}-${activeTab}`);
+              } catch (e) {
+                toast.error("PDF export failed", { description: e instanceof Error ? e.message : String(e) });
+              }
+            }}
+          />
+        )}
+      </div>
 
-      <div className="grid grid-2" style={{ alignItems: "start" }}>
+      <div ref={panelRef} className="grid grid-2" style={{ alignItems: "start" }}>
         {/* Left panel — aggregate importance */}
         <div className="panel">
           <div className="panel-header">

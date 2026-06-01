@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Toaster } from "./components/ui/sonner";
 import { AppShell } from "./components/layout/AppShell";
 import { Agent } from "./views/Agent";
 import { Artifacts } from "./views/Artifacts";
@@ -13,6 +14,7 @@ import { Data } from "./views/Data";
 import { Explanations } from "./views/Explanations";
 import { Evaluation } from "./views/Evaluation";
 import { Registry } from "./views/Registry";
+import { CodeGuide } from "./views/CodeGuide";
 import { useModelVersions } from "./lib/api/queries";
 
 function VersionRedirect() {
@@ -31,31 +33,35 @@ function VersionRedirect() {
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<AppShell />}>
-        <Route index element={<Registry />} />
-        <Route path="/ingest" element={<Ingest />} />
-        <Route path="/models/:id" element={<ModelDetail />} />
-        <Route path="/models/:id/versions/:version" element={<VersionRedirect />} />
-        <Route path="/artifacts/:id/overview" element={<Overview />} />
-        <Route path="/artifacts/:id/importance" element={<Importance />} />
-        <Route path="/artifacts/:id/trees" element={<Trees />} />
-        <Route path="/artifacts/:id/data" element={<Data />} />
-        <Route path="/artifacts/:id/explanations" element={<Explanations />} />
-        <Route path="/artifacts/:id/evaluation" element={<Evaluation />} />
-        <Route path="/artifacts/:id/agent" element={<Agent />} />
-        <Route path="/artifacts/:id/readiness" element={<Readiness />} />
-        <Route path="/artifacts/:id/diff/:compareId" element={<Diff />} />
-        <Route path="/artifacts" element={<Artifacts />} />
-        <Route
-          path="*"
-          element={
-            <div className="flex items-center justify-center h-full text-text-muted font-mono text-sm">
-              404 — page not found
-            </div>
-          }
-        />
-      </Route>
-    </Routes>
+    <>
+      <Toaster position="bottom-right" theme="dark" />
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<Registry />} />
+          <Route path="/ingest" element={<Ingest />} />
+          <Route path="/models/:id" element={<ModelDetail />} />
+          <Route path="/models/:id/versions/:version" element={<VersionRedirect />} />
+          <Route path="/artifacts/:id/overview" element={<Overview />} />
+          <Route path="/artifacts/:id/importance" element={<Importance />} />
+          <Route path="/artifacts/:id/trees" element={<Trees />} />
+          <Route path="/artifacts/:id/data" element={<Data />} />
+          <Route path="/artifacts/:id/explanations" element={<Explanations />} />
+          <Route path="/artifacts/:id/evaluation" element={<Evaluation />} />
+          <Route path="/artifacts/:id/agent" element={<Agent />} />
+          <Route path="/artifacts/:id/readiness" element={<Readiness />} />
+          <Route path="/artifacts/:id/diff/:compareId" element={<Diff />} />
+          <Route path="/artifacts/:id/code-guide" element={<CodeGuide />} />
+          <Route path="/artifacts" element={<Artifacts />} />
+          <Route
+            path="*"
+            element={
+              <div className="flex items-center justify-center h-full text-text-muted font-mono text-sm">
+                404 — page not found
+              </div>
+            }
+          />
+        </Route>
+      </Routes>
+    </>
   );
 }

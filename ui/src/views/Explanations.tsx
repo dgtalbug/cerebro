@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { BarSparklineChart } from "reaviz";
 import type { ChartShallowDataShape } from "reaviz";
 import { ViewHeader } from "../components/layout/ViewHeader";
+import { ExportMenu } from "../components/ui/ExportMenu";
+import { exportCsv } from "../lib/export/csv";
 import { SectionLockedState } from "../components/SectionLockedState";
 import { SyntheticBadge } from "../components/SyntheticBadge";
 import {
@@ -194,13 +196,23 @@ export function Explanations() {
 
   return (
     <div className="view">
-      <ViewHeader
-        title="Local"
-        titleEmphasis="explanations"
-        subtitle="SHAP values computed at extraction time — no live model needed"
-      >
-        {shap && data.provenance === "synthetic" && <SyntheticBadge />}
-      </ViewHeader>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "16px", marginBottom: "24px" }}>
+        <ViewHeader
+          title="Local"
+          titleEmphasis="explanations"
+          subtitle="SHAP values computed at extraction time — no live model needed"
+        >
+          {shap && data.provenance === "synthetic" && <SyntheticBadge />}
+        </ViewHeader>
+        {shap.feature_names && shap.feature_names.length > 0 && (
+          <ExportMenu
+            onCsv={() => exportCsv(
+              shap.feature_names.map((name) => ({ feature: name })),
+              `shap-${id ?? "artifact"}`
+            )}
+          />
+        )}
+      </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
         <div className="panel">

@@ -59,6 +59,10 @@
   --glow-1: rgba(212, 165, 116, 0.15);
   --glow-2: rgba(107, 141, 222, 0.06);
 
+  /* Interactive accent — periwinkle blue for CTAs and focus rings */
+  --interactive: #7B9FFF;
+  --interactive-dim: rgba(123, 159, 255, 0.15);
+
   /* shadcn aliases — both names resolve to the mockup tokens so
      shadcn primitives need no per-component patching. */
   --background: var(--bg);

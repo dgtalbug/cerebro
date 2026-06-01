@@ -73,7 +73,22 @@ def _to_ndarray(
         cols = rel.fetchnumpy()
         if label == "labels":
             return np.asarray(next(iter(cols.values())))
-        return np.column_stack([np.asarray(v) for v in cols.values()])
+        numeric = {
+            k: v
+            for k, v in cols.items()
+            if np.issubdtype(np.asarray(v).dtype, np.number)
+        }
+        if not numeric:
+            non_numeric = [k for k in cols if k not in numeric]
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    f"{label} ({filename}): no numeric columns found. "
+                    f"This file must be a feature matrix (one row per sample, numeric values). "
+                    f"Non-numeric columns found: {non_numeric[:5]}"
+                ),
+            )
+        return np.column_stack([np.asarray(v) for v in numeric.values()])
     except Exception as exc:
         raise HTTPException(
             status_code=422, detail=f"Could not parse {label} ({filename}): {exc}"
