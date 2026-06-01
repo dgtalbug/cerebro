@@ -84,37 +84,35 @@
   --ring: var(--accent);
 }
 
-/* Light theme — warm parchment / archival aesthetic.
-   Only colour and atmosphere tokens are redefined; typography and radii
-   inherit from `:root` deliberately. */
+/* Light theme — clean white / modern professional aesthetic. */
 :root[data-theme="light"] {
-  --bg: #f5f0e8;
-  --bg-elev: #fdf9f0;
-  --bg-elev-2: #eee7d4;
-  --bg-hover: #e5dcc4;
-  --border: #dbd0b0;
-  --border-strong: #bcae88;
+  --bg: #ffffff;
+  --bg-elev: #f8f9fb;
+  --bg-elev-2: #f0f2f6;
+  --bg-hover: #e8ebf2;
+  --border: #e2e6ef;
+  --border-strong: #c8cedc;
 
-  --text: #1e1c18;
-  --text-muted: #5e5948;
-  --text-dim: #8c8270;
+  --text: #111318;
+  --text-muted: #556080;
+  --text-dim: #8892aa;
 
   --accent: #b07830;
   --accent-bright: #c8904a;
   --accent-dim: #d4b890;
-  --accent-glow: rgba(176, 120, 48, 0.1);
+  --accent-glow: rgba(176, 120, 48, 0.08);
 
   --blue: #3a5ca0;
-  --green: #3a7230;
-  --red: #a83030;
+  --green: #2a7a38;
+  --red: #b03030;
   --amber: #b07830;
   --purple: #6a52a0;
 
-  --grain-opacity: 0.22;
-  --grain-blend: multiply;
-  --glow-1: rgba(176, 120, 48, 0.08);
-  --glow-2: rgba(58, 92, 160, 0.04);
+  --grain-opacity: 0;
+  --grain-blend: normal;
+  --glow-1: transparent;
+  --glow-2: transparent;
 
   --interactive: #5b67e8;
-  --interactive-dim: rgba(91, 103, 232, 0.12);
+  --interactive-dim: rgba(91, 103, 232, 0.1);
 }
