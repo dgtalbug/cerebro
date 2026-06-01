@@ -230,14 +230,14 @@ body::after {
 
 .btn.primary {
   background: var(--interactive);
-  color: var(--bg);
+  color: #fff;
   border-color: var(--interactive);
   font-weight: 600;
 }
 
 .btn.primary:hover {
-  background: var(--accent-bright);
-  border-color: var(--accent-bright);
+  filter: brightness(1.12);
+  border-color: var(--interactive);
 }
 
 /* ===== SIDEBAR ===== */

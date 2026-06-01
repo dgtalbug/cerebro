@@ -18,31 +18,31 @@
 
 :root,
 :root[data-theme="dark"] {
-  /* Surface */
-  --bg: #0a0d14;
-  --bg-elev: #11151f;
-  --bg-elev-2: #161b27;
-  --bg-hover: #1a2030;
-  --border: #1f2632;
-  --border-strong: #2a3242;
+  /* Surface — warm charcoal, no blue cast */
+  --bg: #0f1012;
+  --bg-elev: #16181d;
+  --bg-elev-2: #1d1f27;
+  --bg-hover: #232630;
+  --border: #272b38;
+  --border-strong: #333848;
 
   /* Text */
-  --text: #e8e6df;
-  --text-muted: #8b92a8;
-  --text-dim: #5a6275;
+  --text: #eae8e1;
+  --text-muted: #8d94aa;
+  --text-dim: #5c6377;
 
-  /* Accent */
-  --accent: #d4a574;
-  --accent-bright: #e8be8a;
-  --accent-dim: #8a6d4f;
-  --accent-glow: rgba(212, 165, 116, 0.15);
+  /* Accent — richer amber-gold */
+  --accent: #e8a848;
+  --accent-bright: #f5c260;
+  --accent-dim: #a07038;
+  --accent-glow: rgba(232, 168, 72, 0.18);
 
-  /* Semantic / chart palette */
-  --blue: #6b8dde;
-  --green: #7fb069;
-  --red: #c95a5a;
-  --amber: #d4a574;
-  --purple: #9b87c4;
+  /* Semantic / chart palette — slightly more vivid */
+  --blue: #60a5fa;
+  --green: #4ade80;
+  --red: #f87171;
+  --amber: #e8a848;
+  --purple: #a78bfa;
 
   /* Typography (theme-invariant) */
   --font-display: "Instrument Serif", "Times New Roman", serif;
@@ -53,15 +53,15 @@
   --radius: 4px;
   --radius-lg: 8px;
 
-  /* Atmosphere — grain + dual radial glow */
-  --grain-opacity: 0.4;
+  /* Atmosphere — warm amber glow, cool blue counter-glow */
+  --grain-opacity: 0.35;
   --grain-blend: overlay;
-  --glow-1: rgba(212, 165, 116, 0.15);
-  --glow-2: rgba(107, 141, 222, 0.06);
+  --glow-1: rgba(232, 168, 72, 0.14);
+  --glow-2: rgba(96, 165, 250, 0.06);
 
-  /* Interactive accent — periwinkle blue for CTAs and focus rings */
-  --interactive: #7B9FFF;
-  --interactive-dim: rgba(123, 159, 255, 0.15);
+  /* Interactive accent — violet-indigo for CTAs and focus rings */
+  --interactive: #818cf8;
+  --interactive-dim: rgba(129, 140, 248, 0.15);
 
   /* shadcn aliases — both names resolve to the mockup tokens so
      shadcn primitives need no per-component patching. */
@@ -84,34 +84,37 @@
   --ring: var(--accent);
 }
 
-/* Light theme — aged paper / archival aesthetic.
+/* Light theme — warm parchment / archival aesthetic.
    Only colour and atmosphere tokens are redefined; typography and radii
    inherit from `:root` deliberately. */
 :root[data-theme="light"] {
-  --bg: #f4efe2;
-  --bg-elev: #fbf7eb;
-  --bg-elev-2: #ede6d1;
-  --bg-hover: #e4dbc1;
-  --border: #d8cdaf;
-  --border-strong: #b8aa86;
+  --bg: #f5f0e8;
+  --bg-elev: #fdf9f0;
+  --bg-elev-2: #eee7d4;
+  --bg-hover: #e5dcc4;
+  --border: #dbd0b0;
+  --border-strong: #bcae88;
 
-  --text: #1f1d18;
-  --text-muted: #5c574a;
-  --text-dim: #8a8270;
+  --text: #1e1c18;
+  --text-muted: #5e5948;
+  --text-dim: #8c8270;
 
-  --accent: #a07338;
-  --accent-bright: #b8884a;
-  --accent-dim: #c9b78f;
-  --accent-glow: rgba(160, 115, 56, 0.1);
+  --accent: #b07830;
+  --accent-bright: #c8904a;
+  --accent-dim: #d4b890;
+  --accent-glow: rgba(176, 120, 48, 0.1);
 
-  --blue: #3d5d9b;
-  --green: #4a7a3d;
-  --red: #a23030;
-  --amber: #a07338;
-  --purple: #6e5896;
+  --blue: #3a5ca0;
+  --green: #3a7230;
+  --red: #a83030;
+  --amber: #b07830;
+  --purple: #6a52a0;
 
-  --grain-opacity: 0.25;
+  --grain-opacity: 0.22;
   --grain-blend: multiply;
-  --glow-1: rgba(160, 115, 56, 0.08);
-  --glow-2: rgba(61, 93, 155, 0.04);
+  --glow-1: rgba(176, 120, 48, 0.08);
+  --glow-2: rgba(58, 92, 160, 0.04);
+
+  --interactive: #5b67e8;
+  --interactive-dim: rgba(91, 103, 232, 0.12);
 }
