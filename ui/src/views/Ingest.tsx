@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Upload, Check } from "lucide-react";
+import { Loader2, Upload, Check, ChevronDown, ChevronUp, Info } from "lucide-react";
 import { toast } from "sonner";
 import { useIngest, useModels, useModelVersions, type IngestParams } from "../lib/api/queries";
 
@@ -260,6 +260,105 @@ function VersionLabel({ modelName }: { modelName: string }) {
 
 const MAX_DATA_BYTES = 500 * 1024 * 1024;
 
+const READINESS_STEPS = [
+  {
+    label: "Model file",
+    required: true,
+    detail: "Export your trained model to a file. LightGBM: booster.save_model('model.txt'). XGBoost: bst.save_model('model.ubj') or bst.save_model('model.json').",
+    code: `# LightGBM\nbst = lgb.train(params, dtrain)\nbst.save_model("model.txt")\n\n# XGBoost\nbst = xgb.train(params, dtrain)\nbst.save_model("model.ubj")`,
+  },
+  {
+    label: "Background samples (SHAP)",
+    required: false,
+    detail: "A representative sample of your training data as a CSV or Parquet (100–500 rows). Used as the SHAP background dataset to compute feature attributions.",
+    code: `bg = X_train.sample(200, random_state=42)\nbg.to_csv("background_samples.csv", index=False)`,
+  },
+  {
+    label: "Background labels (SHAP)",
+    required: false,
+    detail: "The corresponding target values (y) for your background samples — same row order.",
+    code: `y_bg = y_train.loc[bg.index]\ny_bg.to_csv("background_labels.csv", index=False)`,
+  },
+  {
+    label: "Eval samples + labels",
+    required: false,
+    detail: "A held-out test set (CSV/Parquet) with ground-truth labels. Unlocks accuracy, AUC, RMSE, and the confusion matrix.",
+    code: `X_test.to_csv("eval_samples.csv", index=False)\ny_test.to_csv("eval_labels.csv", index=False)`,
+  },
+  {
+    label: "Full training table",
+    required: false,
+    detail: "Your complete training DataFrame (all features + target). Unlocks the data profile: distributions, correlation matrix, and missingness charts.",
+    code: `df_train.to_parquet("training_table.parquet", index=False)\n# or: df_train.to_csv("training_table.csv", index=False)`,
+  },
+];
+
+function ReadinessGuide() {
+  const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  return (
+    <div style={{ marginBottom: "24px", border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", overflow: "hidden" }}>
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "12px 16px", background: "var(--bg-elev)", border: "none", cursor: "pointer",
+          color: "var(--text)", fontFamily: "var(--font-body)", fontSize: "13px",
+        }}
+      >
+        <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Info size={14} style={{ color: "var(--accent)" }} />
+          <span style={{ fontWeight: 500 }}>Readiness guide</span>
+          <span style={{ color: "var(--text-dim)", fontWeight: 400 }}>— what to prepare before uploading</span>
+        </span>
+        {open ? <ChevronUp size={14} style={{ color: "var(--text-dim)" }} /> : <ChevronDown size={14} style={{ color: "var(--text-dim)" }} />}
+      </button>
+
+      {open && (
+        <div style={{ padding: "8px 0", background: "var(--bg)" }}>
+          {READINESS_STEPS.map((step, i) => (
+            <div key={i} style={{ borderBottom: i < READINESS_STEPS.length - 1 ? "1px solid var(--border)" : "none" }}>
+              <button
+                type="button"
+                onClick={() => setExpanded(expanded === i ? null : i)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "10px 16px", background: "none", border: "none", cursor: "pointer",
+                  color: "var(--text)", fontFamily: "var(--font-body)", fontSize: "13px", textAlign: "left",
+                }}
+              >
+                <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{
+                    width: "6px", height: "6px", borderRadius: "50%", flexShrink: 0,
+                    background: step.required ? "var(--accent)" : "var(--border-strong)",
+                  }} />
+                  {step.label}
+                  {step.required && (
+                    <span style={{ fontSize: "10px", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--accent)", opacity: 0.8 }}>required</span>
+                  )}
+                </span>
+                {expanded === i ? <ChevronUp size={12} style={{ color: "var(--text-dim)" }} /> : <ChevronDown size={12} style={{ color: "var(--text-dim)" }} />}
+              </button>
+              {expanded === i && (
+                <div style={{ padding: "0 16px 14px 32px" }}>
+                  <p style={{ color: "var(--text-muted)", fontSize: "12px", lineHeight: 1.6, marginBottom: "10px" }}>{step.detail}</p>
+                  <pre style={{
+                    background: "var(--bg-elev-2)", border: "1px solid var(--border)", borderRadius: "var(--radius)",
+                    padding: "10px 12px", fontFamily: "var(--font-mono)", fontSize: "11px", color: "var(--text-muted)",
+                    overflowX: "auto", whiteSpace: "pre", margin: 0, lineHeight: 1.6,
+                  }}>{step.code}</pre>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function Ingest() {
   const navigate = useNavigate();
   const { mutate, isPending, isError, error } = useIngest();
@@ -317,9 +416,11 @@ export function Ingest() {
       <div className="view-header">
         <div>
           <h1 className="view-title">Load <em>model</em></h1>
-          <p className="view-subtitle">Upload a LightGBM or XGBoost model to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view. Not sure what to provide? See the <a href="#" style={{ color: "var(--accent)" }}>Readiness guide</a> for this artifact.</p>
+          <p className="view-subtitle">Upload a LightGBM or XGBoost model to extract a canonical artifact. Optional supporting files unlock SHAP explanations, evaluation metrics, and the data profile view.</p>
         </div>
       </div>
+
+      <ReadinessGuide />
 
       <div className="panel">
         {/* Model file */}
