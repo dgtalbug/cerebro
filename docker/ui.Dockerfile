@@ -10,12 +10,15 @@ FROM node:22-alpine AS builder
 # (ERR_PNPM_ABORTED_REMOVE_MODULES_DIR_NO_TTY). The .dockerignore at the
 # repo root prevents the host's node_modules from being COPYed in, which
 # is the most common cause of that decision.
+# --ignore-scripts prevents ERR_PNPM_IGNORED_BUILDS from core-js@3.x
+# (pnpm v9+ requires explicit approval for any package with install scripts;
+# skipping those scripts is safe in a CI/Docker context).
 ENV CI=true
 
 RUN npm install -g pnpm@11.1.2
 WORKDIR /build
 COPY ui/package.json ui/pnpm-lock.yaml ui/pnpm-workspace.yaml ./
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY ui/ ./
 ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
