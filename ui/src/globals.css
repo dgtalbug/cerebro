@@ -287,8 +287,8 @@ body::after {
 }
 
 .nav-item.active {
-  color: var(--accent);
-  background: var(--bg-elev-2);
+  color: var(--interactive);
+  background: var(--interactive-dim);
 }
 
 .nav-item.active::before {
@@ -299,7 +299,7 @@ body::after {
   transform: translateY(-50%);
   width: 2px;
   height: 14px;
-  background: var(--accent);
+  background: var(--interactive);
   border-radius: 2px;
 }
 
@@ -369,7 +369,7 @@ body::after {
 
 .view-title em {
   font-style: italic;
-  color: var(--accent);
+  color: var(--interactive);
 }
 
 .view-subtitle {
@@ -443,8 +443,8 @@ body::after {
 }
 
 .panel-tab.active {
-  background: var(--bg-elev-2);
-  color: var(--accent);
+  background: var(--interactive-dim);
+  color: var(--interactive);
 }
 
 /* ===== STAT TILES ===== */
@@ -728,8 +728,8 @@ body::after {
 }
 
 .sample-tab.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
+  color: var(--interactive);
+  border-bottom-color: var(--interactive);
 }
 
 /* ===== SHAP BARS ===== */
