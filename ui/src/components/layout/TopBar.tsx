@@ -23,10 +23,10 @@ export function TopBar() {
   return (
     <header className="topbar">
       <div className="brand">
-        <BrandMark className="w-[26px] h-[26px] text-accent" />
-        <div className="brand-name">
-          cer<em>e</em>bro
-        </div>
+        <BrandMark className="w-[28px] h-[28px] text-accent" />
+        <h1 className="brand-name">
+          cerebro
+        </h1>
       </div>
 
       <div className="model-bar">

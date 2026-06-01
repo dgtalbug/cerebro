@@ -109,11 +109,13 @@ body::after {
 }
 
 .brand-name {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 400;
-  letter-spacing: 0.02em;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
   color: var(--text);
+  margin: 0;
 }
 
 .brand-name em {
