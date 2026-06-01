@@ -31,11 +31,11 @@
   --text-muted: #8d94aa;
   --text-dim: #5c6377;
 
-  /* Accent — richer amber-gold */
-  --accent: #e8a848;
-  --accent-bright: #f5c260;
-  --accent-dim: #a07038;
-  --accent-glow: rgba(232, 168, 72, 0.18);
+  /* Accent — full indigo */
+  --accent: #818cf8;
+  --accent-bright: #a5b0ff;
+  --accent-dim: #4f5a9e;
+  --accent-glow: rgba(129, 140, 248, 0.18);
 
   /* Semantic / chart palette — blue is the "negative" pole */
   --blue: #60a5fa;
@@ -52,10 +52,10 @@
   --radius: 4px;
   --radius-lg: 8px;
 
-  /* Atmosphere — warm amber glow, cool blue counter-glow */
+  /* Atmosphere — indigo glow */
   --grain-opacity: 0.35;
   --grain-blend: overlay;
-  --glow-1: rgba(232, 168, 72, 0.14);
+  --glow-1: rgba(129, 140, 248, 0.12);
   --glow-2: rgba(96, 165, 250, 0.06);
 
   /* Interactive accent — violet-indigo for CTAs and focus rings */
@@ -96,10 +96,11 @@
   --text-muted: #556080;
   --text-dim: #8892aa;
 
-  --accent: #b07830;
-  --accent-bright: #c8904a;
-  --accent-dim: #d4b890;
-  --accent-glow: rgba(176, 120, 48, 0.08);
+  /* Accent — full indigo (light variant) */
+  --accent: #5b67e8;
+  --accent-bright: #7880f0;
+  --accent-dim: #c7caf9;
+  --accent-glow: rgba(91, 103, 232, 0.1);
 
   --blue: #3a5ca0;
   --green: #2a7a38;
