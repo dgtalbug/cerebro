@@ -17,7 +17,7 @@ export function DivergenceCallout({ warnings }: Props) {
         padding: "12px 14px",
         borderRadius: "var(--radius)",
         border: "1px solid var(--blue)",
-        background: "rgba(192, 57, 43, 0.08)",
+        background: "var(--interactive-dim)",
         fontFamily: "var(--font-mono)",
         fontSize: "12px",
         color: "var(--text)",

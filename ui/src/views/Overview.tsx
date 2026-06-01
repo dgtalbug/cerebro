@@ -58,7 +58,7 @@ export function Overview() {
           titleEmphasis="overview"
           subtitle={status === 404 ? "Artifact not found." : "Failed to load artifact."}
         />
-        <div className="p-8 rounded-lg border border-red bg-bg-elev text-text-muted font-mono text-sm">
+        <div className="p-8 rounded-lg border border-blue bg-bg-elev text-text-muted font-mono text-sm">
           {status === 404
             ? "The requested artifact could not be found. Check the artifact ID and try again."
             : `An error occurred while loading the artifact. ${error?.message ?? ""}`}

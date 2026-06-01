@@ -78,7 +78,7 @@
   --muted-foreground: var(--text-muted);
   --accent-foreground: var(--bg);
   --destructive: var(--blue);
-  --destructive-foreground: var(--text);
+  --destructive-foreground: #ffffff;
   --input: var(--border);
   --ring: var(--accent);
 }
